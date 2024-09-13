@@ -20,3 +20,5 @@ N/A
 
 ## Customer Email
 (to be confirmed) darren.rempel@irisndt.com
+
+Note: The team is currently evaluating other potential projects and clients.
