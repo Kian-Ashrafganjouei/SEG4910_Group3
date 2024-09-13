@@ -8,7 +8,8 @@ Isam Karroum \
 Lisa Korolyov \
 Jazia Djoudad \
 Hossein Hajmirbaba \
-Kian Ashrafganjouei
+Kian Ashrafganjouei \
+Ghait Ouled Amar Ben Cheikh
 
 ## Customer Name
 
