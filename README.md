@@ -4,8 +4,8 @@ CAPSTONE PROJECT SEG
 ## Project Description and Goals
 
 ## Student Names
-Lisa Korolyov
-Jazia Djoudad
+Lisa Korolyov \
+Jazia Djoudad \
 
 ## Customer Name
 
