@@ -7,7 +7,7 @@ CAPSTONE PROJECT SEG
 Isam Karroum \
 Lisa Korolyov \
 Jazia Djoudad \
-Hossein Hajmirbaba \ 
+Hossein Hajmirbaba \
 Kian Ashrafganjouei \
 
 ## Customer Name
