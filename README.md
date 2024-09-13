@@ -5,6 +5,7 @@ CAPSTONE PROJECT SEG
 
 ## Student Names
 Lisa Korolyov
+Jazia Djoudad
 
 ## Customer Name
 
