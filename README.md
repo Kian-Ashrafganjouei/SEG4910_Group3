@@ -19,4 +19,4 @@ IRISNDT
 N/A
 
 ## Customer Email
-darren.rempel@irisndt.com
+(to be confirmed) darren.rempel@irisndt.com
