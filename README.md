@@ -1,8 +1,11 @@
-# SEG4910_Group3
-CAPSTONE PROJECT SEG
+# Travel-Buddy (Capstone-Project)
 
-## Project Description and Goals
-Use machine learning to populate nameplate data from a picture into reports, Mobile, Technician, etc and integrate it into the existing applications
+A platform designed for travelers who want to connect with others for companionship or support during their trips.
+Whether they’re looking for a travel buddy to explore a destination together or need local assistance when they arrive (such as a local guide or someone to show them around). It makes traveling safer, more social, and more enjoyable.
+It focuses on connecting like-minded people with shared interests or offering help from locals for a smoother travel experience.
+
+
+The goal of this project is to design and build a complete software solution that will concretize the aforementioned idea.
 
 ## Student Names
 Isam Karroum \
@@ -12,13 +15,29 @@ Hossein Hajmirbaba \
 Kian Ashrafganjouei \
 Ghait Ouled Amar Ben Cheikh
 
+## Roles
+This first draft of the project roles is as follows:
+
+- Project manager [Jazia Djoudad]
+
+- Business analyst [Isam Karroum]
+
+- QA manager [Lisa Korolyov - Kian Ashrafganjouei]
+
+- Architect [Hossein Hajmirbaba]
+
+- Build manager [Ghait Ouled Amar Ben Cheikh]
+
+- Lead developers [Hossein Hajmirbaba - Lisa Korolyov - Kian Ashrafganjouei]
+
+
+Note that these roles are subject to change. The final roles will be established once we have a clear architecture document describing the technical requirements.
+
 ## Customer Name
-IRISNDT
+Open market client.
 
 ## Customer Affiliation
 N/A
 
 ## Customer Email
 (to be confirmed) darren.rempel@irisndt.com
-
-Note: The team is currently evaluating other potential projects and clients.
