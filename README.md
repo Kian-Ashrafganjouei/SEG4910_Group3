@@ -80,12 +80,10 @@ Note that these roles are subject to change. The final roles will be established
 - Beta release of the platform with real user testing.
 - Final report and evaluation, including lessons learned, customer satisfaction feedback, and future expansion opportunities.
 
-## Customer Name
+## Customer Name and Email
 Open market clients
-- Mohamed Frendi
+- Mohamed Frendi (md.frendi@gmail.com)
+- Saïd Chotbi (saidchotbi@gmail.com)
 
 ## Customer Affiliation
 N/A
-
-## Customer Email
-(to be confirmed) md.frendi@gmail.com
