@@ -81,10 +81,11 @@ Note that these roles are subject to change. The final roles will be established
 - Final report and evaluation, including lessons learned, customer satisfaction feedback, and future expansion opportunities.
 
 ## Customer Name
-Open market client.
+Open market clients
+- Mohamed Frendi
 
 ## Customer Affiliation
 N/A
 
 ## Customer Email
-(to be confirmed) darren.rempel@irisndt.com
+(to be confirmed) md.frendi@gmail.com
