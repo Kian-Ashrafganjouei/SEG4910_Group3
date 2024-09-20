@@ -1,0 +1,13 @@
+TODO:
++ Set up the development environment for the team.
+  + Make sure everyone can pull-edit-compile-push code.
+  + The environment can be a simple dockerized Spring app integrated with PostgreSQL.
+
++ Features:
+  + User authentication.
+  + User profile management.
+  + Discussion space for users to post about their travel plans. (Something similar to "subreddits" in Reddit).
+  + Private messaging system (1-1 chat + Group chats).
+
++ Prototyping:
+  + UI prototypes for the features aforementioned (Figma?).
