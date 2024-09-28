@@ -16,12 +16,14 @@ RUN wget -O /THIRD-PARTY-LICENSES-20200824.tar.gz https://corretto.aws/downloads
     apk add --no-cache amazon-corretto-21=$version-r0 && \
     rm -rf /usr/lib/jvm/java-21-amazon-corretto/lib/src.zip
 
-
 ENV LANG=C.UTF-8
-
 ENV JAVA_HOME=/usr/lib/jvm/default-jvm
 ENV PATH=$PATH:/usr/lib/jvm/default-jvm/bin
 
-WORKDIR /home
+WORKDIR /gradle
+RUN wget https://services.gradle.org/distributions/gradle-8.10.2-bin.zip && \
+    unzip gradle-8.10.2-bin.zip && \
+    rm -rf gradle-8.10.2-bin.zip
 
-ENTRYPOINT ["./gradlew", "bootRun"]
+WORKDIR /home
+ENTRYPOINT ["/bin/sh", "-c", "/gradle/gradle-8.10.2/bin/gradle wrapper --gradle-version 8.10 && ./gradlew bootRun"]

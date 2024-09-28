@@ -3,3 +3,6 @@
 
 # Gradle files
 **/.gradle
+
+# Gradle wrapper
+**/gradlew
