@@ -26,4 +26,4 @@ RUN wget https://services.gradle.org/distributions/gradle-8.10.2-bin.zip && \
     rm -rf gradle-8.10.2-bin.zip
 
 WORKDIR /home
-ENTRYPOINT ["/bin/sh", "-c", "/gradle/gradle-8.10.2/bin/gradle wrapper --gradle-version 8.10 && ./gradlew bootRun"]
+ENTRYPOINT ["/bin/sh", "-c", "/gradle/gradle-8.10.2/bin/gradle wrapper --gradle-version 8.10 && /home/gradlew bootRun"]
