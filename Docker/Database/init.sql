@@ -20,7 +20,6 @@ CREATE TABLE Users (
     interests TEXT,
     bio TEXT,
     profile_picture VARCHAR(255),
-    password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
