@@ -12,6 +12,7 @@ export default function SignUpForm() {
   const [email, set_email] = useState("");
   const [confirmed_password, set_confirmed_password] = useState("");
   const [error, set_error] = useState("");
+  const session = useSession();
 
   const signup_form_submission_handler = async (e) => {
     e.preventDefault();
