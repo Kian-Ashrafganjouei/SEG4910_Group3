@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { useState } from "react";
-import { useSession } from "../session";
+import { useAuthentication } from "../session";
 
 export default function SignUpForm() {
   const [username, set_username] = useState("");
@@ -12,7 +12,7 @@ export default function SignUpForm() {
   const [email, set_email] = useState("");
   const [confirmed_password, set_confirmed_password] = useState("");
   const [error, set_error] = useState("");
-  const session = useSession();
+  const auth = useAuthentication();
 
   const signup_form_submission_handler = async (e) => {
     e.preventDefault();
@@ -40,7 +40,7 @@ export default function SignUpForm() {
       } else if (!res.ok) {
         throw new Error();
       } else {
-        session.login(await res.json());
+        auth.login(await res.json());
       }
 
     } catch (error) {

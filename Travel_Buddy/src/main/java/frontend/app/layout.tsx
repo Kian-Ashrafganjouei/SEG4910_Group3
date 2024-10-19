@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SessionProvider } from "./session";
+import { AuthenticationProvider } from "./session";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -29,9 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-      <SessionProvider>
+      <AuthenticationProvider>
         {children}
-      </SessionProvider>
+      </AuthenticationProvider>
       </body>
     </html>
   );

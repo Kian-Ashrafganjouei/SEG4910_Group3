@@ -4,13 +4,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGoogle, faApple } from '@fortawesome/free-brands-svg-icons';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { useState } from "react";
-import { useSession } from "../session";
+import { useAuthentication } from "../session";
+import { signIn, useSession } from "next-auth/react";
 
 export default function SignInForm() {
   const [username, set_username] = useState("");
   const [password, set_password] = useState("");
   const [error, set_error] = useState("");
-  const session = useSession();
+  const auth = useAuthentication();
 
   const signin_form_submission_handler = async (e) => {
     e.preventDefault();
@@ -28,7 +29,7 @@ export default function SignInForm() {
       } else if (!res.ok) {
         throw new Error();
       } else {
-        session.login(await res.json());
+        auth.login(await res.json());
       }
     } catch (error) {
       set_error("An error occured. Please try again.");
@@ -90,12 +91,12 @@ export default function SignInForm() {
         </div>
 
         <div className="flex justify-between mt-4 gap-3">
-          <a 
+          <button 
             className="flex items-center justify-center w-1/2 p-2 text-white bg-red-500 rounded-md hover:bg-red-600"
-            href="/api/auth/signin/google"
+            onClick={() => signIn("google", { callbackUrl: "/" })}
           >
             <FontAwesomeIcon icon={faGoogle} className="mr-2 size-4" /> Sign in with Google
-          </a>
+          </button>
           <button className="flex items-center justify-center w-1/2 p-2 text-white bg-gray-800 rounded-md hover:bg-gray-700">
             <FontAwesomeIcon icon={faApple} className="mr-2 size-4" /> Sign in with Apple
           </button>

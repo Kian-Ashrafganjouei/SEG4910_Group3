@@ -1,31 +1,36 @@
+// FIXME: The authentication logic is not very well written. Fix it later if you have
+// time.
 "use client";
 
 import { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession, SessionProvider, signIn } from "next-auth/react";
 
-const SessionContext = createContext();
+const AuthenticationContext = createContext();
 
-export const SessionProvider = ({ children }) => {
-  const [session, setSession] = useState(null);
+export const AuthenticationProvider = ({ children }) => {
+  const [user, set_user] = useState(null);
   const router = useRouter();
 
   const login = (user) => {
-    setSession(user);
-    // FIXME: Maybe show a 'Loading... redirecting you soon.' message.
+    set_user(user);
     router.push("/");
   };
 
   const logout = () => {
-    setSession(null);
+    set_user(null);
+    router.push("/");
   };
 
   return (
-    <SessionContext.Provider value={{ session, login, logout }}>
-      {children}
-    </SessionContext.Provider>
+    <AuthenticationContext.Provider value={{ user, login, logout }}>
+      <SessionProvider>
+        {children}
+      </SessionProvider>
+    </AuthenticationContext.Provider>
   );
 };
 
-export const useSession = () => {
-  return useContext(SessionContext);
+export const useAuthentication = () => {
+  return useContext(AuthenticationContext);
 };
