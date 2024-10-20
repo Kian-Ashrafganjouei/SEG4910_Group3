@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { useState } from "react";
-import { useAuthentication } from "../session";
 
 export default function SignUpForm() {
   const [username, set_username] = useState("");
@@ -12,7 +11,6 @@ export default function SignUpForm() {
   const [email, set_email] = useState("");
   const [confirmed_password, set_confirmed_password] = useState("");
   const [error, set_error] = useState("");
-  const auth = useAuthentication();
 
   const signup_form_submission_handler = async (e) => {
     e.preventDefault();
@@ -38,14 +36,12 @@ export default function SignUpForm() {
       if (res.status === 400) {
         set_error(await res.text());
       } else if (!res.ok) {
-        throw new Error();
+        throw new Error("Internal server error");
       } else {
-        auth.login(await res.json());
+        window.location.href = "/";
       }
-
     } catch (error) {
-      set_error("An error occured. Please try again.");
-      console.error(error);
+      set_error(error);
     }
   };
 

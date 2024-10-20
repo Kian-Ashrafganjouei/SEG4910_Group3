@@ -26,8 +26,8 @@ public class BackendApplication {
 	}
 
   @CrossOrigin(origins = "http://localhost:3000")
-  @PostMapping("/backend/signin")
-  public ResponseEntity<?> authenticate_user(@RequestBody User user) {
+  @PostMapping("/backend/credentials/signin")
+  public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
     List<User> all_users = user_repository.findAll();
 
     for (User u : all_users) {
@@ -41,15 +41,28 @@ public class BackendApplication {
   }
 
   @CrossOrigin(origins = "http://localhost:3000")
+  @PostMapping("/backend/google/signin")
+  public ResponseEntity<User> handle_google_signin(@RequestBody User user) {
+    List<User> all_users = user_repository.findAll();
+
+    for (User u : all_users) {
+      if (u.getEmail().equals(user.getEmail())) {
+        return ResponseEntity.ok(u);
+      }
+    }
+    return ResponseEntity.ok(user_repository.save(user));
+  }
+
+  @CrossOrigin(origins = "http://localhost:3000")
   @PostMapping("/backend/signup")
-  public ResponseEntity<?> register_user(@RequestBody User user) {
+  public ResponseEntity<?> handle_signup(@RequestBody User user) {
     Optional<User> existingUserByUsername = user_repository.findByUsername(user.getUsername());
     Optional<User> existingUserByEmail = user_repository.findByEmail(user.getEmail());
 
     if (existingUserByUsername.isPresent() ||
         existingUserByEmail.isPresent())
     {
-      return ResponseEntity.badRequest().body("Username or Email already exist");
+      return ResponseEntity.badRequest().body("username or email already exist");
     }
 
     return ResponseEntity.ok(user_repository.save(user));

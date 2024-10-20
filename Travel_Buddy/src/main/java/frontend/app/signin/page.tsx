@@ -4,36 +4,27 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGoogle, faApple } from '@fortawesome/free-brands-svg-icons';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { useState } from "react";
-import { useAuthentication } from "../session";
 import { signIn, useSession } from "next-auth/react";
 
 export default function SignInForm() {
   const [username, set_username] = useState("");
   const [password, set_password] = useState("");
   const [error, set_error] = useState("");
-  const auth = useAuthentication();
 
   const signin_form_submission_handler = async (e) => {
     e.preventDefault();
+    const res = await signIn("credentials", {
+      redirect: false,
+      callbackUrl: "/",
+      username,
+      password
+    });
 
-    try {
-      const res = await fetch("http://localhost:8080/backend/signin", {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password})
-      });
-      if (res.status === 400) {
-        set_error(await res.text());
-      } else if (!res.ok) {
-        throw new Error();
-      } else {
-        auth.login(await res.json());
-      }
-    } catch (error) {
-      set_error("An error occured. Please try again.");
-      console.error(error);
+    if (res.error) {
+      set_error("Invalid username or password");
+      return;
+    } else {
+      window.location.href = "/";
     }
   }
 
