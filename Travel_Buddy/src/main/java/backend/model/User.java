@@ -1,33 +1,191 @@
 package backend;
 
 import jakarta.persistence.*;
+import java.sql.Timestamp;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users")  // Matches the existing table name in the database
 public class User {
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  public long id;
 
-  // TODO: encode uniqueness here.
-  @Column(name = "username")
-  public String username;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")  // Matches the primary key column in the table
+    private long userId;
 
-  @Column(name = "password")
-  public String password;
+    @Column(name = "username", unique = true, nullable = false)
+    private String username;
 
-  @Column(name = "email")
-  public String email;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-  public String getUsername() {
-    return username;
-  }
+    @Column(name = "email", unique = true, nullable = false)
+    private String email;
 
-  public String getPassword() {
-    return password;
-  }
+    @Column(name = "password", nullable = false)
+    private String password;
 
-  public String getEmail() {
-    return email;
-  }
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "nationality")
+    private String nationality;
+
+    @Column(name = "languages")
+    private String languages;
+
+    @Column(name = "age")
+    private Integer age;
+
+    @Column(name = "sex")
+    private String sex;
+
+    @Column(name = "interests")
+    private String interests;
+
+    @Column(name = "bio")
+    private String bio;
+
+    @Column(name = "profile_picture")
+    private String profilePicture;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private Timestamp updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = new Timestamp(System.currentTimeMillis());
+    }
+
+    // Getters and setters...
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getNationality() {
+        return nationality;
+    }
+
+    public void setNationality(String nationality) {
+        this.nationality = nationality;
+    }
+
+    public String getLanguages() {
+        return languages;
+    }
+
+    public void setLanguages(String languages) {
+        this.languages = languages;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
+    }
+
+    public String getInterests() {
+        return interests;
+    }
+
+    public void setInterests(String interests) {
+        this.interests = interests;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }
+
