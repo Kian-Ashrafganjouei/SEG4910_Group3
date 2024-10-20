@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, signIn } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -39,6 +39,20 @@ export default function Home() {
                 }}
               >
                 Profile
+              </button>
+              <button
+                onClick={() => signOut()}
+                style={{
+                  marginRight: "1rem",
+                  padding: "0.5rem 1rem",
+                  backgroundColor: "#f44336",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Sign Out
               </button>
             </>
           ) : (
