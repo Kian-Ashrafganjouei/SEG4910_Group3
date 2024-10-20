@@ -30,4 +30,3 @@ services:
       retries: 10
     ports:
       - 5432:5432
-

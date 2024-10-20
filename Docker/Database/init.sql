@@ -1,6 +1,7 @@
 ---------------------------- DATABASE SETUP ---------------------------------------------
 -- Create the root superuser and database to supress PG's warnings.
 CREATE USER root superuser;
+ALTER USER root WITH PASSWORD 'password';
 CREATE DATABASE root;
 
 -- Create a new database --
