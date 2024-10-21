@@ -3,6 +3,7 @@ package backend;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
@@ -101,4 +102,59 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
             return ResponseEntity.badRequest().body("User not found");
         }
     }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PutMapping("/backend/user")
+    public ResponseEntity<?> update_user(@RequestHeader("Email") String email, @RequestBody User updatedUser) {
+        System.out.println("Request to update user data for email: " + email);
+        
+        Optional<User> existingUser = user_repository.findByEmail(email);
+        
+        if (existingUser.isPresent()) {
+            User user = existingUser.get();
+            
+            // Print current user data
+            System.out.println("Current User Data:");
+            System.out.println("Name: " + user.getName());
+            System.out.println("Phone Number: " + user.getPhoneNumber());
+            System.out.println("Nationality: " + user.getNationality());
+            System.out.println("Languages: " + user.getLanguages());
+            System.out.println("Age: " + user.getAge());
+            System.out.println("Sex: " + user.getSex());
+            System.out.println("Interests: " + user.getInterests());
+            System.out.println("Bio: " + user.getBio());
+            
+            // Print incoming update data
+            System.out.println("Updated User Data:");
+            System.out.println("Name: " + updatedUser.getName());
+            System.out.println("Phone Number: " + updatedUser.getPhoneNumber());
+            System.out.println("Nationality: " + updatedUser.getNationality());
+            System.out.println("Languages: " + updatedUser.getLanguages());
+            System.out.println("Age: " + updatedUser.getAge());
+            System.out.println("Sex: " + updatedUser.getSex());
+            System.out.println("Interests: " + updatedUser.getInterests());
+            System.out.println("Bio: " + updatedUser.getBio());
+
+            // Update user fields
+            user.setName(updatedUser.getName());
+            user.setPhoneNumber(updatedUser.getPhoneNumber());
+            user.setNationality(updatedUser.getNationality());
+            user.setLanguages(updatedUser.getLanguages());
+            user.setAge(updatedUser.getAge());
+            user.setSex(updatedUser.getSex());
+            user.setInterests(updatedUser.getInterests());
+            user.setBio(updatedUser.getBio());
+            user.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+            // Save the updated user
+            user_repository.save(user);
+            System.out.println("User updated successfully.");
+            return ResponseEntity.ok("User updated successfully.");
+        } else {
+            System.out.println("User not found.");
+            return ResponseEntity.badRequest().body("User not found.");
+        }
+    }
+
+
 }

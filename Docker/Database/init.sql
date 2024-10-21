@@ -8,7 +8,7 @@ CREATE DATABASE root;
 CREATE DATABASE main;
 \connect main;
 
--- Users Table
+-- Users table remains unchanged
 CREATE TABLE Users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -17,14 +17,25 @@ CREATE TABLE Users (
     password VARCHAR(255) NOT NULL,
     phone_number VARCHAR(15),
     nationality VARCHAR(50),
-    languages VARCHAR(255),
     age INT,
     sex VARCHAR(10),
-    interests TEXT,
     bio TEXT,
     profile_picture VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create a new join table for user languages
+CREATE TABLE User_Languages (
+    user_id INT REFERENCES Users(user_id) ON DELETE CASCADE,
+    language VARCHAR(255),
+    PRIMARY KEY (user_id, language)
+);
+
+CREATE TABLE user_interests (
+    user_id INT REFERENCES Users(user_id) ON DELETE CASCADE,
+    interest VARCHAR(255),
+    PRIMARY KEY (user_id, interest)
 );
 
 -- Trips Table

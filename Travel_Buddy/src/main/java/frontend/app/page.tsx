@@ -4,7 +4,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function Home() {
   const { data: session } = useSession();
-
+  console.log("Session data:", session); // Check the session data
   return (
     <>
       {/* Navigation Bar */}
@@ -20,7 +20,7 @@ export default function Home() {
       >
         <div>
           <h1>
-            Welcome{session && session.user?.name ? `, ${session.user.name}` : "!"}
+          Welcome{session?.user?.username ? `, ${session.user.username}` : "!"}
           </h1>
         </div>
         <div>

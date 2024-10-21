@@ -44,29 +44,34 @@ const options = {
     signIn: "/signin"
   },
   callbacks: {
-    async signIn(credentials) {
-      try {
-        const res = await fetch("http://docker-backend-1:8080/backend/google/signin", {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: credentials.user.name,
-            email: credentials.user.email,
-            password: credentials.user.id
-          })
-        });
-        if (!res.ok) {
-          throw new Error("Internal server error");
-        } else {
+    async signIn({ user, account, profile, email, credentials }) {
+      if (account.provider === "google") {
+        try {
+          const res = await fetch("http://docker-backend-1:8080/backend/google/signin", {
+            method: "POST",
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username: user.name,
+              email: user.email,
+              password: user.id
+            })
+          });
+          if (!res.ok) {
+            throw new Error("Internal server error");
+          }
+          const userData = await res.json();
+          user.username = userData.username; // Assuming your backend returns a username
+          user.id = userData.id; // Assuming your backend returns a user ID
           return true;
+        } catch (error) {
+          console.log(error);
+          return false;
         }
-      } catch (error) {
-        console.log(error);
       }
-      return false;
-    },
+      return true; // For other providers
+    },    
     async jwt({ token, user }) {
       if (user) {
         token.username = user.username;
@@ -75,7 +80,8 @@ const options = {
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token}) {
+      console.log("IN SESSION", session)
       session.user.username = token.username;
       session.user.user_id = token.user_id;
       session.user.email = token.email;
