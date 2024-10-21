@@ -83,7 +83,7 @@ export default function Profile() {
       <nav className="nav-bar">
         <div className="nav-content">
           <h1 className="welcome-text">
-            Welcome{session && session.user?.name ? `, ${session.user.name}` : "!"}
+            Welcome{session && session.user?.username ? `, ${session.user.username}` : "!"}
           </h1>
           <button className="back-button" onClick={() => router.push("/")}>
             Back
