@@ -2,6 +2,8 @@ package backend;
 
 import jakarta.persistence.*;
 import java.sql.Timestamp;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 
 @Entity
 @Table(name = "users")  // Matches the existing table name in the database
@@ -30,8 +32,13 @@ public class User {
     @Column(name = "nationality")
     private String nationality;
 
-    @Column(name = "languages")
-    private String languages;
+    @ElementCollection
+    @CollectionTable(
+        name = "user_languages",
+        joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "language") // Specify column name for languages
+    private List<String> languages;
 
     @Column(name = "age")
     private Integer age;
@@ -39,8 +46,10 @@ public class User {
     @Column(name = "sex")
     private String sex;
 
-    @Column(name = "interests")
-    private String interests;
+    @ElementCollection
+    @CollectionTable(name = "user_interests", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "interest")
+    private List<String> interests;
 
     @Column(name = "bio")
     private String bio;
@@ -124,11 +133,11 @@ public class User {
         this.nationality = nationality;
     }
 
-    public String getLanguages() {
+    public List<String> getLanguages() {
         return languages;
     }
 
-    public void setLanguages(String languages) {
+    public void setLanguages(List<String> languages) {
         this.languages = languages;
     }
 
@@ -148,11 +157,11 @@ public class User {
         this.sex = sex;
     }
 
-    public String getInterests() {
+    public List<String> getInterests() {
         return interests;
     }
 
-    public void setInterests(String interests) {
+    public void setInterests(List<String> interests) {
         this.interests = interests;
     }
 
