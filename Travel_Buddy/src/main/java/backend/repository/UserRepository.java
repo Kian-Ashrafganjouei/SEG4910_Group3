@@ -1,8 +1,10 @@
-package backend;
+package backend.repository;
+
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import backend.User;
-import java.util.Optional;
+
+import backend.model.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
   Optional<User> findByUsername(String username);
