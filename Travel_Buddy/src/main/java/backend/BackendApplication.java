@@ -1,28 +1,35 @@
 package backend;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.beans.factory.annotation.Autowired;
-import backend.UserRepository;
-import backend.User;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
-import java.sql.Timestamp;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
+
+import backend.model.Trip;
+import backend.model.User;
+import backend.repository.TripRepository;
+import backend.repository.UserRepository;
 
 @RestController
 @SpringBootApplication
 public class BackendApplication {
 
     @Autowired
-    UserRepository user_repository; 
+    private UserRepository user_repository;
+
+    @Autowired
+    private TripRepository trip_repository;  // Ensure proper @Autowired for TripRepository
 
     public static void main(String[] args) {
         SpringApplication.run(BackendApplication.class, args);
@@ -156,5 +163,42 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/trips")
+    public ResponseEntity<List<Trip>> getAllTrips() {
+        List<Trip> trips = trip_repository.findAll();
+        return ResponseEntity.ok(trips);
+    }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/backend/trips")
+    public ResponseEntity<?> addTrip(@RequestBody Trip trip) {
+        try {
+            // Check if the user exists using the email provided in the request
+            Optional<User> user = user_repository.findByEmail(trip.getCreatedByEmail());
+
+            if (user.isEmpty()) {
+                System.err.println("Error: User not found for email: " + trip.getCreatedByEmail());
+                return ResponseEntity.badRequest().body("User not found.");
+            }
+
+            // Associate the trip with the user
+            trip.setCreatedBy(user.get());
+
+            // Set timestamps
+            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+            trip.setCreatedAt(currentTimestamp);
+            trip.setUpdatedAt(currentTimestamp);
+
+            // Save the trip
+            Trip savedTrip = trip_repository.save(trip);
+            System.out.println("Trip added successfully: " + savedTrip);
+            return ResponseEntity.ok(savedTrip);
+
+        } catch (Exception e) {
+            System.err.println("Error while adding trip: " + e.getMessage());
+            return ResponseEntity.status(500).body("An error occurred while adding the trip.");
+        }
+    }
 
 }

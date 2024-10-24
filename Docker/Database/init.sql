@@ -25,6 +25,22 @@ CREATE TABLE Users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+INSERT INTO Users (
+    username, name, email, password, phone_number, nationality, age, sex, bio, profile_picture
+) 
+VALUES (
+    'johndoe', 
+    'John Doe', 
+    'johndoe@example.com', 
+    'hashed_password123', 
+    '+1234567890', 
+    'Canadian', 
+    30, 
+    'Male', 
+    'Software engineer with a passion for travel and photography.', 
+    'profile_pictures/johndoe.jpg'
+);
+
 -- Create a new join table for user languages
 CREATE TABLE User_Languages (
     user_id INT REFERENCES Users(user_id) ON DELETE CASCADE,
@@ -48,6 +64,17 @@ CREATE TABLE Trips (
     created_by INT REFERENCES Users(user_id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO Trips (
+    location, start_date, end_date, description, created_by
+) 
+VALUES (
+    'Paris, France', 
+    '2024-12-15', 
+    '2024-12-22', 
+    'Christmas vacation exploring Paris.', 
+    1 
 );
 
 -- UserTrips Table
