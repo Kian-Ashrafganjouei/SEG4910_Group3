@@ -1,27 +1,57 @@
 ---------------------------- DATABASE SETUP ---------------------------------------------
 -- Create the root superuser and database to supress PG's warnings.
 CREATE USER root superuser;
+ALTER USER root WITH PASSWORD 'password';
 CREATE DATABASE root;
 
 -- Create a new database --
 CREATE DATABASE main;
 \connect main;
 
--- Users Table
+-- Users table remains unchanged
 CREATE TABLE Users (
     user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
     phone_number VARCHAR(15),
     nationality VARCHAR(50),
-    languages VARCHAR(255),
     age INT,
     sex VARCHAR(10),
-    interests TEXT,
     bio TEXT,
     profile_picture VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO Users (
+    username, name, email, password, phone_number, nationality, age, sex, bio, profile_picture
+) 
+VALUES (
+    'johndoe', 
+    'John Doe', 
+    'johndoe@example.com', 
+    'hashed_password123', 
+    '+1234567890', 
+    'Canadian', 
+    30, 
+    'Male', 
+    'Software engineer with a passion for travel and photography.', 
+    'profile_pictures/johndoe.jpg'
+);
+
+-- Create a new join table for user languages
+CREATE TABLE User_Languages (
+    user_id INT REFERENCES Users(user_id) ON DELETE CASCADE,
+    language VARCHAR(255),
+    PRIMARY KEY (user_id, language)
+);
+
+CREATE TABLE user_interests (
+    user_id INT REFERENCES Users(user_id) ON DELETE CASCADE,
+    interest VARCHAR(255),
+    PRIMARY KEY (user_id, interest)
 );
 
 -- Trips Table
@@ -34,6 +64,17 @@ CREATE TABLE Trips (
     created_by INT REFERENCES Users(user_id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO Trips (
+    location, start_date, end_date, description, created_by
+) 
+VALUES (
+    'Paris, France', 
+    '2024-12-15', 
+    '2024-12-22', 
+    'Christmas vacation exploring Paris.', 
+    1 
 );
 
 -- UserTrips Table
