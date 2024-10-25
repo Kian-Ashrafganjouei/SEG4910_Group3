@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 
 const LandingPage = () => {
@@ -52,12 +51,12 @@ const LandingPage = () => {
           />
         </div>
         {/* Overlay Text Content */}
-        <div className="w-full h-[600px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[58%] bg-black bg-opacity-25">
+        <div className="w-full h-[600px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[60%] bg-black bg-opacity-25">
           <div className="text-center text-white text-[40px] h-max p-20">
-            <h1>Find a Travel Compagnion</h1>
+            <h1>Find a Travel Companion</h1>
             <p>
-              Find travel compagnions by creating and sharing your trips!
-              Enabling a new experience!
+              Find travel companion by creating and sharing your trips! Enabling
+              a new experience!
             </p>
           </div>
         </div>
@@ -85,6 +84,18 @@ const LandingPage = () => {
               className="w-full h-96 rounded-xl"
             />
           )}
+        </div>
+      </div>
+      {/* Sign up section */}
+      <div className="signup-section bg-[#f2f2f2] text-black">
+        <div className="justify-items-center p-10 grid grid-rows-2 gap-10">
+          <h1 className="text-6xl	p-10">Ready to Start a new Journey?</h1>
+          <a
+            className="signup rounded-md bg-black text-white p-10 flex items-center justify-center"
+            style={{ width: "160px", height: "40px" }}
+            href="/signup">
+            Sign Up
+          </a>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const LoginForm = () => {
   const [error, setError] = useState<string | null>(null);
@@ -18,15 +18,14 @@ const LoginForm = () => {
     }
   };
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit  = (e: React.FormEvent) => {
-    e.preventDefault();   
-
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     // Handle form submission here, e.g., send data to a backend API for authentication
-    console.log('Email:', email);
-    console.log('Password:', password);
+    console.log("Email:", email);
+    console.log("Password:", password);
   };
 
   return (
@@ -47,7 +46,9 @@ const LoginForm = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="password" className="block text-gray-700 font-bold mb-2">
+          <label
+            htmlFor="password"
+            className="block text-gray-700 font-bold mb-2">
             Password
           </label>
           <input
@@ -62,17 +63,18 @@ const LoginForm = () => {
         <div className="text-center">
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
             Login
           </button>
         </div>
       </form>
 
       <div className="text-center">
-        <button 
-        className="mt-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        onClick={handleSignIn}>Sign in with Google</button>
+        <button
+          className="mt-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={handleSignIn}>
+          Sign in with Google
+        </button>
         {error && <p>Error: {error}</p>}
       </div>
     </div>
