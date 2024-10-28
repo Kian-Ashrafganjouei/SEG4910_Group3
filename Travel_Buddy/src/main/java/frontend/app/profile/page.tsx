@@ -197,7 +197,7 @@ export default function Profile() {
 
             {/* Interests Checkboxes */}
             <div className="form-group">
-            <label>Intrests:</label>
+            <label>Interests:</label>
             <div className="checkbox-group">
                 {interestOptions.map((interest) => (
                 <label key={interest} className="checkbox-label">
