@@ -1,11 +1,16 @@
 "use client";
 
 import NavbarLayout from "../../components/NavbarLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Navbar from "../../layout/navbar/page";
 import Footer from "../../layout/footer/page";
+
+interface Interest {
+  interestId: number;
+  name: string;
+}
 
 export default function AddTrip() {
   const { data: session } = useSession();
@@ -16,15 +21,45 @@ export default function AddTrip() {
     startDate: "",
     endDate: "",
     description: "",
+    interestIds: [] as number[],
   });
 
+  const [interests, setInterests] = useState<Interest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchInterests = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/backend/interests");
+        if (!response.ok) throw new Error("Failed to fetch interests.");
+
+        const data = await response.json();
+        setInterests(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching interests:", error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchInterests();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setTrip((prevTrip) => ({ ...prevTrip, [name]: value }));
+  };
+
+  const toggleInterest = (interestId: number) => {
+    setTrip((prevTrip) => {
+      const updatedInterests = prevTrip.interestIds.includes(interestId)
+        ? prevTrip.interestIds.filter((id) => id !== interestId)
+        : [...prevTrip.interestIds, interestId];
+      return { ...prevTrip, interestIds: updatedInterests };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,10 +74,10 @@ export default function AddTrip() {
     try {
       const tripData = {
         ...trip,
-        createdByEmail: session?.user?.email, // Ensure the correct user email is sent
+        createdByEmail: session?.user?.email,
       };
 
-      console.log("Sending trip data to backend:", tripData); // Log the request data
+      console.log("Sending trip data to backend:", tripData);
 
       const response = await fetch("http://localhost:8080/backend/trips", {
         method: "POST",
@@ -119,6 +154,24 @@ export default function AddTrip() {
               />
             </div>
 
+            <h3 className="interests-title">Select Interests:</h3>
+            {isLoading ? (
+              <p>Loading interests...</p>
+            ) : (
+              <div className="interests-list">
+                {interests.map((interest) => (
+                  <label key={interest.interestId} className="interest-label">
+                    <input
+                      type="checkbox"
+                      checked={trip.interestIds.includes(interest.interestId)}
+                      onChange={() => toggleInterest(interest.interestId)}
+                    />
+                    <span>{interest.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+
             {errorMessage && <p className="error-msg">{errorMessage}</p>}
 
             <button type="submit" className="submit-button">
@@ -155,11 +208,29 @@ export default function AddTrip() {
             border-radius: 8px;
             margin-top: 0.5rem;
           }
-          input:focus,
-          textarea:focus {
-            outline: none;
-            border-color: #7b1fa2;
-            box-shadow: 0 0 4px #b39ddb;
+          .interests-title {
+            margin-top: 1rem;
+            font-size: 1.5rem;
+            color: #4a148c;
+          }
+          .interests-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 1rem;
+          }
+          .interest-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: #e0f7fa;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+          }
+          .interest-label:hover {
+            background-color: #b2ebf2;
           }
           .submit-button {
             width: 100%;

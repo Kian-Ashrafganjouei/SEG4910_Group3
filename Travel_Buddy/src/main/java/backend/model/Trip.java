@@ -2,6 +2,7 @@ package backend.model;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,6 +43,9 @@ public class Trip {
 
     @Transient  
     private String createdByEmail;
+
+    @Transient
+    private List<Integer> interestIds;    
     
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
@@ -84,6 +88,14 @@ public class Trip {
     }
     public void setCreatedByEmail(String createdByEmail) {
         this.createdByEmail = createdByEmail;
+    }
+
+     public List<Integer> getInterestIds() {
+        return interestIds;
+    }
+
+    public void setInterestIds(List<Integer> interestIds) {
+        this.interestIds = interestIds;
     }
 
     public Timestamp getCreatedAt() { return createdAt; }
