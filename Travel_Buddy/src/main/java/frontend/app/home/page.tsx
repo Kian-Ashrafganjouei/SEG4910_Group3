@@ -2,19 +2,19 @@
 
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import Navbar from "../layout/navbar/page";
+import Footer from "../layout/footer/page";
 
-export default function NavbarLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Home() {
   const { data: session } = useSession();
   const router = useRouter();
 
+  console.log("Session data:", session); // Check the session data
+
   return (
     <>
-      {/* Navbar */}
+      <Navbar />
+      {/* Navigation Bar */}
       <nav
         style={{
           display: "flex",
@@ -23,11 +23,6 @@ export default function NavbarLayout({
           padding: "1rem",
           backgroundColor: "#333",
           color: "white",
-          // position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          zIndex: 1000,
         }}>
         <div>
           <h1>
@@ -69,13 +64,21 @@ export default function NavbarLayout({
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div style={{ paddingTop: "5rem" }}>{children}</div>
+      {/* Home Content */}
+      <div style={{ padding: "2rem" }}>
+        <h2>Home Page</h2>
+        {session ? (
+          <p>Welcome to the home page, {session.user?.name}!</p>
+        ) : (
+          <p>Please log in to see your personalized content.</p>
+        )}
+      </div>
+      <Footer />
     </>
   );
 }
 
-// Button style
+// Button style object to reuse styles across buttons
 const buttonStyle = {
   marginRight: "1rem",
   padding: "0.5rem 1rem",
