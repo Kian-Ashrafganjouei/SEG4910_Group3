@@ -77,6 +77,34 @@ VALUES (
     1 
 );
 
+CREATE TABLE interests (
+    interest_id SERIAL PRIMARY KEY,  
+    name VARCHAR(100) NOT NULL UNIQUE 
+);
+
+-- Insert preset interests
+INSERT INTO interests (name) VALUES 
+('Adventure'),
+('Cultural Experiences'),
+('Nature and Hiking'),
+('Food and Wine Tasting'),
+('Beach and Relaxation'),
+('Nightlife and Entertainment'),
+('Historical Sites'),
+('Shopping'),
+('Sports and Activities'),
+('Photography'),
+('Wellness and Spa'),
+('Music and Festivals');
+
+
+CREATE TABLE trip_interests (
+    trip_interest_id SERIAL PRIMARY KEY,
+    trip_id INT NOT NULL REFERENCES Trips(trip_id) ON DELETE CASCADE,
+    interest_id INT NOT NULL REFERENCES interests(interest_id) ON DELETE CASCADE,
+    UNIQUE (trip_id, interest_id)
+);
+
 -- UserTrips Table
 CREATE TABLE UserTrips (
     user_trip_id SERIAL PRIMARY KEY,

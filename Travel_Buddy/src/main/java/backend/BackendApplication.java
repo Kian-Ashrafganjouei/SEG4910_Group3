@@ -16,10 +16,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+import backend.model.Interest;
 import backend.model.Trip;
 import backend.model.User;
+import backend.repository.InterestRepository;
 import backend.repository.TripRepository;
 import backend.repository.UserRepository;
+import jakarta.transaction.Transactional;
 
 @RestController
 @SpringBootApplication
@@ -27,6 +30,9 @@ public class BackendApplication {
 
     @Autowired
     private UserRepository user_repository;
+
+    @Autowired
+    private InterestRepository interestRepository;
 
     @Autowired
     private TripRepository trip_repository;  // Ensure proper @Autowired for TripRepository
@@ -171,10 +177,17 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
     }
 
     @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/interests")
+    public ResponseEntity<List<Interest>> getAllInterests() {
+        return ResponseEntity.ok(interestRepository.findAll());
+    }
+
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/trips")
+    @Transactional
     public ResponseEntity<?> addTrip(@RequestBody Trip trip) {
         try {
-            // Check if the user exists using the email provided in the request
+            // Validate the user creating the trip
             Optional<User> user = user_repository.findByEmail(trip.getCreatedByEmail());
 
             if (user.isEmpty()) {
@@ -182,7 +195,7 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
                 return ResponseEntity.badRequest().body("User not found.");
             }
 
-            // Associate the trip with the user
+            // Associate the trip with the found user
             trip.setCreatedBy(user.get());
 
             // Set timestamps
@@ -192,6 +205,14 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
 
             // Save the trip
             Trip savedTrip = trip_repository.save(trip);
+
+            // Save trip-interests associations
+            if (trip.getInterestIds() != null) {
+                for (Integer interestId : trip.getInterestIds()) {
+                    trip_repository.addTripInterest(savedTrip.getTripId(), interestId);
+                }
+            }
+
             System.out.println("Trip added successfully: " + savedTrip);
             return ResponseEntity.ok(savedTrip);
 
