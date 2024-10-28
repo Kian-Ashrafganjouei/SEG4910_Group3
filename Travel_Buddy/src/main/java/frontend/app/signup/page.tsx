@@ -1,8 +1,8 @@
 "use client";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGoogle, faGithub } from '@fortawesome/free-brands-svg-icons';
-import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGoogle, faGithub } from "@fortawesome/free-brands-svg-icons";
+import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 
 export default function SignUpForm() {
@@ -24,13 +24,13 @@ export default function SignUpForm() {
       const res = await fetch("http://localhost:8080/backend/signup", {
         method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          username, 
+        body: JSON.stringify({
+          username,
           email,
           password,
-        })
+        }),
       });
 
       if (res.status === 400) {
@@ -38,7 +38,7 @@ export default function SignUpForm() {
       } else if (!res.ok) {
         throw new Error("Internal server error");
       } else {
-        window.location.href = "/";
+        window.location.href = "/home";
       }
     } catch (error) {
       set_error(error);
@@ -48,18 +48,23 @@ export default function SignUpForm() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-700">Sign Up</h2>
-        {
-          error !== "" &&
+        <h2 className="text-2xl font-bold text-center text-gray-700">
+          Sign Up
+        </h2>
+        {error !== "" && (
           <div className="p-4 mt-2 text-red-700 bg-red-100 border border-red-300 rounded-lg">
-            <FontAwesomeIcon icon={faExclamationCircle} className="mr-2 size-4" /> 
+            <FontAwesomeIcon
+              icon={faExclamationCircle}
+              className="mr-2 size-4"
+            />
             <strong>{error}</strong>
           </div>
-
-        }
+        )}
         <form className="space-y-4" onSubmit={signup_form_submission_handler}>
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-600">
               Username
             </label>
             <input
@@ -72,7 +77,9 @@ export default function SignUpForm() {
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-600">
               Email
             </label>
             <input
@@ -85,7 +92,9 @@ export default function SignUpForm() {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-600">
               Password
             </label>
             <input
@@ -98,7 +107,9 @@ export default function SignUpForm() {
             />
           </div>
           <div>
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="confirm-password"
+              className="block text-sm font-medium text-gray-600">
               Confirm Password
             </label>
             <input
@@ -112,8 +123,7 @@ export default function SignUpForm() {
           </div>
           <button
             type="submit"
-            className="w-full py-3 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+            className="w-full py-3 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
             Sign Up
           </button>
         </form>
@@ -125,19 +135,20 @@ export default function SignUpForm() {
         </div>
 
         <div className="flex justify-between mt-4 gap-3">
-          <a 
+          <a
             className="flex items-center justify-center w-1/2 p-2 text-white bg-red-500 rounded-md hover:bg-red-600"
-            href="/api/auth/signin/google"
-          >
-            <FontAwesomeIcon icon={faGoogle} className="mr-2 size-4" /> Sign up with Google
+            href="/api/auth/signin/google">
+            <FontAwesomeIcon icon={faGoogle} className="mr-2 size-4" /> Sign up
+            with Google
           </a>
           <button className="flex items-center justify-center w-1/2 p-2 text-white bg-gray-800 rounded-md hover:bg-gray-700">
-            <FontAwesomeIcon icon={faGithub} className="mr-2 size-4" /> Sign up with GitHub
+            <FontAwesomeIcon icon={faGithub} className="mr-2 size-4" /> Sign up
+            with GitHub
           </button>
         </div>
 
         <p className="text-sm text-center text-gray-500">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <a href="/signin" className="text-blue-600 hover:underline">
             Login
           </a>

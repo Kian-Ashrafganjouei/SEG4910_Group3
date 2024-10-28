@@ -1,8 +1,8 @@
 "use client";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faGoogle, faApple } from '@fortawesome/free-brands-svg-icons';
-import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGoogle, faApple } from "@fortawesome/free-brands-svg-icons";
+import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 
@@ -15,34 +15,37 @@ export default function SignInForm() {
     e.preventDefault();
     const res = await signIn("credentials", {
       redirect: false,
-      callbackUrl: "/",
+      callbackUrl: "/home",
       username,
-      password
+      password,
     });
 
     if (res.error) {
       set_error("Invalid username or password");
       return;
     } else {
-      window.location.href = "/";
+      window.location.href = "/home";
     }
-  }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center text-gray-700">Login</h2>
-        {
-          error !== "" &&
+        {error !== "" && (
           <div className="p-4 mt-2 text-red-700 bg-red-100 border border-red-300 rounded-lg">
-            <FontAwesomeIcon icon={faExclamationCircle} className="mr-2 size-4" /> 
+            <FontAwesomeIcon
+              icon={faExclamationCircle}
+              className="mr-2 size-4"
+            />
             <strong>{error}</strong>
           </div>
-
-        }
+        )}
         <form className="space-y-4" onSubmit={signin_form_submission_handler}>
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-600">
               Username
             </label>
             <input
@@ -55,7 +58,9 @@ export default function SignInForm() {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-600">
               Password
             </label>
             <input
@@ -69,8 +74,7 @@ export default function SignInForm() {
           </div>
           <button
             type="submit"
-            className="w-full py-3 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+            className="w-full py-3 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
             Login
           </button>
         </form>
@@ -82,19 +86,20 @@ export default function SignInForm() {
         </div>
 
         <div className="flex justify-between mt-4 gap-3">
-          <button 
+          <button
             className="flex items-center justify-center w-1/2 p-2 text-white bg-red-500 rounded-md hover:bg-red-600"
-            onClick={() => signIn("google", { callbackUrl: "/" })}
-          >
-            <FontAwesomeIcon icon={faGoogle} className="mr-2 size-4" /> Sign in with Google
+            onClick={() => signIn("google", { callbackUrl: "/" })}>
+            <FontAwesomeIcon icon={faGoogle} className="mr-2 size-4" /> Sign in
+            with Google
           </button>
           <button className="flex items-center justify-center w-1/2 p-2 text-white bg-gray-800 rounded-md hover:bg-gray-700">
-            <FontAwesomeIcon icon={faApple} className="mr-2 size-4" /> Sign in with Apple
+            <FontAwesomeIcon icon={faApple} className="mr-2 size-4" /> Sign in
+            with Apple
           </button>
         </div>
 
         <p className="text-sm text-center text-gray-500">
-          Don't have an account?{' '}
+          Don't have an account?{" "}
           <a href="/signup" className="text-blue-600 hover:underline">
             Sign up
           </a>

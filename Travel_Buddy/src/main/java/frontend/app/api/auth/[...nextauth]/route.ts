@@ -6,7 +6,7 @@ const options = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
     CredentialsProvider({
       credentials: {
@@ -15,16 +15,19 @@ const options = {
       },
       async authorize(credentials) {
         try {
-          const res = await fetch("http://docker-backend-1:8080/backend/credentials/signin", {
-            method: "POST",
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              username: credentials.username,
-              password: credentials.password
-            })
-          });
+          const res = await fetch(
+            "http://docker-backend-1:8080/backend/credentials/signin",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                username: credentials.username,
+                password: credentials.password,
+              }),
+            }
+          );
 
           if (res.status === 400) {
             return null;
@@ -37,27 +40,30 @@ const options = {
           console.log(error);
         }
         return null;
-      }
-    })
+      },
+    }),
   ],
   pages: {
-    signIn: "/signin"
+    signIn: "/signin",
   },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       if (account.provider === "google") {
         try {
-          const res = await fetch("http://docker-backend-1:8080/backend/google/signin", {
-            method: "POST",
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              username: user.name,
-              email: user.email,
-              password: user.id
-            })
-          });
+          const res = await fetch(
+            "http://docker-backend-1:8080/backend/google/signin",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                username: user.name,
+                email: user.email,
+                password: user.id,
+              }),
+            }
+          );
           if (!res.ok) {
             throw new Error("Internal server error");
           }
@@ -71,7 +77,7 @@ const options = {
         }
       }
       return true; // For other providers
-    },    
+    },
     async jwt({ token, user }) {
       if (user) {
         token.username = user.username;
@@ -80,14 +86,18 @@ const options = {
       }
       return token;
     },
-    async session({ session, token}) {
-      console.log("IN SESSION", session)
+    async session({ session, token }) {
+      console.log("IN SESSION", session);
       session.user.username = token.username;
       session.user.user_id = token.user_id;
       session.user.email = token.email;
       return session;
-    }
-  }
+    },
+    async redirect({ url, baseUrl }) {
+      // Redirect to /home after sign-in
+      return url.startsWith(baseUrl) ? url : `${baseUrl}/home`;
+    },
+  },
 };
 
 const handler = NextAuth(options);

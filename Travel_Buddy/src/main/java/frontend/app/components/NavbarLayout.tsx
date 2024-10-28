@@ -4,7 +4,11 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React from "react";
 
-export default function NavbarLayout({ children }: { children: React.ReactNode }) {
+export default function NavbarLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -19,16 +23,16 @@ export default function NavbarLayout({ children }: { children: React.ReactNode }
           padding: "1rem",
           backgroundColor: "#333",
           color: "white",
-          position: "fixed",
+          // position: "fixed",
           top: 0,
           left: 0,
           width: "100%",
           zIndex: 1000,
-        }}
-      >
+        }}>
         <div>
           <h1>
-            Welcome{session?.user?.username ? `, ${session.user.username}` : "!"}
+            Welcome
+            {session?.user?.username ? `, ${session.user.username}` : "!"}
           </h1>
         </div>
         <div>
@@ -36,34 +40,29 @@ export default function NavbarLayout({ children }: { children: React.ReactNode }
             <>
               <button
                 onClick={() => router.push("/trips/view")}
-                style={buttonStyle}
-              >
+                style={buttonStyle}>
                 View Trips
               </button>
               <button
                 onClick={() => router.push("/trips/add")}
-                style={buttonStyle}
-              >
+                style={buttonStyle}>
                 Add Trip
               </button>
               <button
                 onClick={() => router.push("/profile")}
-                style={buttonStyle}
-              >
+                style={buttonStyle}>
                 Profile
               </button>
               <button
                 onClick={() => signOut()}
-                style={{ ...buttonStyle, backgroundColor: "#f44336" }}
-              >
+                style={{ ...buttonStyle, backgroundColor: "#f44336" }}>
                 Sign Out
               </button>
             </>
           ) : (
             <button
               onClick={() => signIn()}
-              style={{ ...buttonStyle, backgroundColor: "#4CAF50" }}
-            >
+              style={{ ...buttonStyle, backgroundColor: "#4CAF50" }}>
               Sign In
             </button>
           )}

@@ -1,91 +1,114 @@
 "use client";
+import { useState } from "react";
+import Navbar from "./layout/navbar/page";
+import Footer from "./layout/footer/page";
 
-import { useSession, signIn, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+const LandingPage = () => {
+  const features = [
+    {
+      title: "Feature 1",
+      imageUrl: "/images/france_landpage.jpg",
+      description: "Description for Benefit of Feature 1.",
+    },
+    {
+      title: "Feature 2",
+      imageUrl: "/images/japan_landpage.jpg",
+      description: "Description for Benefit of Feature 2.",
+    },
+    {
+      title: "Feature 3",
+      imageUrl: "/images/usa_landpage.jpg",
+      description: "Description for Benefit of Feature 3.",
+    },
+    {
+      title: "Feature 4",
+      imageUrl: "/images/japan_landpage.jpg",
+      description: "Description for Benefit of Feature 4.",
+    },
+  ];
 
-export default function Home() {
-  const { data: session } = useSession();
-  const router = useRouter();
-
-  console.log("Session data:", session); // Check the session data
+  const [selectedFeature, setSelectedFeature] = useState<number>(0);
 
   return (
-    <>
-      {/* Navigation Bar */}
-      <nav
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1rem",
-          backgroundColor: "#333",
-          color: "white",
-        }}
-      >
-        <div>
-          <h1>
-          Welcome{session?.user?.username ? `, ${session.user.username}` : "!"}
-          </h1>
+    // Landing Page
+    <div className="max-w-full">
+      <Navbar />
+      {/* hero section */}
+      <div className=" hero-section flex flex-wrap items-center">
+        {/* Images Section */}
+        <div className="flex justify-center text-center h-[600px] overflow-hidden w-full">
+          <img
+            src="/images/france_landpage.jpg"
+            alt="picture1"
+            className="w-full h-[700px] bg-white border-l border-solid border-1"
+          />
+          <img
+            src="/images/japan_landpage.jpg"
+            alt="picture2"
+            className="w-full h-[700px] bg-white border-l border-solid border-1"
+          />
+          <img
+            src="/images/usa_landpage.jpg"
+            alt="picture3"
+            className="w-full h-[700px] bg-white border-l border-solid border-1"
+          />
         </div>
-        <div>
-          {session ? (
-            <>
+        {/* Overlay Text Content */}
+        <div className="w-full h-[600px] absolute bg-black bg-opacity-25">
+          <div className="text-center text-white text-[40px] h-max p-20">
+            <h1>Find a Travel Companion</h1>
+            <p>
+              Find travel companion by creating and sharing your trips! Enabling
+              a new experience!
+            </p>
+            <a
+              className="signup rounded-md bg-black text-white text-xl py-4 px-6"
+              href="/signup">
+              Sign Up
+            </a>
+          </div>
+        </div>
+      </div>
+      <div className="features-section grid grid-cols-2 justify-items-center p-10 bg-white">
+        <div className="feature-list text-black text-2xl p-4 flex flex-col justify-center gap-4">
+          {features.map((feature, index) => (
+            <div className="mb-4" key={index}>
               <button
-                onClick={() => router.push("/trips/view")}
-                style={buttonStyle}
-              >
-                View Trips
+                className="w-full text-left font-bold"
+                onClick={() => setSelectedFeature(index)}>
+                {feature.title}
               </button>
-              <button
-                onClick={() => router.push("/trips/add")}
-                style={buttonStyle}
-              >
-                Add Trip
-              </button>
-              <button
-                onClick={() => router.push("/profile")}
-                style={buttonStyle}
-              >
-                Profile
-              </button>
-              <button
-                onClick={() => signOut()}
-                style={{ ...buttonStyle, backgroundColor: "#f44336" }}
-              >
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => signIn()}
-              style={{ ...buttonStyle, backgroundColor: "#4CAF50" }}
-            >
-              Sign In
-            </button>
+              {selectedFeature === index && (
+                <p className="mt-2">{feature.description}</p>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="feature-image p-4">
+          {selectedFeature !== null && (
+            <img
+              src={features[selectedFeature].imageUrl}
+              alt={`Feature ${selectedFeature + 1}`}
+              className="w-full h-96 rounded-xl"
+            />
           )}
         </div>
-      </nav>
-
-      {/* Home Content */}
-      <div style={{ padding: "2rem" }}>
-        <h2>Home Page</h2>
-        {session ? (
-          <p>Welcome to the home page, {session.user?.name}!</p>
-        ) : (
-          <p>Please log in to see your personalized content.</p>
-        )}
       </div>
-    </>
+      {/* Sign up section */}
+      <div className="signup-section bg-[#f2f2f2] text-black">
+        <div className="justify-items-center p-10 grid grid-rows-2 gap-10">
+          <h1 className="text-6xl	p-10">Ready to Start a new Journey?</h1>
+          <a
+            className="signup rounded-md bg-black text-white p-10 flex items-center justify-center"
+            style={{ width: "160px", height: "40px" }}
+            href="/signup">
+            Sign Up
+          </a>
+        </div>
+      </div>
+      <Footer />
+    </div>
   );
-}
-
-// Button style object to reuse styles across buttons
-const buttonStyle = {
-  marginRight: "1rem",
-  padding: "0.5rem 1rem",
-  backgroundColor: "#008CBA",
-  color: "white",
-  border: "none",
-  borderRadius: "4px",
-  cursor: "pointer",
 };
+
+export default LandingPage;
