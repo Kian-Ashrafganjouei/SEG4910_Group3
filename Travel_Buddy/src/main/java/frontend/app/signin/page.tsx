@@ -100,8 +100,15 @@ export default function SignInForm() {
 
         <p className="text-sm text-center text-gray-500">
           Don't have an account?{" "}
-          <a href="/signup" className="text-blue-600 hover:underline">
+          <a href="/signup" className="text-blue-600 hover:underline mr-2">
             Sign up
+          </a>
+        </p>
+
+        <p className="text-sm text-center text-gray-500">
+          Want to be forgotten?{" "}
+          <a href="/forgetme" className="text-red-600 hover:underline mr-2">
+            Delete my account
           </a>
         </p>
       </div>

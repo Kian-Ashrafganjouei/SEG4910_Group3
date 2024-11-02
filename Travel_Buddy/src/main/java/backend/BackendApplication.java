@@ -103,6 +103,20 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
     }
 
     @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/backend/forgetme")
+    public ResponseEntity<?> handle_forgetme(@RequestBody User user) {
+      Optional<User> existingUserByEmail = user_repository.findByEmail(user.getEmail());
+
+      if (!existingUserByEmail.isPresent()) {
+        return ResponseEntity.badRequest().body("Email doesn't exist.");
+      }
+
+      user_repository.deleteById(existingUserByEmail.get().getUserId());
+      return ResponseEntity.ok().build();
+    }
+
+
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/user")
     public ResponseEntity<?> get_user_data(@RequestHeader("Email") String email) {
         System.out.println("Request to get user data for email: " + email);
