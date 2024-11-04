@@ -39,7 +39,7 @@ export default function ViewTrips() {
   }, []);
 
   return (
-    <div>
+    <div className="mt-16">
       <Navbar />
 
       <NavbarLayout>

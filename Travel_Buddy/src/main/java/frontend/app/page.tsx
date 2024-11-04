@@ -31,7 +31,7 @@ const LandingPage = () => {
 
   return (
     // Landing Page
-    <div className="max-w-full">
+    <div className="max-w-full mt-16">
       <Navbar />
       {/* hero section */}
       <div className=" hero-section flex flex-wrap items-center">

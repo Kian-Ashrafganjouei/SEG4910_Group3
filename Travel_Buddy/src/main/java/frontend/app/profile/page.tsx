@@ -80,7 +80,7 @@ export default function Profile() {
   }
 
   return (
-    <div>
+    <div className="mt-16">
       <Navbar />
       <nav className="nav-bar">
         <div className="nav-content">
