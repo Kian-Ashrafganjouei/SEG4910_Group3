@@ -2,28 +2,32 @@
 import { useState } from "react";
 import Navbar from "./layout/navbar/page";
 import Footer from "./layout/footer/page";
+import "./styles/Landing.css";
 
 const LandingPage = () => {
   const features = [
     {
-      title: "Feature 1",
-      imageUrl: "/images/france_landpage.jpg",
-      description: "Description for Benefit of Feature 1.",
+      title: "Look for Trips",
+      imageUrl: "/images/look_trips_pic.jpg",
+      description:
+        "Search for trips created by other travellers. You can search by destination or name of the creator.",
     },
     {
-      title: "Feature 2",
-      imageUrl: "/images/japan_landpage.jpg",
-      description: "Description for Benefit of Feature 2.",
+      title: "Connect With Fellow Travellers",
+      imageUrl: "/images/connect_pic.jpg",
+      description:
+        "Connect with other travellers from all around the world and plan trips.",
     },
     {
-      title: "Feature 3",
-      imageUrl: "/images/usa_landpage.jpg",
-      description: "Description for Benefit of Feature 3.",
+      title: "Create Trips",
+      imageUrl: "/images/create_trips.jpg",
+      description:
+        "You don't want to travel alone? Create a trip and share it with other travellers.",
     },
     {
-      title: "Feature 4",
-      imageUrl: "/images/japan_landpage.jpg",
-      description: "Description for Benefit of Feature 4.",
+      title: "Build Communities",
+      imageUrl: "/images/communities_pic.jpg",
+      description: "Grow a community and experience travelling a new way!",
     },
   ];
 
@@ -69,29 +73,31 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
-      <div className="features-section grid grid-cols-2 justify-items-center p-10 bg-white">
-        <div className="feature-list text-black text-2xl p-4 flex flex-col justify-center gap-4">
-          {features.map((feature, index) => (
-            <div className="mb-4" key={index}>
-              <button
-                className="w-full text-left font-bold"
-                onClick={() => setSelectedFeature(index)}>
-                {feature.title}
-              </button>
-              {selectedFeature === index && (
-                <p className="mt-2">{feature.description}</p>
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="feature-image p-4">
-          {selectedFeature !== null && (
-            <img
-              src={features[selectedFeature].imageUrl}
-              alt={`Feature ${selectedFeature + 1}`}
-              className="w-full h-96 rounded-xl"
-            />
-          )}
+      <div className="feature">
+        <div className="features-section grid grid-cols-2 justify-items-center p-10 bg-white">
+          <div className="feature-list text-black text-2xl flex flex-col justify-center gap-4">
+            {features.map((feature, index) => (
+              <div className="mb-4 " key={index}>
+                <button
+                  className="w-full text-left font-bold"
+                  onClick={() => setSelectedFeature(index)}>
+                  {feature.title}
+                </button>
+                {selectedFeature === index && (
+                  <p className="max-w-96 text-xl mt-2">{feature.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="feature-image pr-20">
+            {selectedFeature !== null && (
+              <img
+                src={features[selectedFeature].imageUrl}
+                alt={`Feature ${selectedFeature + 1}`}
+                className="w-full h-96 rounded-xl"
+              />
+            )}
+          </div>
         </div>
       </div>
       {/* Sign up section */}
