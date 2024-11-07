@@ -8,8 +8,8 @@ import Footer from "../../layout/footer/page";
 interface Trip {
   tripId: number;
   location: string;
-  startDate: string;
-  endDate: string;
+  startDate: string;  // Format: YYYY-MM-DD
+  endDate: string;    // Format: YYYY-MM-DD
   description: string;
   interests: { interestId: number; name: string }[];
 }
@@ -26,6 +26,7 @@ export default function ViewTrips() {
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>("");  // Store selected start date
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showInterestDropdown, setShowInterestDropdown] = useState(false);
@@ -71,7 +72,7 @@ export default function ViewTrips() {
   }, []);
 
   useEffect(() => {
-    // Filter trips based on selected interests and location
+    // Filter trips based on selected interests, location, and start date
     setFilteredTrips(
       trips.filter((trip) => {
         const matchesInterests =
@@ -80,10 +81,15 @@ export default function ViewTrips() {
 
         const matchesLocation = selectedLocation === "" || trip.location === selectedLocation;
 
-        return matchesInterests && matchesLocation;
+        const matchesDate =
+          selectedDate === "" ||
+          (new Date(trip.startDate) <= new Date(selectedDate) &&
+           new Date(trip.endDate) >= new Date(selectedDate));
+
+        return matchesInterests && matchesLocation && matchesDate;
       })
     );
-  }, [selectedInterests, selectedLocation, trips]);
+  }, [selectedInterests, selectedLocation, selectedDate, trips]);
 
   const toggleInterestDropdown = () => {
     setShowInterestDropdown(!showInterestDropdown);
@@ -99,6 +105,10 @@ export default function ViewTrips() {
 
   const handleLocationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedLocation(event.target.value);
+  };
+
+  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedDate(event.target.value);
   };
 
   return (
@@ -154,6 +164,20 @@ export default function ViewTrips() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Start Date Filter */}
+            <div className="filter-item">
+              <label htmlFor="date-filter" className="filter-label">
+                Filter by Start Date:
+              </label>
+              <input
+                type="date"
+                id="date-filter"
+                value={selectedDate}
+                onChange={handleDateChange}
+                className="date-select"
+              />
             </div>
           </div>
 
@@ -261,7 +285,8 @@ export default function ViewTrips() {
             color: #333;
           }
 
-          .location-select {
+          .location-select,
+          .date-select {
             width: 100%;
             padding: 0.5rem;
             font-size: 1rem;
