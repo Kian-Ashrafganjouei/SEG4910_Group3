@@ -82,23 +82,15 @@ export default function ViewTrips() {
 
         const matchesLocation = selectedLocation === "" || trip.location === selectedLocation;
 
-        const matchesStartDate =
-          selectedStartDate === "" ||
-          (new Date(trip.startDate) <= new Date(selectedStartDate) &&
-            new Date(trip.endDate) >= new Date(selectedStartDate));
+        // Apply date filtering only if both start and end dates are selected
+        const matchesDateRange = selectedStartDate !== "" && selectedEndDate !== ""
+          ? (new Date(trip.startDate) <= new Date(selectedEndDate) &&
+             new Date(trip.endDate) >= new Date(selectedStartDate)) ||
+            (new Date(trip.startDate) > new Date(selectedStartDate) &&
+             new Date(trip.endDate) < new Date(selectedEndDate))
+          : true;  // If no date range is selected, ignore date filter
 
-        const matchesEndDate =
-          selectedEndDate === "" ||
-          (new Date(trip.startDate) <= new Date(selectedEndDate) &&
-            new Date(trip.endDate) >= new Date(selectedEndDate));
-
-        const withinDateRange =
-          selectedStartDate !== "" &&
-          selectedEndDate !== "" &&
-          new Date(trip.startDate) > new Date(selectedStartDate) &&
-          new Date(trip.endDate) < new Date(selectedEndDate);
-
-        return matchesInterests && matchesLocation && (matchesStartDate || matchesEndDate || withinDateRange);
+        return matchesInterests && matchesLocation && matchesDateRange;
       })
     );
   }, [selectedInterests, selectedLocation, selectedStartDate, selectedEndDate, trips]);
