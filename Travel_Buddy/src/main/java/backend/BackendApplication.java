@@ -187,6 +187,9 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
     @GetMapping("/backend/trips")
     public ResponseEntity<List<Trip>> getAllTrips() {
         List<Trip> trips = trip_repository.findAll();
+        for (Trip trip : trips) {
+            trip.setInterests(trip.getInterests()); // Load interests for each trip
+        }
         return ResponseEntity.ok(trips);
     }
 
