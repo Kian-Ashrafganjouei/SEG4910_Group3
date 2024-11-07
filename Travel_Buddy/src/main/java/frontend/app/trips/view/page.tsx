@@ -7,7 +7,7 @@ import Footer from "../../layout/footer/page";
 
 interface Trip {
   tripId: number;
-  location: string;
+  location: string;  
   startDate: string;  // Format: YYYY-MM-DD
   endDate: string;    // Format: YYYY-MM-DD
   description: string;
@@ -26,7 +26,8 @@ export default function ViewTrips() {
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<string>("");  // Store selected start date
+  const [selectedStartDate, setSelectedStartDate] = useState<string>("");  // Start date filter
+  const [selectedEndDate, setSelectedEndDate] = useState<string>("");      // End date filter
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showInterestDropdown, setShowInterestDropdown] = useState(false);
@@ -72,7 +73,7 @@ export default function ViewTrips() {
   }, []);
 
   useEffect(() => {
-    // Filter trips based on selected interests, location, and start date
+    // Filter trips based on selected interests, location, and date range
     setFilteredTrips(
       trips.filter((trip) => {
         const matchesInterests =
@@ -81,15 +82,26 @@ export default function ViewTrips() {
 
         const matchesLocation = selectedLocation === "" || trip.location === selectedLocation;
 
-        const matchesDate =
-          selectedDate === "" ||
-          (new Date(trip.startDate) <= new Date(selectedDate) &&
-           new Date(trip.endDate) >= new Date(selectedDate));
+        const matchesStartDate =
+          selectedStartDate === "" ||
+          (new Date(trip.startDate) <= new Date(selectedStartDate) &&
+            new Date(trip.endDate) >= new Date(selectedStartDate));
 
-        return matchesInterests && matchesLocation && matchesDate;
+        const matchesEndDate =
+          selectedEndDate === "" ||
+          (new Date(trip.startDate) <= new Date(selectedEndDate) &&
+            new Date(trip.endDate) >= new Date(selectedEndDate));
+
+        const withinDateRange =
+          selectedStartDate !== "" &&
+          selectedEndDate !== "" &&
+          new Date(trip.startDate) > new Date(selectedStartDate) &&
+          new Date(trip.endDate) < new Date(selectedEndDate);
+
+        return matchesInterests && matchesLocation && (matchesStartDate || matchesEndDate || withinDateRange);
       })
     );
-  }, [selectedInterests, selectedLocation, selectedDate, trips]);
+  }, [selectedInterests, selectedLocation, selectedStartDate, selectedEndDate, trips]);
 
   const toggleInterestDropdown = () => {
     setShowInterestDropdown(!showInterestDropdown);
@@ -107,8 +119,12 @@ export default function ViewTrips() {
     setSelectedLocation(event.target.value);
   };
 
-  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedDate(event.target.value);
+  const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedStartDate(event.target.value);
+  };
+
+  const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedEndDate(event.target.value);
   };
 
   return (
@@ -168,15 +184,30 @@ export default function ViewTrips() {
 
             {/* Start Date Filter */}
             <div className="filter-item">
-              <label htmlFor="date-filter" className="filter-label">
+              <label htmlFor="start-date-filter" className="filter-label">
                 Filter by Start Date:
               </label>
               <input
                 type="date"
-                id="date-filter"
-                value={selectedDate}
-                onChange={handleDateChange}
+                id="start-date-filter"
+                value={selectedStartDate}
+                onChange={handleStartDateChange}
                 className="date-select"
+              />
+            </div>
+
+            {/* End Date Filter */}
+            <div className="filter-item">
+              <label htmlFor="end-date-filter" className="filter-label">
+                Filter by End Date:
+              </label>
+              <input
+                type="date"
+                id="end-date-filter"
+                value={selectedEndDate}
+                onChange={handleEndDateChange}
+                className="date-select"
+                min={selectedStartDate || undefined} // Only set min if start date is selected
               />
             </div>
           </div>
