@@ -7,9 +7,9 @@ import Footer from "../../layout/footer/page";
 
 interface Trip {
   tripId: number;
-  location: string;
-  startDate: string;
-  endDate: string;
+  location: string;  
+  startDate: string;  // Format: YYYY-MM-DD
+  endDate: string;    // Format: YYYY-MM-DD
   description: string;
   interests: { interestId: number; name: string }[];
 }
@@ -24,8 +24,13 @@ export default function ViewTrips() {
   const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
   const [interests, setInterests] = useState<Interest[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [selectedStartDate, setSelectedStartDate] = useState<string>("");  // Start date filter
+  const [selectedEndDate, setSelectedEndDate] = useState<string>("");      // End date filter
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showInterestDropdown, setShowInterestDropdown] = useState(false);
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -37,6 +42,10 @@ export default function ViewTrips() {
         const data = await response.json();
         setTrips(data);
         setFilteredTrips(data); // Initialize filtered trips with all trips
+
+        // Extract unique locations for the location filter
+        const uniqueLocations = Array.from(new Set(data.map((trip: Trip) => trip.location)));
+        setLocations(uniqueLocations);
       } catch (error) {
         console.error("Error fetching trips:", error);
         setErrorMessage("An error occurred while fetching trips.");
@@ -64,19 +73,31 @@ export default function ViewTrips() {
   }, []);
 
   useEffect(() => {
-    // Filter trips based on selected interests
-    if (selectedInterests.length === 0) {
-      setFilteredTrips(trips); // Show all trips if no interests are selected
-    } else {
-      setFilteredTrips(
-        trips.filter((trip) =>
-          trip.interests.some((interest) =>
-            selectedInterests.includes(interest.interestId)
-          )
-        )
-      );
-    }
-  }, [selectedInterests, trips]);
+    // Filter trips based on selected interests, location, and date range
+    setFilteredTrips(
+      trips.filter((trip) => {
+        const matchesInterests =
+          selectedInterests.length === 0 ||
+          trip.interests.some((interest) => selectedInterests.includes(interest.interestId));
+
+        const matchesLocation = selectedLocation === "" || trip.location === selectedLocation;
+
+        // Apply date filtering only if both start and end dates are selected
+        const matchesDateRange = selectedStartDate !== "" && selectedEndDate !== ""
+          ? (new Date(trip.startDate) <= new Date(selectedEndDate) &&
+             new Date(trip.endDate) >= new Date(selectedStartDate)) ||
+            (new Date(trip.startDate) > new Date(selectedStartDate) &&
+             new Date(trip.endDate) < new Date(selectedEndDate))
+          : true;  // If no date range is selected, ignore date filter
+
+        return matchesInterests && matchesLocation && matchesDateRange;
+      })
+    );
+  }, [selectedInterests, selectedLocation, selectedStartDate, selectedEndDate, trips]);
+
+  const toggleInterestDropdown = () => {
+    setShowInterestDropdown(!showInterestDropdown);
+  };
 
   const handleInterestChange = (interestId: number) => {
     setSelectedInterests((prevSelected) =>
@@ -84,6 +105,18 @@ export default function ViewTrips() {
         ? prevSelected.filter((id) => id !== interestId)
         : [...prevSelected, interestId]
     );
+  };
+
+  const handleLocationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedLocation(event.target.value);
+  };
+
+  const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedStartDate(event.target.value);
+  };
+
+  const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedEndDate(event.target.value);
   };
 
   return (
@@ -94,21 +127,80 @@ export default function ViewTrips() {
         <div className="trips-container">
           <h1 className="title">Explore Trips</h1>
 
-          {/* Interest Filter */}
-          <div className="filter-container">
-            <label className="filter-label">Filter by Interests:</label>
-            <div className="checkbox-group">
-              {interests.map((interest) => (
-                <label key={interest.interestId} className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    value={interest.interestId}
-                    checked={selectedInterests.includes(interest.interestId)}
-                    onChange={() => handleInterestChange(interest.interestId)}
-                  />
-                  {interest.name}
-                </label>
-              ))}
+          {/* Filters Container */}
+          <div className="filters-container">
+            {/* Interest Multi-Select Checkbox Dropdown */}
+            <div className="filter-item">
+              <label className="filter-label">Filter by Interests:</label>
+              <div className="multi-select-dropdown">
+                <button onClick={toggleInterestDropdown} className="dropdown-toggle">
+                  Select Interests
+                </button>
+                {showInterestDropdown && (
+                  <div className="dropdown-menu">
+                    {interests.map((interest) => (
+                      <label key={interest.interestId} className="dropdown-item">
+                        <input
+                          type="checkbox"
+                          value={interest.interestId}
+                          checked={selectedInterests.includes(interest.interestId)}
+                          onChange={() => handleInterestChange(interest.interestId)}
+                        />
+                        {interest.name}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Location Filter */}
+            <div className="filter-item">
+              <label htmlFor="location-filter" className="filter-label">
+                Filter by Location:
+              </label>
+              <select
+                id="location-filter"
+                value={selectedLocation}
+                onChange={handleLocationChange}
+                className="location-select"
+              >
+                <option value="">All Locations</option>
+                {locations.map((location) => (
+                  <option key={location} value={location}>
+                    {location}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Start Date Filter */}
+            <div className="filter-item">
+              <label htmlFor="start-date-filter" className="filter-label">
+                Filter by Start Date:
+              </label>
+              <input
+                type="date"
+                id="start-date-filter"
+                value={selectedStartDate}
+                onChange={handleStartDateChange}
+                className="date-select"
+              />
+            </div>
+
+            {/* End Date Filter */}
+            <div className="filter-item">
+              <label htmlFor="end-date-filter" className="filter-label">
+                Filter by End Date:
+              </label>
+              <input
+                type="date"
+                id="end-date-filter"
+                value={selectedEndDate}
+                onChange={handleEndDateChange}
+                className="date-select"
+                min={selectedStartDate || undefined} // Only set min if start date is selected
+              />
             </div>
           </div>
 
@@ -162,9 +254,15 @@ export default function ViewTrips() {
             font-weight: 700;
           }
 
-          .filter-container {
+          .filters-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 2rem;
             margin-bottom: 1.5rem;
-            text-align: center;
+          }
+
+          .filter-item {
+            flex: 1;
           }
 
           .filter-label {
@@ -174,16 +272,49 @@ export default function ViewTrips() {
             display: block;
           }
 
-          .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
+          .multi-select-dropdown {
+            position: relative;
           }
 
-          .checkbox-label {
+          .dropdown-toggle {
+            width: 100%;
+            padding: 0.5rem;
             font-size: 1rem;
-            color: #6a1b9a;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            cursor: pointer;
+          }
+
+          .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1;
+          }
+
+          .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            font-size: 1rem;
+            color: #333;
+          }
+
+          .location-select,
+          .date-select {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
           }
 
           .trip-list {
