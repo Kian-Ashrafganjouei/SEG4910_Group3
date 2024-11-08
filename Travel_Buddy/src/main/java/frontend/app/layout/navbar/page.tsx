@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import "../../styles/Navbar.css";
 
 const Navbar = () => {
@@ -8,32 +10,49 @@ const Navbar = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  console.log("Session data:", session); // Check the session data
+
   return (
-    <div className="navbar fixed w-full top-0 left-0 z-10">
+    <div className="navbar border-b border-stone-300 fixed w-full top-0 left-0 z-10 ">
       <div className="grid grid-cols-2 md:grid-cols-3 items-center h-16 pl-2 pr-2 bg-white text-black">
         <div className="text-xl font-bold">
-          <a href="/">Travel Companion</a>
+          <a href="/" className="pl-2">
+            Travel Companion
+          </a>
         </div>
-        <div className="hidden md:flex space-x-4 justify-center">
+        <div className="hidden md:flex space-x-4 justify-center gap-5">
           <a href="/home" className="relative group">
             <span className="hover-underline-animation">Home</span>
           </a>
-          <a href="/trips" className="relative group">
+          <a href="/trips/view" className="relative group">
             <span className="hover-underline-animation">Trips</span>
+          </a>
+          <a href="/profile" className="relative group">
+            <span className="hover-underline-animation">My Profile</span>
           </a>
           <a href="/about" className="relative group">
             <span className="hover-underline-animation">About</span>
           </a>
-          <a href="/contact" className="relative group">
-            <span className="hover-underline-animation">Contact</span>
-          </a>
         </div>
         <div className="hidden md:flex justify-end">
-          <a
-            href="/signup"
-            className=" hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black">
-            Sign Up
-          </a>
+          {session ? (
+            <a
+              href="/signup"
+              onClick={() => signOut()}
+              className=" hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black">
+              Sign Out
+            </a>
+          ) : (
+            <a
+              href="/signup"
+              onClick={() => signIn()}
+              className=" hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black">
+              Sign Up
+            </a>
+          )}
         </div>
         <div className="md:hidden flex justify-end">
           <button

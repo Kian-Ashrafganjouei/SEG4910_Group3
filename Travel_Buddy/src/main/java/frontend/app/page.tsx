@@ -66,9 +66,9 @@ const LandingPage = () => {
               a new experience!
             </p>
             <a
-              className="signup rounded-md bg-black text-white text-xl py-4 px-6"
-              href="/signup">
-              Sign Up
+              className="signup rounded-md bg-white text-black text-xl py-4 px-6"
+              href="/home">
+              Explore Trips
             </a>
           </div>
         </div>
