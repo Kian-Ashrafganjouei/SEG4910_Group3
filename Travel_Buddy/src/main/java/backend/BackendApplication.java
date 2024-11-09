@@ -7,9 +7,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -103,6 +105,20 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
     }
 
     @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/backend/forgetme")
+    public ResponseEntity<?> handle_forgetme(@RequestBody User user) {
+      Optional<User> existingUserByEmail = user_repository.findByEmail(user.getEmail());
+
+      if (!existingUserByEmail.isPresent()) {
+        return ResponseEntity.badRequest().body("Email doesn't exist.");
+      }
+
+      user_repository.deleteById(existingUserByEmail.get().getUserId());
+      return ResponseEntity.ok().build();
+    }
+
+
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/user")
     public ResponseEntity<?> get_user_data(@RequestHeader("Email") String email) {
         System.out.println("Request to get user data for email: " + email);
@@ -173,8 +189,58 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
     @GetMapping("/backend/trips")
     public ResponseEntity<List<Trip>> getAllTrips() {
         List<Trip> trips = trip_repository.findAll();
+        for (Trip trip : trips) {
+            trip.setInterests(trip.getInterests()); // Load interests for each trip
+        }
         return ResponseEntity.ok(trips);
     }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PutMapping("/backend/trips/{id}")
+    public ResponseEntity<?> updateTrip(@PathVariable Long id, @RequestBody Trip updatedTrip) {
+        System.out.println("Request to update trip with ID: " + id);
+
+        Optional<Trip> optionalTrip = trip_repository.findById(id);
+        if (optionalTrip.isPresent()) {
+            Trip existingTrip = optionalTrip.get();
+
+            // Update the fields
+            existingTrip.setLocation(updatedTrip.getLocation());
+            existingTrip.setStartDate(updatedTrip.getStartDate());
+            existingTrip.setEndDate(updatedTrip.getEndDate());
+            existingTrip.setDescription(updatedTrip.getDescription());
+            if (updatedTrip.getInterests() != null) {
+                existingTrip.setInterests(updatedTrip.getInterests());
+            }
+
+            // Save the updated trip
+            try {
+                trip_repository.save(existingTrip);
+                System.out.println("Trip updated successfully.");
+                return ResponseEntity.ok("Trip updated successfully"); 
+            } catch (Exception e) {
+                System.err.println("Error saving updated trip: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not save updated trip data.");
+            }
+        } else {
+            System.out.println("Trip not found with ID: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found");
+        }
+    }
+
+
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/trips/{id}")
+    public ResponseEntity<Trip> getTripById(@PathVariable Long id) {
+        Optional<Trip> trip = trip_repository.findById(id);
+        if (trip.isPresent()) {
+            return ResponseEntity.ok(trip.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/interests")

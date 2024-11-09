@@ -6,3 +6,11 @@
 
 # Gradle wrapper
 **/gradlew
+
+# Node related files
+**/node_modules
+**/package-lock.json
+**/package.json
+
+# Vscode
+**/.vscode
