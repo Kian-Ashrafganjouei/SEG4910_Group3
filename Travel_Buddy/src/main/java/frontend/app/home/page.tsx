@@ -12,7 +12,7 @@ export default function Home() {
   console.log("Session data:", session); // Check the session data
 
   return (
-    <>
+    <div className="mt-16">
       <Navbar />
       {/* Navigation Bar */}
       <nav
@@ -74,7 +74,7 @@ export default function Home() {
         )}
       </div>
       <Footer />
-    </>
+    </div>
   );
 }
 

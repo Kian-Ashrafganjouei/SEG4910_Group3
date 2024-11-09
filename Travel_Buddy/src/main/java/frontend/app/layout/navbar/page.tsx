@@ -1,32 +1,80 @@
+import React, { useState } from "react";
+import "../../styles/Navbar.css";
+
 const Navbar = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
-    <div className="navbar">
-      <div className="grid grid-cols-3 items-center p-4 bg-white text-black">
+    <div className="navbar fixed w-full top-0 left-0 z-10">
+      <div className="grid grid-cols-2 md:grid-cols-3 items-center h-16 pl-2 pr-2 bg-white text-black">
         <div className="text-xl font-bold">
           <a href="/">Travel Companion</a>
         </div>
-        <div className="flex space-x-4 justify-center">
-          <a href="/home" className="hover:underline">
-            Home
+        <div className="hidden md:flex space-x-4 justify-center">
+          <a href="/home" className="relative group">
+            <span className="hover-underline-animation">Home</span>
           </a>
-          <a href="/trips" className="hover:underline">
-            Trips
+          <a href="/trips" className="relative group">
+            <span className="hover-underline-animation">Trips</span>
           </a>
-          <a href="/about" className="hover:underline">
-            About
+          <a href="/about" className="relative group">
+            <span className="hover-underline-animation">About</span>
           </a>
-          <a href="/contact" className="hover:underline">
-            Contact
+          <a href="/contact" className="relative group">
+            <span className="hover-underline-animation">Contact</span>
           </a>
         </div>
-        <div className="flex justify-end">
+        <div className="hidden md:flex justify-end">
           <a
             href="/signup"
             className=" hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black">
             Sign Up
           </a>
         </div>
+        <div className="md:hidden flex justify-end">
+          <button
+            onClick={toggleMobileMenu}
+            className="text-black focus:outline-none">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+          </button>
+        </div>
       </div>
+      {isMobileMenuOpen && (
+        <div className="grid justify-center md:hidden bg-white text-black p-4">
+          <a href="/home" className="grid justify-center underline">
+            Home
+          </a>
+          <a href="/trips" className="grid justify-center underline">
+            Trips
+          </a>
+          <a href="/about" className="grid justify-center underline">
+            About
+          </a>
+          <a href="/contact" className="grid justify-center underline">
+            Contact
+          </a>
+          <a
+            href="/signup"
+            className="block hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black mt-2">
+            Sign Up
+          </a>
+        </div>
+      )}
     </div>
   );
 };

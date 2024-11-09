@@ -100,10 +100,10 @@ export default function AddTrip() {
   };
 
   return (
-    <div>
+    <div className="mt-16">
       <Navbar />
       <NavbarLayout>
-        <div className="form-container">
+        <div className="form-container mt-16">
           <h2 className="heading">Add a New Trip</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
