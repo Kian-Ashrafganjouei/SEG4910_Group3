@@ -10,8 +10,8 @@ const options = {
     }),
     CredentialsProvider({
       credentials: {
-        username: {},
-        password: {},
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         try {
@@ -19,27 +19,30 @@ const options = {
             "http://docker-backend-1:8080/backend/credentials/signin",
             {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 username: credentials.username,
                 password: credentials.password,
               }),
             }
           );
-
-          if (res.status === 400) {
-            return null;
-          } else if (!res.ok) {
-            throw new Error("Internal server error");
-          } else {
-            return await res.json();
+    
+          if (!res.ok) {
+            // Extract the error message from the response
+            const errorData = await res.json();
+            throw new Error(errorData.error || "Login failed");
           }
+    
+          const user = await res.json();
+          if (!user) {
+            throw new Error("No user data returned");
+          }
+    
+          return user; // Return user object for successful authentication
         } catch (error) {
-          console.log(error);
+          console.error("Authorization error:", error.message);
+          throw new Error(error.message || "An error occurred during login");
         }
-        return null;
       },
     }),
   ],
@@ -68,34 +71,56 @@ const options = {
             throw new Error("Internal server error");
           }
           const userData = await res.json();
-          user.username = userData.username; // Assuming your backend returns a username
-          user.id = userData.id; // Assuming your backend returns a user ID
+          user.username = userData.username; // Set the username from backend response
+          user.id = userData.id; // Set the user ID from backend response
+          user.name = userData.name; // Update the session's name
           return true;
         } catch (error) {
-          console.log(error);
+          console.error(error);
           return false;
         }
       }
       return true; // For other providers
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: any }) {
+      console.log("JWT callback triggered");
+      console.log("Incoming token:", token);
       if (user) {
-        token.username = user.username;
-        token.user_id = user.id;
-        token.email = user.email;
+        console.log("User data received:", user);
+        token.username = user.username || user.name || "Unknown User";
+        token.user_id = user.id || "Unknown ID";
+        token.email = user.email || "Unknown Email";
       }
+      console.log("Updated token:", token);
       return token;
     },
-    async session({ session, token }) {
-      console.log("IN SESSION", session);
-      session.user.username = token.username;
-      session.user.user_id = token.user_id;
-      session.user.email = token.email;
+    async session({
+      session,
+      token,
+    }: {
+      session: Session;
+      token: JWT;
+    }) {
+      console.log("Session callback triggered");
+      console.log("Incoming session:", session);
+      console.log("Token data:", token);
+  
+      session.user.username = token.username || session.user.name || "Unknown User";
+      session.user.user_id = token.user_id || "Unknown ID";
+      session.user.email = token.email || "Unknown Email";
+  
+      console.log("Updated session:", session);
       return session;
     },
+    
     async redirect({ url, baseUrl }) {
-      // Redirect to /home after sign-in
-      return url.startsWith(baseUrl) ? url : `${baseUrl}/home`;
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+      if (url === "/") {
+        return `${baseUrl}/`;
+      }
+      return baseUrl;
     },
   },
 };

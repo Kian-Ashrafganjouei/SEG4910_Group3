@@ -16,7 +16,6 @@ interface Trip {
 }
 
 export default function ViewTrips() {
-  const router = useRouter();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,160 +41,132 @@ export default function ViewTrips() {
     fetchTrips();
   }, []);
 
-  const handleEditTrip = (tripId: number) => {
-    router.push(`/trips/edit/${tripId}`);
-  };
-
   return (
     <div className="mt-16">
       <Navbar />
-      <NavbarLayout>
-        <div className="trips-container">
-          <h1 className="title">Explore Trips</h1>
-          {isLoading ? (
-            <p className="loading-msg">Loading trips...</p>
-          ) : errorMessage ? (
-            <p className="error-msg">{errorMessage}</p>
-          ) : filteredTrips.length > 0 ? (
-            <div className="trip-list">
-              {filteredTrips.map((trip) => (
-                <div key={trip.tripId} className="trip-card">
-                  <h2 className="trip-location">{trip.location}</h2>
-                  <p className="trip-dates">
-                    {trip.startDate} to {trip.endDate}
-                  </p>
-                  <p className="description">{trip.description}</p>
-                  {trip.interests && trip.interests.length > 0 && (
-                    <div className="interests">
-                      <h3>Interests:</h3>
-                      <ul>
-                        {trip.interests.map((interest) => (
-                          <li key={interest.interestId}>{interest.name}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {/* Edit Button */}
-                  <button
-                    onClick={() => handleEditTrip(trip.tripId)}
-                    className="edit-button">
-                    Edit
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="no-trips-msg">No trips available.</p>
-          )}
-        </div>
+      <div className="trips-container">
+        <h1 className="title">Explore Trips</h1>
+        {isLoading ? (
+          <p className="loading-msg">Loading trips...</p>
+        ) : errorMessage ? (
+          <p className="error-msg">{errorMessage}</p>
+        ) : filteredTrips.length > 0 ? (
+          <div className="trip-list">
+            {filteredTrips.map((trip) => (
+              <div key={trip.tripId} className="trip-card">
+                <h2 className="trip-location">{trip.location}</h2>
+                <p className="trip-dates">
+                  {trip.startDate} to {trip.endDate}
+                </p>
+                <p className="description">{trip.description}</p>
+                {trip.interests && trip.interests.length > 0 && (
+                  <div className="interests">
+                    <h3>Interests:</h3>
+                    <ul>
+                      {trip.interests.map((interest) => (
+                        <li key={interest.interestId}>{interest.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="no-trips-msg">No trips available.</p>
+        )}
+      </div>
 
-        <style jsx>{`
-          .trips-container {
-            max-width: 800px;
-            margin: 3rem auto;
-            padding: 2rem;
-            background-color: #ede7f6;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-            font-family: "Poppins", sans-serif;
-          }
+      <style jsx>{`
+        .trips-container {
+          max-width: 800px;
+          margin: 3rem auto;
+          padding: 2rem;
+          background-color: #ede7f6;
+          border-radius: 16px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+          font-family: "Poppins", sans-serif;
+        }
 
-          .title {
-            text-align: center;
-            font-size: 3rem;
-            color: #512da8;
-            margin-bottom: 2rem;
-            font-weight: 700;
-          }
+        .title {
+          text-align: center;
+          font-size: 3rem;
+          color: #512da8;
+          margin-bottom: 2rem;
+          font-weight: 700;
+        }
 
-          .trip-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-          }
+        .trip-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
 
-          .trip-card {
-            background-color: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-          }
+        .trip-card {
+          background-color: #f8f9fa;
+          padding: 1.5rem;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
 
-          .trip-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-          }
+        .trip-card:hover {
+          transform: scale(1.02);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
 
-          .trip-location {
-            font-size: 1.8rem;
-            color: #00bfa6;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-          }
+        .trip-location {
+          font-size: 1.8rem;
+          color: #00bfa6;
+          margin-bottom: 0.5rem;
+          font-weight: 600;
+        }
 
-          .trip-dates {
-            font-size: 1.2rem;
-            color: #9ac0b6;
-            margin-bottom: 1rem;
-            font-weight: 500;
-          }
+        .trip-dates {
+          font-size: 1.2rem;
+          color: #9ac0b6;
+          margin-bottom: 1rem;
+          font-weight: 500;
+        }
 
-          .description {
-            color: #6a1b9a;
-            font-size: 1.2rem;
-            margin: 0;
-          }
+        .description {
+          color: #6a1b9a;
+          font-size: 1.2rem;
+          margin: 0;
+        }
 
-          .edit-button {
-            margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
-            color: #fff;
-            background-color: #512da8;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-          }
+        .loading-msg,
+        .no-trips-msg,
+        .error-msg {
+          text-align: center;
+          font-size: 1.3rem;
+          margin-top: 1rem;
+        }
 
-          .edit-button:hover {
-            background-color: #3e1d9d;
-          }
+        .error-msg {
+          color: #d32f2f;
+        }
 
-          .loading-msg,
-          .no-trips-msg,
-          .error-msg {
-            text-align: center;
-            font-size: 1.3rem;
-            margin-top: 1rem;
-          }
+        .interests {
+          margin-top: 1rem;
+          font-size: 1.1rem;
+        }
 
-          .error-msg {
-            color: #d32f2f;
-          }
+        .interests h3 {
+          font-weight: 600;
+          color: #512da8;
+          margin-bottom: 0.5rem;
+        }
 
-          .interests {
-            margin-top: 1rem;
-            font-size: 1.1rem;
-          }
+        .interests ul {
+          padding-left: 1.5rem;
+        }
 
-          .interests h3 {
-            font-weight: 600;
-            color: #512da8;
-            margin-bottom: 0.5rem;
-          }
-
-          .interests ul {
-            padding-left: 1.5rem;
-          }
-
-          .interests li {
-            list-style-type: disc;
-            color: #6a1b9a;
-          }
-        `}</style>
-      </NavbarLayout>
+        .interests li {
+          list-style-type: disc;
+          color: #6a1b9a;
+        }
+      `}</style>
       <Footer />
     </div>
   );

@@ -61,7 +61,7 @@ CREATE TABLE Trips (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     description TEXT,
-    created_by INT REFERENCES Users(user_id),
+    created_by INT REFERENCES Users(user_id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

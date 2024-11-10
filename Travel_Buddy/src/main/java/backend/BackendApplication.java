@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import backend.model.Interest;
 import backend.model.Trip;
@@ -241,6 +242,60 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/trips/created")
+    public ResponseEntity<?> getTripsByCreator(@RequestHeader("Email") String email) {
+        System.out.println("Request to get trips created by user with email: " + email);
+
+        Optional<User> user = user_repository.findByEmail(email);
+        if (user.isEmpty()) {
+            System.err.println("User not found for email: " + email);
+            return ResponseEntity.badRequest().body("User not found.");
+        }
+
+        List<Trip> trips = trip_repository.findByCreatedByUserId(user.get().getUserId());
+        if (trips.isEmpty()) {
+            System.out.println("No trips found for user ID: " + user.get().getUserId());
+            return ResponseEntity.ok(List.of()); // Return empty list
+        }
+
+        for (Trip trip : trips) {
+            trip.setInterests(trip.getInterests());
+        }
+
+        System.out.println("Trips fetched successfully for user ID: " + user.get().getUserId());
+        return ResponseEntity.ok(trips);
+    }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @DeleteMapping("/backend/trips/{tripId}")
+    public ResponseEntity<?> deleteTrip(@PathVariable Long tripId, @RequestHeader("Email") String email) {
+        System.out.println("Request to delete trip with ID: " + tripId + " by user with email: " + email);
+
+        Optional<User> user = user_repository.findByEmail(email);
+        if (user.isEmpty()) {
+            System.err.println("User not found for email: " + email);
+            return ResponseEntity.badRequest().body("User not found.");
+        }
+
+        Optional<Trip> trip = trip_repository.findById(tripId);
+        if (trip.isEmpty()) {
+            System.err.println("Trip not found with ID: " + tripId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found.");
+        }
+        if (trip.get().getCreatedBy().getUserId() != user.get().getUserId()) {
+            System.err.println("User is not authorized to delete this trip.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this trip.");
+        }
+        try {
+            trip_repository.delete(trip.get());
+            System.out.println("Trip with ID: " + tripId + " deleted successfully.");
+            return ResponseEntity.ok("Trip deleted successfully.");
+        } catch (Exception e) {
+            System.err.println("Error deleting trip with ID: " + tripId + ". Error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting trip.");
+        }
+    }
 
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/interests")

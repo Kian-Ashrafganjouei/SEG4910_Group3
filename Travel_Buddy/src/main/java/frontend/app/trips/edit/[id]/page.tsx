@@ -56,7 +56,7 @@ export default function EditTrip({ params }: { params: { id: string } }) {
 
       if (response.status === 200) {
         alert("Trip updated successfully!");
-        router.push("/trips/view");
+        router.push("/trips/mytrips");
       } else {
         const result = await response.json();
         console.error("Error message:", result.message);
