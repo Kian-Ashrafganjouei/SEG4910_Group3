@@ -52,7 +52,7 @@ export default function SignInForm() {
               type="text"
               id="username"
               required
-              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="username"
               onChange={(e) => set_username(e.target.value)}
             />
@@ -67,7 +67,7 @@ export default function SignInForm() {
               type="password"
               id="password"
               required
-              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="••••••••"
               onChange={(e) => set_password(e.target.value)}
             />

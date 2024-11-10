@@ -14,56 +14,6 @@ export default function Home() {
   return (
     <div className="mt-16">
       <Navbar />
-      {/* Navigation Bar */}
-      <nav
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1rem",
-          backgroundColor: "#333",
-          color: "white",
-        }}>
-        <div>
-          <h1>
-            Welcome
-            {session?.user?.username ? `, ${session.user.username}` : "!"}
-          </h1>
-        </div>
-        <div>
-          {session ? (
-            <>
-              <button
-                onClick={() => router.push("/trips/view")}
-                style={buttonStyle}>
-                View Trips
-              </button>
-              <button
-                onClick={() => router.push("/trips/add")}
-                style={buttonStyle}>
-                Add Trip
-              </button>
-              <button
-                onClick={() => router.push("/profile")}
-                style={buttonStyle}>
-                Profile
-              </button>
-              <button
-                onClick={() => signOut()}
-                style={{ ...buttonStyle, backgroundColor: "#f44336" }}>
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => signIn()}
-              style={{ ...buttonStyle, backgroundColor: "#4CAF50" }}>
-              Sign In
-            </button>
-          )}
-        </div>
-      </nav>
-
       {/* Home Content */}
       <div style={{ padding: "2rem" }}>
         <h2>Home Page</h2>

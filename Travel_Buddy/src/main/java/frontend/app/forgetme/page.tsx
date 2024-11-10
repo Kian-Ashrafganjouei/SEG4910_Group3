@@ -3,6 +3,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function ForgetMeForm() {
   const [email, set_email] = useState("");
@@ -12,18 +13,15 @@ export default function ForgetMeForm() {
   const forgetme_form_submission_handler = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(
-        "http://localhost:8080/backend/forgetme",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email
-          })
-        }
-      );
+      const res = await fetch("http://localhost:8080/backend/forgetme", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+        }),
+      });
 
       if (res.status === 400) {
         set_error(await res.text());
@@ -33,10 +31,13 @@ export default function ForgetMeForm() {
         set_error("");
         set_email("");
         set_success("Your profile has been deleted! You will be redirected soon.");
-        setTimeout(() => { window.location.href = "/home"; }, 3000);
+        setTimeout(() => {
+          signOut({ callbackUrl: "/" }); // Log out and redirect
+        }, 3000);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      set_error("An error occurred. Please try again.");
     }
   };
 
@@ -73,7 +74,7 @@ export default function ForgetMeForm() {
               type="email"
               id="email"
               required
-              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="Email"
               onChange={(e) => set_email(e.target.value)}
             />

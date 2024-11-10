@@ -1,9 +1,11 @@
 "use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGoogle, faGithub } from "@fortawesome/free-brands-svg-icons";
+import { faGoogle, faApple } from "@fortawesome/free-brands-svg-icons";
 import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
+import { signIn, useSession } from "next-auth/react";
+
 
 export default function SignUpForm() {
   const [username, set_username] = useState("");
@@ -38,7 +40,7 @@ export default function SignUpForm() {
       } else if (!res.ok) {
         throw new Error("Internal server error");
       } else {
-        window.location.href = "/home";
+        window.location.href = "/";
       }
     } catch (error) {
       set_error(error);
@@ -71,7 +73,7 @@ export default function SignUpForm() {
               type="text"
               id="username"
               required
-              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="username"
               onChange={(e) => set_username(e.target.value)}
             />
@@ -86,7 +88,7 @@ export default function SignUpForm() {
               type="email"
               id="email"
               required
-              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="you@example.com"
               onChange={(e) => set_email(e.target.value)}
             />
@@ -101,7 +103,7 @@ export default function SignUpForm() {
               type="password"
               id="password"
               required
-              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="••••••••"
               onChange={(e) => set_password(e.target.value)}
             />
@@ -116,7 +118,7 @@ export default function SignUpForm() {
               type="password"
               id="confirm-password"
               required
-              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               placeholder="••••••••"
               onChange={(e) => set_confirmed_password(e.target.value)}
             />
@@ -133,17 +135,16 @@ export default function SignUpForm() {
           <span className="px-2 text-gray-500">Or</span>
           <div className="flex-1 h-px bg-gray-300"></div>
         </div>
-
         <div className="flex justify-between mt-4 gap-3">
-          <a
+          <button
             className="flex items-center justify-center w-1/2 p-2 text-white bg-red-500 rounded-md hover:bg-red-600"
-            href="/api/auth/signin/google">
-            <FontAwesomeIcon icon={faGoogle} className="mr-2 size-4" /> Sign up
+            onClick={() => signIn("google", { callbackUrl: "/" })}>
+            <FontAwesomeIcon icon={faGoogle} className="mr-2 size-4" /> Sign in
             with Google
-          </a>
+          </button>
           <button className="flex items-center justify-center w-1/2 p-2 text-white bg-gray-800 rounded-md hover:bg-gray-700">
-            <FontAwesomeIcon icon={faGithub} className="mr-2 size-4" /> Sign up
-            with GitHub
+            <FontAwesomeIcon icon={faApple} className="mr-2 size-4" /> Sign in
+            with Apple
           </button>
         </div>
 
