@@ -92,7 +92,7 @@ export default function AddTrip() {
       }
 
       alert("Trip added successfully!");
-      router.push("/trips/view");
+      router.push("/trips/mytrips");
     } catch (error) {
       console.error("Error adding trip:", error);
       setErrorMessage("An error occurred while adding the trip.");
@@ -102,7 +102,6 @@ export default function AddTrip() {
   return (
     <div className="mt-16">
       <Navbar />
-      <NavbarLayout>
         <div className="form-container mt-16">
           <h2 className="heading">Add a New Trip</h2>
           <form onSubmit={handleSubmit}>
@@ -252,7 +251,6 @@ export default function AddTrip() {
             margin-top: 1rem;
           }
         `}</style>
-      </NavbarLayout>
       <Footer />
     </div>
   );

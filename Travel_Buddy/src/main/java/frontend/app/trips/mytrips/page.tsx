@@ -1,10 +1,11 @@
 "use client";
 
 import NavbarLayout from "../../components/NavbarLayout";
-import { useRouter } from "next/navigation"; // Import from next/navigation for App Router
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Navbar from "../../layout/navbar/page";
 import Footer from "../../layout/footer/page";
+import { useSession } from "next-auth/react";
 
 interface Trip {
   tripId: number;
@@ -16,20 +17,37 @@ interface Trip {
 }
 
 export default function ViewTrips() {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTrips = async () => {
       try {
-        const response = await fetch("http://localhost:8080/backend/trips");
-        if (!response.ok) throw new Error("Failed to fetch trips");
+        const response = await fetch("http://localhost:8080/backend/trips/created", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Email: session?.user?.email || "",
+          },
+        });
 
-        const data = await response.json();
-        setTrips(data);
-        setFilteredTrips(data); // Initialize filtered trips
+        if (!response.ok) {
+          throw new Error("Failed to fetch trips.");
+        }
+
+        const data: Trip[] = await response.json();
+
+        if (data.length === 0) {
+          setErrorMessage(
+            `You (${session?.user?.username || "User"}) with email (${session?.user?.email || "unknown"}) have no trips posted.`
+          );
+        } else {
+          setTrips(data);
+          setErrorMessage(null);
+        }
       } catch (error) {
         console.error("Error fetching trips:", error);
         setErrorMessage("An error occurred while fetching trips.");
@@ -39,20 +57,50 @@ export default function ViewTrips() {
     };
 
     fetchTrips();
-  }, []);
+  }, [session]);
+
+  const handleEditTrip = (tripId: number) => {
+    router.push(`/trips/edit/${tripId}`);
+  };
+
+  const handleDeleteTrip = async (tripId: number) => {
+    const confirmed = confirm("Are you sure you want to delete this trip?");
+    if (!confirmed) return;
+  
+    try {
+      const response = await fetch(`http://localhost:8080/backend/trips/${tripId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Email: session?.user?.email || "", // Include email from session
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to delete the trip.");
+      }
+  
+      // Update the state to remove the deleted trip
+      setTrips(trips.filter((trip) => trip.tripId !== tripId));
+      alert("Trip deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting trip:", error);
+      alert("An error occurred while deleting the trip.");
+    }
+  };  
 
   return (
     <div className="mt-16">
       <Navbar />
         <div className="trips-container">
-          <h1 className="title">Explore Trips</h1>
+          <h1 className="title">My Trips</h1>
           {isLoading ? (
             <p className="loading-msg">Loading trips...</p>
           ) : errorMessage ? (
             <p className="error-msg">{errorMessage}</p>
-          ) : filteredTrips.length > 0 ? (
+          ) : trips.length > 0 ? (
             <div className="trip-list">
-              {filteredTrips.map((trip) => (
+              {trips.map((trip) => (
                 <div key={trip.tripId} className="trip-card">
                   <h2 className="trip-location">{trip.location}</h2>
                   <p className="trip-dates">
@@ -69,11 +117,25 @@ export default function ViewTrips() {
                       </ul>
                     </div>
                   )}
+                  {/* Edit Button */}
+                  <button
+                    onClick={() => handleEditTrip(trip.tripId)}
+                    className="edit-button"
+                  >
+                    Edit
+                  </button>
+                  {/* Delete Button */}
+                  <button
+                    onClick={() => handleDeleteTrip(trip.tripId)}
+                    className="delete-button"
+                  >
+                    Delete
+                  </button>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="no-trips-msg">No trips available.</p>
+            <p className="no-trips-msg">No trips found.</p>
           )}
         </div>
 
@@ -133,6 +195,35 @@ export default function ViewTrips() {
             color: #6a1b9a;
             font-size: 1.2rem;
             margin: 0;
+          }
+
+          .edit-button,
+          .delete-button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+          }
+
+          .edit-button {
+            background-color: #512da8;
+          }
+
+          .edit-button:hover {
+            background-color: #3e1d9d;
+          }
+
+          .delete-button {
+            background-color: #d32f2f;
+            margin-left: 0.5rem;
+          }
+
+          .delete-button:hover {
+            background-color: #b71c1c;
           }
 
           .loading-msg,
