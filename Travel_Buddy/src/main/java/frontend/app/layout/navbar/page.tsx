@@ -39,19 +39,17 @@ const Navbar = () => {
         </div>
         <div className="hidden md:flex justify-end">
           {session ? (
-            <a
-              href="/signup"
+            <button
               onClick={() => signOut()}
               className=" hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black">
               Sign Out
-            </a>
+            </button>
           ) : (
-            <a
-              href="/signup"
+            <button
               onClick={() => signIn()}
               className=" hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black">
               Sign Up
-            </a>
+            </button>
           )}
         </div>
         <div className="md:hidden flex justify-end">
