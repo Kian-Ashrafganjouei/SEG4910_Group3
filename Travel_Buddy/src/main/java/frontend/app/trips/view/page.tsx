@@ -135,7 +135,7 @@ export default function ViewTrips() {
     <div className="mt-16">
       <Navbar />
       <div className="flex justify-center">
-        <div className="trips-container w-6/12 p-8 m-12 rounded-2xl bg-violet-200">
+        <div className="trips-container w-7/12 p-8 m-12 rounded-2xl bg-violet-200">
           <h1 className="title">Explore Trips</h1>
 
           <div className="filters-container">
