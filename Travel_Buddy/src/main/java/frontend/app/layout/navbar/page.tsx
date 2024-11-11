@@ -100,7 +100,6 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      <div className="content-wrapper pt-1">{/* Add padding here */}</div>
     </div>
   );
 };
