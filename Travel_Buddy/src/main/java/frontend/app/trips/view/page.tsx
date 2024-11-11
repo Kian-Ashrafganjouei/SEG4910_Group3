@@ -43,7 +43,9 @@ export default function ViewTrips() {
         setTrips(data);
         setFilteredTrips(data);
 
-        const uniqueLocations = Array.from(new Set(data.map((trip: Trip) => trip.location)));
+        const uniqueLocations = Array.from(
+          new Set(data.map((trip: Trip) => trip.location))
+        );
         setLocations(uniqueLocations);
       } catch (error) {
         console.error("Error fetching trips:", error);
@@ -75,22 +77,31 @@ export default function ViewTrips() {
       trips.filter((trip) => {
         const matchesInterests =
           selectedInterests.length === 0 ||
-          trip.interests.some((interest) => selectedInterests.includes(interest.interestId));
+          trip.interests.some((interest) =>
+            selectedInterests.includes(interest.interestId)
+          );
 
-        const matchesLocation = selectedLocation === "" || trip.location === selectedLocation;
+        const matchesLocation =
+          selectedLocation === "" || trip.location === selectedLocation;
 
         const matchesDateRange =
           selectedStartDate !== "" && selectedEndDate !== ""
             ? (new Date(trip.startDate) <= new Date(selectedEndDate) &&
-               new Date(trip.endDate) >= new Date(selectedStartDate)) ||
+                new Date(trip.endDate) >= new Date(selectedStartDate)) ||
               (new Date(trip.startDate) > new Date(selectedStartDate) &&
-               new Date(trip.endDate) < new Date(selectedEndDate))
+                new Date(trip.endDate) < new Date(selectedEndDate))
             : true;
 
         return matchesInterests && matchesLocation && matchesDateRange;
       })
     );
-  }, [selectedInterests, selectedLocation, selectedStartDate, selectedEndDate, trips]);
+  }, [
+    selectedInterests,
+    selectedLocation,
+    selectedStartDate,
+    selectedEndDate,
+    trips,
+  ]);
 
   const toggleInterestDropdown = () => {
     setShowInterestDropdown(!showInterestDropdown);
@@ -104,11 +115,15 @@ export default function ViewTrips() {
     );
   };
 
-  const handleLocationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleLocationChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     setSelectedLocation(event.target.value);
   };
 
-  const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleStartDateChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setSelectedStartDate(event.target.value);
   };
 
@@ -119,25 +134,34 @@ export default function ViewTrips() {
   return (
     <div className="mt-16">
       <Navbar />
-        <div className="trips-container">
+      <div className="flex justify-center">
+        <div className="trips-container w-6/12 p-8 m-12 rounded-2xl bg-violet-200">
           <h1 className="title">Explore Trips</h1>
 
           <div className="filters-container">
             <div className="filter-item">
               <label className="filter-label">Filter by Interests:</label>
               <div className="multi-select-dropdown">
-                <button onClick={toggleInterestDropdown} className="dropdown-toggle">
+                <button
+                  onClick={toggleInterestDropdown}
+                  className="dropdown-toggle">
                   Select Interests
                 </button>
                 {showInterestDropdown && (
                   <div className="dropdown-menu">
                     {interests.map((interest) => (
-                      <label key={interest.interestId} className="dropdown-item">
+                      <label
+                        key={interest.interestId}
+                        className="dropdown-item">
                         <input
                           type="checkbox"
                           value={interest.interestId}
-                          checked={selectedInterests.includes(interest.interestId)}
-                          onChange={() => handleInterestChange(interest.interestId)}
+                          checked={selectedInterests.includes(
+                            interest.interestId
+                          )}
+                          onChange={() =>
+                            handleInterestChange(interest.interestId)
+                          }
                         />
                         {interest.name}
                       </label>
@@ -155,8 +179,7 @@ export default function ViewTrips() {
                 id="location-filter"
                 value={selectedLocation}
                 onChange={handleLocationChange}
-                className="location-select"
-              >
+                className="location-select">
                 <option value="">All Locations</option>
                 {locations.map((location) => (
                   <option key={location} value={location}>
@@ -224,160 +247,93 @@ export default function ViewTrips() {
             <p className="no-trips-msg">No trips available.</p>
           )}
         </div>
+      </div>
 
-        <style jsx>{`
-          .trips-container {
-            max-width: 800px;
-            margin: 3rem auto;
-            padding: 2rem;
-            background-color: #ede7f6;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-            font-family: "Poppins", sans-serif;
-          }
+      <style jsx>{`
+        .trips-container {
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+          font-family: "Poppins", sans-serif;
+        }
 
-          .title {
-            text-align: center;
-            font-size: 3rem;
-            color: #512da8;
-            margin-bottom: 2rem;
-            font-weight: 700;
-          }
+        .title {
+          text-align: center;
+          font-size: 3rem;
+          color: #512da8;
+          margin-bottom: 2rem;
+          font-weight: 700;
+        }
 
-          .filters-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 2rem;
-            margin-bottom: 1.5rem;
-          }
+        .trip-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
 
-          .filter-item {
-            flex: 1;
-          }
+        .trip-card {
+          background-color: #f8f9fa;
+          padding: 1.5rem;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
 
-          .filter-label {
-            font-weight: 600;
-            color: #512da8;
-            margin-bottom: 1rem;
-            display: block;
-          }
+        .trip-card:hover {
+          transform: scale(1.02);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
 
-          .multi-select-dropdown {
-            position: relative;
-          }
+        .trip-location {
+          font-size: 1.8rem;
+          color: #00bfa6;
+          margin-bottom: 0.5rem;
+          font-weight: 600;
+        }
 
-          .dropdown-toggle {
-            width: 100%;
-            padding: 0.5rem;
-            font-size: 1rem;
-            border-radius: 8px;
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
-            cursor: pointer;
-          }
+        .trip-dates {
+          font-size: 1.2rem;
+          color: #9ac0b6;
+          margin-bottom: 1rem;
+          font-weight: 500;
+        }
 
-          .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1;
-          }
+        .description {
+          color: #6a1b9a;
+          font-size: 1.2rem;
+          margin: 0;
+        }
 
-          .dropdown-item {
-            display: flex;
-            align-items: center;
-            padding: 0.5rem;
-            font-size: 1rem;
-            color: #333;
-          }
+        .loading-msg,
+        .no-trips-msg,
+        .error-msg {
+          text-align: center;
+          font-size: 1.3rem;
+          margin-top: 1rem;
+        }
 
-          .location-select,
-          .date-select {
-            width: 100%;
-            padding: 0.5rem;
-            font-size: 1rem;
-            border-radius: 8px;
-            margin-top: 0.5rem;
-          }
+        .error-msg {
+          color: #d32f2f;
+        }
 
-          .trip-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-          }
+        .interests {
+          margin-top: 1rem;
+          font-size: 1.1rem;
+        }
 
-          .trip-card {
-            background-color: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-          }
+        .interests h3 {
+          font-weight: 600;
+          color: #512da8;
+          margin-bottom: 0.5rem;
+        }
 
-          .trip-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-          }
+        .interests ul {
+          padding-left: 1.5rem;
+        }
 
-          .trip-location {
-            font-size: 1.8rem;
-            color: #00bfa6;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-          }
-
-          .trip-dates {
-            font-size: 1.2rem;
-            color: #9ac0b6;
-            margin-bottom: 1rem;
-            font-weight: 500;
-          }
-
-          .description {
-            color: #6a1b9a;
-            font-size: 1.2rem;
-            margin: 0;
-          }
-
-          .loading-msg,
-          .no-trips-msg,
-          .error-msg {
-            text-align: center;
-            font-size: 1.3rem;
-            margin-top: 1rem;
-          }
-
-          .error-msg {
-            color: #d32f2f;
-          }
-
-          .interests {
-            margin-top: 1rem;
-            font-size: 1.1rem;
-          }
-
-          .interests h3 {
-            font-weight: 600;
-            color: #512da8;
-            margin-bottom: 0.5rem;
-          }
-
-          .interests ul {
-            padding-left: 1.5rem;
-          }
-
-          .interests li {
-            list-style-type: disc;
-            color: #6a1b9a;
-          }
-        `}</style>
+        .interests li {
+          list-style-type: disc;
+          color: #6a1b9a;
+        }
+      `}</style>
       <Footer />
     </div>
   );

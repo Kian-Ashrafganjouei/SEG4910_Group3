@@ -23,7 +23,9 @@ export default function EditTrip({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchTrip = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/backend/trips/${params.id}`);
+        const response = await fetch(
+          `http://localhost:8080/backend/trips/${params.id}`
+        );
         if (!response.ok) throw new Error("Failed to fetch trip data.");
 
         const data = await response.json();
@@ -39,7 +41,9 @@ export default function EditTrip({ params }: { params: { id: string } }) {
     fetchTrip();
   }, [params.id]);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     if (trip) {
       const { name, value } = event.target;
       setTrip({ ...trip, [name]: value });
@@ -48,11 +52,14 @@ export default function EditTrip({ params }: { params: { id: string } }) {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/backend/trips/${params.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(trip),
-      });
+      const response = await fetch(
+        `http://localhost:8080/backend/trips/${params.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(trip),
+        }
+      );
 
       if (response.status === 200) {
         alert("Trip updated successfully!");
@@ -72,78 +79,75 @@ export default function EditTrip({ params }: { params: { id: string } }) {
   if (!trip) return <p>{errorMessage || "Trip not found"}</p>;
 
   return (
-    <div>
+    <div className="mt-16">
       <Navbar />
-      <div className="edit-trip-container">
-        <h1>Edit Trip</h1>
+      <div className="flex justify-center">
+        <div className="edit-trip-container w-6/12 p-8 m-12 rounded-2xl bg-violet-200">
+          <h1>Edit Trip</h1>
 
-        <div className="form-group">
-          <label htmlFor="location">Location</label>
-          <input
-            type="text"
-            id="location"
-            name="location"
-            value={trip.location}
-            onChange={handleInputChange}
-            className="input-field"
-          />
+          <div className="form-group">
+            <label htmlFor="location">Location</label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              value={trip.location}
+              onChange={handleInputChange}
+              className="input-field"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="startDate">Start Date</label>
+            <input
+              type="date"
+              id="startDate"
+              name="startDate"
+              value={trip.startDate}
+              onChange={handleInputChange}
+              className="input-field"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="endDate">End Date</label>
+            <input
+              type="date"
+              id="endDate"
+              name="endDate"
+              value={trip.endDate}
+              onChange={handleInputChange}
+              className="input-field"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              value={trip.description}
+              onChange={handleInputChange}
+              className="textarea-field"
+            />
+          </div>
+
+          <div className="button-group">
+            <button onClick={handleSave} className="save-button">
+              Save Changes
+            </button>
+            <button onClick={() => router.back()} className="cancel-button">
+              Go Back
+            </button>
+          </div>
+
+          {errorMessage && <p className="error-msg">{errorMessage}</p>}
         </div>
-
-        <div className="form-group">
-          <label htmlFor="startDate">Start Date</label>
-          <input
-            type="date"
-            id="startDate"
-            name="startDate"
-            value={trip.startDate}
-            onChange={handleInputChange}
-            className="input-field"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="endDate">End Date</label>
-          <input
-            type="date"
-            id="endDate"
-            name="endDate"
-            value={trip.endDate}
-            onChange={handleInputChange}
-            className="input-field"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            value={trip.description}
-            onChange={handleInputChange}
-            className="textarea-field"
-          />
-        </div>
-
-        <div className="button-group">
-          <button onClick={handleSave} className="save-button">
-            Save Changes
-          </button>
-          <button onClick={() => router.back()} className="cancel-button">
-            Go Back
-          </button>
-        </div>
-
-        {errorMessage && <p className="error-msg">{errorMessage}</p>}
       </div>
       <Footer />
 
       <style jsx>{`
         .edit-trip-container {
-          max-width: 600px;
-          margin: 3rem auto;
-          padding: 2rem;
-          background-color: #f1f1f1;
-          border-radius: 16px;
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
           font-family: "Poppins", sans-serif;
           color: #333;

@@ -8,8 +8,8 @@ const Navbar = () => {
   const { data: session } = useSession();
   const router = useRouter();
 
-  const handleTripsHover = (isHovered: boolean) => {
-    setIsTripsDropdownOpen(isHovered);
+  const toggleTripsDropdown = () => {
+    setIsTripsDropdownOpen((prev) => !prev);
   };
 
   const handleSignOut = async () => {
@@ -22,15 +22,19 @@ const Navbar = () => {
 
   return (
     <div>
-      <div className="navbar fixed w-full top-0 left-0 z-10">
+      <div className="navbar fixed w-full top-0 left-0 z-10 border-b border-slate-300">
         <div className="grid grid-cols-2 md:grid-cols-3 items-center h-16 pl-2 pr-2 bg-white text-black">
           <div className="text-xl font-bold">
             <a href="/">
-              <h1 className="text-2xl"> {/* Keep the heading larger */}
+              <h1 className="text-2xl">
+                {" "}
+                {/* Keep the heading larger */}
                 Travel Companion
               </h1>
             </a>
-            <p className="text-sm mt-1"> {/* Make the "Welcome" message smaller */}
+            <p className="text-sm mt-1">
+              {" "}
+              {/* Make the "Welcome" message smaller */}
               Welcome
               {session?.user?.username ? `, ${session.user.username}` : "!"}
             </p>
@@ -41,32 +45,27 @@ const Navbar = () => {
             </a>
             {session && ( // Only show this section if session exists
               <>
-                <div
-                  className="relative group"
-                  onMouseEnter={() => handleTripsHover(true)}
-                  onMouseLeave={() => handleTripsHover(false)}
-                >
-                  <a href="/trips/view" className="relative group">
+                <div className="relative">
+                  <button
+                    className="relative group "
+                    onClick={toggleTripsDropdown}>
                     <span className="hover-underline-animation">Trips</span>
-                  </a>
+                  </button>
                   {isTripsDropdownOpen && (
                     <div className="absolute top-8 left-0 bg-white shadow-lg border rounded-md w-40 z-20">
                       <a
                         href="/trips/view"
-                        className="block px-4 py-2 hover:bg-gray-100 text-black"
-                      >
+                        className="block px-4 py-2 hover:bg-gray-100 text-black">
                         Explore Trips
                       </a>
                       <a
                         href="/trips/mytrips"
-                        className="block px-4 py-2 hover:bg-gray-100 text-black"
-                      >
+                        className="block px-4 py-2 hover:bg-gray-100 text-black">
                         My Trips
                       </a>
                       <a
                         href="/trips/add"
-                        className="block px-4 py-2 hover:bg-gray-100 text-black"
-                      >
+                        className="block px-4 py-2 hover:bg-gray-100 text-black">
                         Create Trip
                       </a>
                     </div>
@@ -88,15 +87,13 @@ const Navbar = () => {
             {session ? (
               <button
                 onClick={handleSignOut}
-                className="hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black"
-              >
+                className="hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black">
                 Sign Out
               </button>
             ) : (
               <button
                 onClick={handleSignIn}
-                className="hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black"
-              >
+                className="hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black">
                 Sign In
               </button>
             )}
