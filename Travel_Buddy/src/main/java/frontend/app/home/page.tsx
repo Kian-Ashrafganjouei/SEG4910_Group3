@@ -4,6 +4,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Navbar from "../layout/navbar/page";
 import Footer from "../layout/footer/page";
+import ViewTrips from '../trips/view/page';
 
 export default function Home() {
   const { data: session } = useSession();
@@ -65,13 +66,8 @@ export default function Home() {
       </nav>
 
       {/* Home Content */}
-      <div style={{ padding: "2rem" }}>
-        <h2>Home Page</h2>
-        {session ? (
-          <p>Welcome to the home page, {session.user?.name}!</p>
-        ) : (
-          <p>Please log in to see your personalized content.</p>
-        )}
+      <div style={{ padding: "1rem" }}>
+        <ViewTrips />
       </div>
       <Footer />
     </>
@@ -87,4 +83,4 @@ const buttonStyle = {
   border: "none",
   borderRadius: "4px",
   cursor: "pointer",
-};
+}
