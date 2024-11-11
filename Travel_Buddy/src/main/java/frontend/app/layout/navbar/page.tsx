@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import "../../styles/Navbar.css";
 
@@ -8,8 +8,8 @@ const Navbar = () => {
   const { data: session } = useSession();
   const router = useRouter();
 
-  const handleTripsHover = (isHovered: boolean) => {
-    setIsTripsDropdownOpen(isHovered);
+  const toggleTripsDropdown = () => {
+    setIsTripsDropdownOpen((prev) => !prev);
   };
 
   const handleSignOut = async () => {
@@ -20,14 +20,9 @@ const Navbar = () => {
     signIn(undefined, { callbackUrl: "/home" }); // Redirect to /home after sign in
   };
 
-  const { data: session } = useSession();
-  const router = useRouter();
-
-  console.log("Session data:", session); // Check the session data
-
   return (
     <div>
-      <div className="navbar fixed w-full top-0 left-0 z-10">
+      <div className="navbar fixed w-full top-0 left-0 z-10 border-b border-slate-300">
         <div className="grid grid-cols-2 md:grid-cols-3 items-center h-16 pl-2 pr-2 bg-white text-black">
           <div className="text-xl font-bold">
             <a href="/">
@@ -50,13 +45,12 @@ const Navbar = () => {
             </a>
             {session && ( // Only show this section if session exists
               <>
-                <div
-                  className="relative group"
-                  onMouseEnter={() => handleTripsHover(true)}
-                  onMouseLeave={() => handleTripsHover(false)}>
-                  <a href="/trips/view" className="relative group">
+                <div className="relative">
+                  <button
+                    className="relative group "
+                    onClick={toggleTripsDropdown}>
                     <span className="hover-underline-animation">Trips</span>
-                  </a>
+                  </button>
                   {isTripsDropdownOpen && (
                     <div className="absolute top-8 left-0 bg-white shadow-lg border rounded-md w-40 z-20">
                       <a

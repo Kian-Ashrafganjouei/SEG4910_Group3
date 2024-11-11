@@ -44,46 +44,43 @@ export default function ViewTrips() {
   return (
     <div className="mt-16">
       <Navbar />
-      <div className="trips-container">
-        <h1 className="title">Explore Trips</h1>
-        {isLoading ? (
-          <p className="loading-msg">Loading trips...</p>
-        ) : errorMessage ? (
-          <p className="error-msg">{errorMessage}</p>
-        ) : filteredTrips.length > 0 ? (
-          <div className="trip-list">
-            {filteredTrips.map((trip) => (
-              <div key={trip.tripId} className="trip-card">
-                <h2 className="trip-location">{trip.location}</h2>
-                <p className="trip-dates">
-                  {trip.startDate} to {trip.endDate}
-                </p>
-                <p className="description">{trip.description}</p>
-                {trip.interests && trip.interests.length > 0 && (
-                  <div className="interests">
-                    <h3>Interests:</h3>
-                    <ul>
-                      {trip.interests.map((interest) => (
-                        <li key={interest.interestId}>{interest.name}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="no-trips-msg">No trips available.</p>
-        )}
+      <div className="flex justify-center">
+        <div className="trips-container w-6/12 p-8 m-12 rounded-2xl bg-violet-200">
+          <h1 className="title">Explore Trips</h1>
+          {isLoading ? (
+            <p className="loading-msg">Loading trips...</p>
+          ) : errorMessage ? (
+            <p className="error-msg">{errorMessage}</p>
+          ) : filteredTrips.length > 0 ? (
+            <div className="trip-list">
+              {filteredTrips.map((trip) => (
+                <div key={trip.tripId} className="trip-card">
+                  <h2 className="trip-location">{trip.location}</h2>
+                  <p className="trip-dates">
+                    {trip.startDate} to {trip.endDate}
+                  </p>
+                  <p className="description">{trip.description}</p>
+                  {trip.interests && trip.interests.length > 0 && (
+                    <div className="interests">
+                      <h3>Interests:</h3>
+                      <ul>
+                        {trip.interests.map((interest) => (
+                          <li key={interest.interestId}>{interest.name}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="no-trips-msg">No trips available.</p>
+          )}
+        </div>
       </div>
 
       <style jsx>{`
         .trips-container {
-          max-width: 800px;
-          margin: 3rem auto;
-          padding: 2rem;
-          background-color: #ede7f6;
-          border-radius: 16px;
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
           font-family: "Poppins", sans-serif;
         }

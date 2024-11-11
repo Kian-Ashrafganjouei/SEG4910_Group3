@@ -65,7 +65,6 @@ export default function Profile() {
         console.error("Error fetching languages:", error);
       }
     };
-  
 
     fetchNationalities();
     fetchLanguages();
@@ -92,7 +91,7 @@ export default function Profile() {
         });
     }
   }, [session]);
-  
+
   const handleUpdate = async () => {
     try {
       const res = await fetch("http://localhost:8080/backend/user", {
@@ -103,19 +102,18 @@ export default function Profile() {
         },
         body: JSON.stringify(userData),
       });
-  
+
       if (!res.ok) {
         throw new Error("Failed to update profile");
       }
-  
+
       alert("Profile updated successfully!");
-      
+
       router.push("/trips/mytrips"); // Redirect after session refresh
     } catch (err) {
       console.error("Failed to update profile", err);
     }
   };
-  
 
   if (!session) {
     return <p className="login-msg">Please log in to view your profile.</p>;
@@ -126,137 +124,133 @@ export default function Profile() {
   }
 
   return (
-    <div className="mt-16">
+    <div className=" profile-page mt-16">
       <Navbar />
-      <div className="profile-container">
-        <h1 className="title">Your Profile</h1>
-        {userData && (
-          <div className="form-container">
-            {/* Name Field */}
-            <div className="form-group">
-              <label>Name:</label>
-              <input
-                type="text"
-                value={userData.name || ""}
-                onChange={(e) =>
-                  setUserData({ ...userData, name: e.target.value })
-                }
-                className="input-field"
-              />
-            </div>
+      <div className="flex justify-center">
+        <div className="profile-container w-5/12 p-8 m-12 bg-violet-200 rounded-2xl">
+          <h1 className="title">Your Profile</h1>
+          {userData && (
+            <div className="form-container">
+              {/* Name Field */}
+              <div className="form-group">
+                <label>Name:</label>
+                <input
+                  type="text"
+                  value={userData.name || ""}
+                  onChange={(e) =>
+                    setUserData({ ...userData, name: e.target.value })
+                  }
+                  className="input-field"
+                />
+              </div>
 
-            {/* Phone Number Field */}
-            <div className="form-group">
-              <label>Phone Number:</label>
-              <input
-                type="text"
-                value={userData.phoneNumber || ""}
-                onChange={(e) =>
-                  setUserData({ ...userData, phoneNumber: e.target.value })
-                }
-                className="input-field"
-              />
-            </div>
+              {/* Phone Number Field */}
+              <div className="form-group">
+                <label>Phone Number:</label>
+                <input
+                  type="text"
+                  value={userData.phoneNumber || ""}
+                  onChange={(e) =>
+                    setUserData({ ...userData, phoneNumber: e.target.value })
+                  }
+                  className="input-field"
+                />
+              </div>
 
-            {/* Nationality Dropdown */}
-            <div className="form-group">
-              <label>Nationality:</label>
-              <Select
-                options={nationalities}
-                value={nationalities.find(
-                  (option) => option.value === userData.nationality
-                )}
-                onChange={(selectedOption) =>
-                  setUserData({
-                    ...userData,
-                    nationality: selectedOption?.value || "",
-                  })
-                }
-              />
-            </div>
+              {/* Nationality Dropdown */}
+              <div className="form-group">
+                <label>Nationality:</label>
+                <Select
+                  options={nationalities}
+                  value={nationalities.find(
+                    (option) => option.value === userData.nationality
+                  )}
+                  onChange={(selectedOption) =>
+                    setUserData({
+                      ...userData,
+                      nationality: selectedOption?.value || "",
+                    })
+                  }
+                />
+              </div>
 
-            {/* Languages Multi-Select Dropdown */}
-            <div className="form-group">
-              <label>Languages:</label>
-              <Select
-                isMulti
-                options={languages}
-                value={languages.filter((option) =>
-                  userData.languages?.includes(option.value)
-                )}
-                onChange={(selectedOptions) =>
-                  setUserData({
-                    ...userData,
-                    languages: selectedOptions.map((option) => option.value),
-                  })
-                }
-              />
-            </div>
+              {/* Languages Multi-Select Dropdown */}
+              <div className="form-group">
+                <label>Languages:</label>
+                <Select
+                  isMulti
+                  options={languages}
+                  value={languages.filter((option) =>
+                    userData.languages?.includes(option.value)
+                  )}
+                  onChange={(selectedOptions) =>
+                    setUserData({
+                      ...userData,
+                      languages: selectedOptions.map((option) => option.value),
+                    })
+                  }
+                />
+              </div>
 
-            {/* Age Field */}
-            <div className="form-group">
-              <label>Age:</label>
-              <input
-                type="number"
-                value={userData.age || ""}
-                onChange={(e) =>
-                  setUserData({ ...userData, age: Number(e.target.value) })
-                }
-                className="input-field"
-              />
-            </div>
+              {/* Age Field */}
+              <div className="form-group">
+                <label>Age:</label>
+                <input
+                  type="number"
+                  value={userData.age || ""}
+                  onChange={(e) =>
+                    setUserData({ ...userData, age: Number(e.target.value) })
+                  }
+                  className="input-field"
+                />
+              </div>
 
-            {/* Sex Dropdown */}
-            <div className="form-group">
-              <label>Sex:</label>
-              <select
-                value={userData.sex || ""}
-                onChange={(e) =>
-                  setUserData({ ...userData, sex: e.target.value })
-                }
-                className="input-field"
-              >
-                <option value="">Select</option>
-                {["Male", "Female", "Other"].map((sex) => (
-                  <option key={sex} value={sex}>
-                    {sex}
-                  </option>
-                ))}
-              </select>
-            </div>
+              {/* Sex Dropdown */}
+              <div className="form-group">
+                <label>Sex:</label>
+                <select
+                  value={userData.sex || ""}
+                  onChange={(e) =>
+                    setUserData({ ...userData, sex: e.target.value })
+                  }
+                  className="input-field">
+                  <option value="">Select</option>
+                  {["Male", "Female", "Other"].map((sex) => (
+                    <option key={sex} value={sex}>
+                      {sex}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            {/* Interests Multi-Select Dropdown */}
-            <div className="form-group">
-              <label>Interests:</label>
-              <Select
-                isMulti
-                options={staticInterests}
-                value={staticInterests.filter((option) =>
-                  userData?.interests?.includes(option.value)
-                )}
-                onChange={(selectedOptions) =>
-                  setUserData({
-                    ...userData,
-                    interests: selectedOptions.map((option) => option.value),
-                  })
-                }
-              />
-            </div>
+              {/* Interests Multi-Select Dropdown */}
+              <div className="form-group">
+                <label>Interests:</label>
+                <Select
+                  isMulti
+                  options={staticInterests}
+                  value={staticInterests.filter((option) =>
+                    userData?.interests?.includes(option.value)
+                  )}
+                  onChange={(selectedOptions) =>
+                    setUserData({
+                      ...userData,
+                      interests: selectedOptions.map((option) => option.value),
+                    })
+                  }
+                />
+              </div>
 
-            <button className="update-button" onClick={handleUpdate}>
-              Update Profile
-            </button>
-          </div>
-        )}
+              <button className="update-button" onClick={handleUpdate}>
+                Update Profile
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <style jsx>{`
         .profile-container {
-          max-width: 800px;
-          margin: 3rem auto;
-          padding: 2rem;
-          background-color: #ede7f6;
-          border-radius: 16px;
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
           font-family: "Poppins", sans-serif;
         }
@@ -278,7 +272,6 @@ export default function Profile() {
         .form-group {
           margin-bottom: 1rem;
           color: #512da8;
-
         }
 
         label {
@@ -312,35 +305,34 @@ export default function Profile() {
           background-color: #005f7a;
         }
 
+        /* Customize react-select options */
+        .react-select__option {
+          color: black; /* Black text for dropdown options */
+          background-color: white; /* White background */
+          cursor: pointer;
+        }
 
-  /* Customize react-select options */
-  .react-select__option {
-    color: black; /* Black text for dropdown options */
-    background-color: white; /* White background */
-    cursor: pointer;
-  }
+        .react-select__option--is-focused {
+          background-color: #ede7f6; /* Purple tint when hovered */
+          color: black; /* Keep text black on hover */
+        }
 
-  .react-select__option--is-focused {
-    background-color: #ede7f6; /* Purple tint when hovered */
-    color: black; /* Keep text black on hover */
-  }
+        .react-select__option--is-selected {
+          background-color: #d1c4e9; /* Slightly darker purple for selected */
+          color: black; /* Keep text black for selected option */
+        }
 
-  .react-select__option--is-selected {
-    background-color: #d1c4e9; /* Slightly darker purple for selected */
-    color: black; /* Keep text black for selected option */
-  }
+        .loading-msg,
+        .no-trips-msg,
+        .error-msg {
+          text-align: center;
+          font-size: 1.3rem;
+          margin-top: 1rem;
+        }
 
-  .loading-msg,
-  .no-trips-msg,
-  .error-msg {
-    text-align: center;
-    font-size: 1.3rem;
-    margin-top: 1rem;
-  }
-
-  .error-msg {
-    color: #d32f2f;
-  }
+        .error-msg {
+          color: #d32f2f;
+        }
       `}</style>
       <Footer />
     </div>
