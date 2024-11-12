@@ -1,28 +1,10 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import moment from 'moment';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faSort, faFilter } from "@fortawesome/free-solid-svg-icons";
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-
-interface User {
-  userId: number;
-  username: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  nationality: string;
-  languages: string[];
-  age: number;
-  sex: string;
-  interests: string[];
-  bio: string;
-  profilePicture: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import NavbarLayout from "../../components/NavbarLayout";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import Navbar from "../../layout/navbar/page";
+import Footer from "../../layout/footer/page";
 
 interface Trip {
   tripId: number;
@@ -30,27 +12,41 @@ interface Trip {
   startDate: string;
   endDate: string;
   description: string;
-  createdBy: User;
-  createdAt: string;
-  updatedAt: string;
+  interests: { interestId: number; name: string }[];
+}
+
+interface Interest {
+  interestId: number;
+  name: string;
 }
 
 export default function ViewTrips() {
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
+  const [interests, setInterests] = useState<Interest[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [selectedStartDate, setSelectedStartDate] = useState<string>("");
+  const [selectedEndDate, setSelectedEndDate] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { data: session } = useSession();
-  const [requested, setRequested] = useState<Record<number, boolean>>({});
+  const [showInterestDropdown, setShowInterestDropdown] = useState(false);
 
   useEffect(() => {
     const fetchTrips = async () => {
       try {
         const response = await fetch("http://localhost:8080/backend/trips");
-        if (!response.ok) {
-          throw new Error("Failed to fetch trips.");
-        }
+        if (!response.ok) throw new Error("Failed to fetch trips");
+
         const data = await response.json();
         setTrips(data);
+        setFilteredTrips(data);
+
+        const uniqueLocations = Array.from(
+          new Set(data.map((trip: Trip) => trip.location))
+        );
+        setLocations(uniqueLocations);
       } catch (error) {
         console.error("Error fetching trips:", error);
         setErrorMessage("An error occurred while fetching trips.");
@@ -59,82 +55,191 @@ export default function ViewTrips() {
       }
     };
 
+    const fetchInterests = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/backend/interests");
+        if (!response.ok) throw new Error("Failed to fetch interests.");
+
+        const data = await response.json();
+        setInterests(data);
+      } catch (error) {
+        console.error("Error fetching interests:", error);
+        setErrorMessage("An error occurred while fetching interests.");
+      }
+    };
+
     fetchTrips();
+    fetchInterests();
   }, []);
 
-  const handleRequestToggle = (tripId: number) => {
-    setRequested((oldVal) => ({
-      ...oldVal,
-      [tripId]: !oldVal[tripId]
-    }));
+  useEffect(() => {
+    setFilteredTrips(
+      trips.filter((trip) => {
+        const matchesInterests =
+          selectedInterests.length === 0 ||
+          trip.interests.some((interest) =>
+            selectedInterests.includes(interest.interestId)
+          );
+
+        const matchesLocation =
+          selectedLocation === "" || trip.location === selectedLocation;
+
+        const matchesDateRange =
+          selectedStartDate !== "" && selectedEndDate !== ""
+            ? (new Date(trip.startDate) <= new Date(selectedEndDate) &&
+                new Date(trip.endDate) >= new Date(selectedStartDate)) ||
+              (new Date(trip.startDate) > new Date(selectedStartDate) &&
+                new Date(trip.endDate) < new Date(selectedEndDate))
+            : true;
+
+        return matchesInterests && matchesLocation && matchesDateRange;
+      })
+    );
+  }, [
+    selectedInterests,
+    selectedLocation,
+    selectedStartDate,
+    selectedEndDate,
+    trips,
+  ]);
+
+  const toggleInterestDropdown = () => {
+    setShowInterestDropdown(!showInterestDropdown);
+  };
+
+  const handleInterestChange = (interestId: number) => {
+    setSelectedInterests((prevSelected) =>
+      prevSelected.includes(interestId)
+        ? prevSelected.filter((id) => id !== interestId)
+        : [...prevSelected, interestId]
+    );
+  };
+
+  const handleLocationChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setSelectedLocation(event.target.value);
+  };
+
+  const handleStartDateChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setSelectedStartDate(event.target.value);
+  };
+
+  const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedEndDate(event.target.value);
   };
 
   return (
-    <div>
-      <div className="trips-container block m-auto max-w-[800px]">
-        <div id="searchSortFilterComponent" className="flex mb-3">
-          <div id="searchComponent" className="relative flex flex-auto mr-2.5 border border-lightgray-600 rounded"
-              data-twe-input-wrapper-init
-              data-twe-input-group-ref>
-            <input type="search"
-                  className="peer block min-h-[auto] w-full rounded border-0 bg-transparent px-3 py-[0.32rem] leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 peer-focus:text-primary data-[twe-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none [&:not([data-twe-input-placeholder-active])]:placeholder:opacity-0"
-                  placeholder="Search"
-                  id="search-input" />
-            <label htmlFor="search-input"
-                  className="pointer-events-none absolute left-3 top-0 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-neutral-500 transition-all duration-200 ease-out peer-focus:-translate-y-[0.9rem] peer-focus:scale-[0.8] peer-focus:text-primary peer-data-[twe-input-state-active]:-translate-y-[0.9rem] peer-data-[twe-input-state-active]:scale-[0.8] motion-reduce:transition-none">
-              Search
-            </label>
-            <button className="border border-lightgray-600 rounded relative z-[2] -ms-0.5 flex items-center bg-primary px-5 text-xs shadow-primary-3 transition duration-150 ease-in-out hover:bg-primary-accent-300 hover:shadow-primary-2 focus:bg-primary-accent-300 focus:shadow-primary-2 focus:outline-none focus:ring-0 active:bg-primary-600 active:shadow-primary-2"
-                    type="button"
-                    id="search-button"
-                    data-twe-ripple-init
-                    data-twe-ripple-color="light">
-              <FontAwesomeIcon icon={faMagnifyingGlass} className="text-gray-500" />
-            </button>
-          </div>
-          <div id="sortAndfilterComponent" className="float-right">
-            <button type="button" className="h-full ml-2.5 px-2 py-1 group flex items-center inline-center inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900" id="menu-button" aria-expanded="false" aria-haspopup="true">
-                <FontAwesomeIcon icon={faSort} className="text-gray-500 px-1.5 items-center" />
-                Sort
-              </button>
-            <button type="button" className="h-full ml-2.5 px-2 py-1 group flex items-center inline-center inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900" id="menu-button" aria-expanded="false" aria-haspopup="true">
-                <FontAwesomeIcon icon={faFilter} className="text-gray-500 px-1.5 items-center" />
-                Filter
-              </button>
-          </div>
+    <div className="mt-16">
+      <Navbar />
+      <div className="flex justify-center">
+        <div className="trips-container w-7/12 p-8 m-12 rounded-2xl bg-violet-200">
+          <h1 className="title">Explore Trips</h1>
 
-        </div>
+          <div className="filters-container">
+            <div className="filter-item">
+              <label className="filter-label">Filter by Interests:</label>
+              <div className="multi-select-dropdown">
+                <button
+                  onClick={toggleInterestDropdown}
+                  className="dropdown-toggle">
+                  Select Interests
+                </button>
+                {showInterestDropdown && (
+                  <div className="dropdown-menu">
+                    {interests.map((interest) => (
+                      <label
+                        key={interest.interestId}
+                        className="dropdown-item">
+                        <input
+                          type="checkbox"
+                          value={interest.interestId}
+                          checked={selectedInterests.includes(
+                            interest.interestId
+                          )}
+                          onChange={() =>
+                            handleInterestChange(interest.interestId)
+                          }
+                        />
+                        {interest.name}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
 
+            <div className="filter-item">
+              <label htmlFor="location-filter" className="filter-label">
+                Filter by Location:
+              </label>
+              <select
+                id="location-filter"
+                value={selectedLocation}
+                onChange={handleLocationChange}
+                className="location-select">
+                <option value="">All Locations</option>
+                {locations.map((location) => (
+                  <option key={location} value={location}>
+                    {location}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-item">
+              <label htmlFor="start-date-filter" className="filter-label">
+                Filter by Start Date:
+              </label>
+              <input
+                type="date"
+                id="start-date-filter"
+                value={selectedStartDate}
+                onChange={handleStartDateChange}
+                className="date-select"
+              />
+            </div>
+
+            <div className="filter-item">
+              <label htmlFor="end-date-filter" className="filter-label">
+                Filter by End Date:
+              </label>
+              <input
+                type="date"
+                id="end-date-filter"
+                value={selectedEndDate}
+                onChange={handleEndDateChange}
+                className="date-select"
+                min={selectedStartDate || undefined}
+              />
+            </div>
+          </div>
 
           {isLoading ? (
             <p className="loading-msg">Loading trips...</p>
           ) : errorMessage ? (
             <p className="error-msg">{errorMessage}</p>
-          ) : trips.length > 0 ? (
-            <div className="">
-              {trips.map((trip) => (
-                <div key={trip.tripId} className="block mb-3.5 w-full rounded-lg border border-lightgray-600 bg-white shadow-secondary-1">
-                  <div className="flex border-b border-gray-300 px-6 py-3 text-surface h-[max-content]" style={{color: "black"}}>
-                    <span className="flex-auto py-1">@{trip.createdBy.username}</span>
-                    <button onClick={() => handleRequestToggle(trip.tripId)} 
-                            className={`float-right py-1 px-2 font-semibold rounded border transition ${
-                              requested[trip.tripId]
-                                ? "bg-transparent text-blue-700 border-blue-500 hover:bg-blue-50"
-                                : "bg-blue-500 text-white border-transparent hover:bg-blue-600"
-                            }`}>
-                      {requested[trip.tripId] ? "Cancel Request" : "Request Join"}
-                    </button>
-                    
-                  </div>
-                  <div className="block p-6">
-                    <div className="flex">
-                      <h2 className="flex-auto mb-2 text-xl font-medium leading-tight text-secondary-600">{trip.location}</h2>
-                      <p className="float-right text-base text-secondary-600">
-                        {moment(trip.startDate).format('MMM D, YYYY')} to {moment(trip.endDate).format('MMM D, YYYY')}
-                      </p>
+          ) : filteredTrips.length > 0 ? (
+            <div className="trip-list">
+              {filteredTrips.map((trip) => (
+                <div key={trip.tripId} className="trip-card">
+                  <h2 className="trip-location">{trip.location}</h2>
+                  <p className="trip-dates">
+                    {trip.startDate} to {trip.endDate}
+                  </p>
+                  <p className="description">{trip.description}</p>
+                  {trip.interests && trip.interests.length > 0 && (
+                    <div className="interests">
+                      <h3>Interests:</h3>
+                      <ul>
+                        {trip.interests.map((interest) => (
+                          <li key={interest.interestId}>{interest.name}</li>
+                        ))}
+                      </ul>
                     </div>
-                    <p className="w-full text-base text-secondary-600">{trip.description}</p>                    
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -142,9 +247,157 @@ export default function ViewTrips() {
             <p className="no-trips-msg">No trips available.</p>
           )}
         </div>
+      </div>
 
-        <style jsx>{`
-        `}</style>
+      <style jsx>{`
+        .trips-container {
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+          font-family: "Poppins", sans-serif;
+        }
+
+        .title {
+          text-align: center;
+          font-size: 3rem;
+          color: #512da8;
+          margin-bottom: 2rem;
+          font-weight: 700;
+        }
+
+        .filters-container {
+          display: flex;
+          justify-content: space-between;
+          gap: 2rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .filter-item {
+          flex: 1;
+        }
+
+        .filter-label {
+          font-weight: 600;
+          color: #512da8;
+          margin-bottom: 1rem;
+          display: block;
+        }
+
+        .multi-select-dropdown {
+          position: relative;
+        }
+
+        .dropdown-toggle {
+          width: 100%;
+          padding: 0.5rem;
+          font-size: 1rem;
+          border-radius: 8px;
+          background-color: #f0f0f0;
+          border: 1px solid #ddd;
+          cursor: pointer;
+        }
+
+        .dropdown-menu {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          width: 100%;
+          background-color: #fff;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          max-height: 200px;
+          overflow-y: auto;
+          z-index: 1;
+        }
+
+        .dropdown-item {
+          display: flex;
+          align-items: center;
+          padding: 0.5rem;
+          font-size: 1rem;
+          color: #333;
+        }
+
+        .location-select,
+        .date-select {
+          width: 100%;
+          padding: 0.5rem;
+          font-size: 1rem;
+          border-radius: 8px;
+          margin-top: 0.5rem;
+        }
+
+        .trip-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .trip-card {
+          background-color: #f8f9fa;
+          padding: 1.5rem;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .trip-card:hover {
+          transform: scale(1.02);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .trip-location {
+          font-size: 1.8rem;
+          color: #00bfa6;
+          margin-bottom: 0.5rem;
+          font-weight: 600;
+        }
+
+        .trip-dates {
+          font-size: 1.2rem;
+          color: #9ac0b6;
+          margin-bottom: 1rem;
+          font-weight: 500;
+        }
+
+        .description {
+          color: #6a1b9a;
+          font-size: 1.2rem;
+          margin: 0;
+        }
+
+        .loading-msg,
+        .no-trips-msg,
+        .error-msg {
+          text-align: center;
+          font-size: 1.3rem;
+          margin-top: 1rem;
+        }
+
+        .error-msg {
+          color: #d32f2f;
+        }
+
+        .interests {
+          margin-top: 1rem;
+          font-size: 1.1rem;
+        }
+
+        .interests h3 {
+          font-weight: 600;
+          color: #512da8;
+          margin-bottom: 0.5rem;
+        }
+
+        .interests ul {
+          padding-left: 1.5rem;
+        }
+
+        .interests li {
+          list-style-type: disc;
+          color: #6a1b9a;
+        }
+      `}</style>
+      <Footer />
     </div>
   );
 }

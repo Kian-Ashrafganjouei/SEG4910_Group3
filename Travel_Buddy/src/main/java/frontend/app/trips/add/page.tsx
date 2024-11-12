@@ -97,7 +97,7 @@ export default function AddTrip() {
       }
 
       alert("Trip added successfully!");
-      router.push("/trips/view");
+      router.push("/trips/mytrips");
     } catch (error) {
       console.error("Error adding trip:", error);
       setErrorMessage("An error occurred while adding the trip.");
@@ -105,10 +105,10 @@ export default function AddTrip() {
   };
 
   return (
-    <div>
+    <div className="mt-16">
       <Navbar />
-      <NavbarLayout>
-        <div className="form-container">
+      <div className="flex justify-center">
+        <div className="form-container w-6/12 p-8 m-12 rounded-2xl bg-violet-200">
           <h2 className="heading">Add a New Trip</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -184,80 +184,80 @@ export default function AddTrip() {
             </button>
           </form>
         </div>
+      </div>
 
-        <style jsx>{`
-          .form-container {
-            max-width: 600px;
-            margin: 3rem auto;
-            padding: 2rem;
-            background-color: #ede7f6;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            font-family: "Poppins", sans-serif;
-            color: #4a148c;
-          }
-          .heading {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-weight: 600;
-            font-size: 1.8rem;
-          }
-          .form-group {
-            margin-bottom: 1.5rem;
-          }
-          input,
-          textarea {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #b39ddb;
-            border-radius: 8px;
-            margin-top: 0.5rem;
-          }
-          .interests-title {
-            margin-top: 1rem;
-            font-size: 1.5rem;
-            color: #4a148c;
-          }
-          .interests-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 1rem;
-          }
-          .interest-label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background-color: #e0f7fa;
-            padding: 5px 10px;
-            border-radius: 5px;
-            transition: background-color 0.2s;
-            white-space: nowrap;
-          }
-          .interest-label:hover {
-            background-color: #b2ebf2;
-          }
-          .submit-button {
-            width: 100%;
-            padding: 1rem;
-            background-color: #7b1fa2;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-          }
-          .submit-button:hover {
-            background-color: #4a148c;
-          }
-          .error-msg {
-            color: #d32f2f;
-            text-align: center;
-            margin-top: 1rem;
-          }
-        `}</style>
-      </NavbarLayout>
+      <style jsx>{`
+        .form-container {
+          max-width: 600px;
+          margin: 3rem auto;
+          padding: 2rem;
+          background-color: #ede7f6;
+          border-radius: 16px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          font-family: "Poppins", sans-serif;
+          color: #4a148c;
+        }
+        .heading {
+          text-align: center;
+          margin-bottom: 2rem;
+          font-weight: 600;
+          font-size: 1.8rem;
+        }
+        .form-group {
+          margin-bottom: 1.5rem;
+        }
+        input,
+        textarea {
+          width: 100%;
+          padding: 0.8rem;
+          border: 1px solid #b39ddb;
+          border-radius: 8px;
+          margin-top: 0.5rem;
+        }
+        .interests-title {
+          margin-top: 1rem;
+          font-size: 1.5rem;
+          color: #4a148c;
+        }
+        .interests-list {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 10px;
+          margin-top: 1rem;
+        }
+        .interest-label {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          background-color: #e0f7fa;
+          padding: 5px 10px;
+          border-radius: 5px;
+          transition: background-color 0.2s;
+          white-space: nowrap;
+        }
+        .interest-label:hover {
+          background-color: #b2ebf2;
+        }
+        .submit-button {
+          width: 100%;
+          padding: 1rem;
+          background-color: #7b1fa2;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background-color 0.3s;
+        }
+        .submit-button:hover {
+          background-color: #4a148c;
+        }
+        .error-msg {
+          color: #d32f2f;
+          text-align: center;
+          margin-top: 1rem;
+        }
+      `}</style>
       <Footer />
     </div>
   );
