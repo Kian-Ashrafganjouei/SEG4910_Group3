@@ -4,8 +4,7 @@
 # Gradle files
 **/.gradle
 
-# Gradle wrapper
-**/gradlew
+
 
 # Node related files
 **/node_modules
