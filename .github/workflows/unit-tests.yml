@@ -25,6 +25,9 @@ jobs:
 
     - name: Start Containers
       run: docker-compose -f Docker/docker-compose.yml up -d
+    
+    - name: List Files in /home
+      run: docker exec -i docker-backend-1 ls -la /home 
 
     - name: Run Gradle Tests in Backend Container
       run: docker exec -i --workdir /home docker-backend-1 ./gradlew test
