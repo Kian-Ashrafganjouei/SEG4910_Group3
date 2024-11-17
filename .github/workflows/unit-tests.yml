@@ -29,11 +29,8 @@ jobs:
     - name: Verify Files in Container
       run: docker exec -i docker-backend-1 ls -la /home
 
-    - name: Ensure gradlew is Executable
-      run: docker exec -i docker-backend-1 chmod +x /home/gradlew
-
     - name: Run Gradle Tests
-      run: docker exec -i --workdir /home docker-backend-1 ./gradlew test
+      run: docker exec -i docker-backend-1 ./home/gradlew test
 
     - name: Tear Down Containers
       if: always()
