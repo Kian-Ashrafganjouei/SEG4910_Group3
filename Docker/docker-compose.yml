@@ -12,6 +12,7 @@ services:
 
   backend:
     build: Webserver/
+    container_name: docker-backend-1
     depends_on:
       database:
         condition: service_healthy
