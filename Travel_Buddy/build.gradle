@@ -19,13 +19,22 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-  implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-  implementation 'org.postgresql:postgresql'
-
+  	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+  	implementation 'org.postgresql:postgresql'
+	
+	testImplementation 'com.jayway.jsonpath:json-path'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.test {
+    testLogging {
+        events "PASSED", "FAILED", "SKIPPED" // Show detailed output for tests
+        exceptionFormat "full" // Show full stack trace for failed tests
+        showStandardStreams = true // Show standard output and error streams
+    }
 }
