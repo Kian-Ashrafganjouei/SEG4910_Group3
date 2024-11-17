@@ -1,0 +1,34 @@
+# .github/workflows/docker-gradle-test.yml
+name: Dockerized Gradle Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Step 2: Build Docker Images
+    - name: Build Docker Containers
+      run: docker-compose -f Docker/docker-compose.yml build
+
+    # Step 3: Run the Containers
+    - name: Start Containers
+      run: docker-compose -f Docker/docker-compose.yml up -d
+
+    # Step 4: Run Tests
+    - name: Run Gradle Tests in Backend Container
+      run: docker exec -it docker-backend-1 /bin/sh ./gradlew test
+
+    # Step 5: Clean Up
+    - name: Tear Down Containers
+      if: always()
+      run: docker-compose -f Docker/docker-compose.yml down
