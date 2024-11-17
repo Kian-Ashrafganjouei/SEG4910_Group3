@@ -44,5 +44,6 @@ class BackendApplicationTests {
         assertEquals(200, response.getStatusCodeValue()); // HTTP 200 OK
         User authenticatedUser = (User) response.getBody();
         assertEquals("testuser", authenticatedUser.getUsername());
+        
     }
 }
