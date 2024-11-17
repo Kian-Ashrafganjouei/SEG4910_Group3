@@ -36,7 +36,7 @@ class BackendApplicationTests {
         // Act
         User inputUser = new User();
         inputUser.setUsername("testuser");
-        inputUser.setPassword("password123");
+        inputUser.setPassword("password1234");
 
         ResponseEntity<?> response = backendApplication.handle_credentials_signin(inputUser);
 
@@ -44,6 +44,6 @@ class BackendApplicationTests {
         assertEquals(200, response.getStatusCodeValue()); // HTTP 200 OK
         User authenticatedUser = (User) response.getBody();
         assertEquals("testuser", authenticatedUser.getUsername());
-        
+
     }
 }
