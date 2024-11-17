@@ -111,7 +111,7 @@ CREATE TABLE UserTrips (
     user_id INT REFERENCES Users(user_id),
     trip_id INT REFERENCES Trips(trip_id),
     role VARCHAR(50),
-    status VARCHAR(50),
+    status VARCHAR(50) CHECK (status IN ('requested', 'joined', 'declined')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

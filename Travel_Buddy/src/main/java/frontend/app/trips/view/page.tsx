@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Navbar from "../../layout/navbar/page";
 import Footer from "../../layout/footer/page";
+import { useSession } from "next-auth/react";
 
 interface Trip {
   tripId: number;
@@ -13,6 +14,7 @@ interface Trip {
   endDate: string;
   description: string;
   interests: { interestId: number; name: string }[];
+  createdBy: { email: string }; // Add createdBy to the Trip interface
 }
 
 interface Interest {
@@ -21,6 +23,7 @@ interface Interest {
 }
 
 export default function ViewTrips() {
+  const { data: session } = useSession();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
   const [interests, setInterests] = useState<Interest[]>([]);
@@ -71,6 +74,31 @@ export default function ViewTrips() {
     fetchTrips();
     fetchInterests();
   }, []);
+
+  const handleJoinTrip = async (tripId: number) => {
+    try {
+      const response = await fetch("http://localhost:8080/backend/user-trips", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tripId,
+          userEmail: session?.user?.email,
+          status: "requested",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to join the trip.");
+      }
+
+      alert("Trip join request sent successfully.");
+    } catch (error) {
+      console.error("Error joining trip:", error);
+      alert("An error occurred while joining the trip.");
+    }
+  };
 
   useEffect(() => {
     setFilteredTrips(
@@ -240,6 +268,13 @@ export default function ViewTrips() {
                       </ul>
                     </div>
                   )}
+                  {trip.createdBy.email !== session?.user?.email && (
+                    <button
+                      onClick={() => handleJoinTrip(trip.tripId)}
+                      className="join-button">
+                      Join
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -363,6 +398,22 @@ export default function ViewTrips() {
           color: #6a1b9a;
           font-size: 1.2rem;
           margin: 0;
+        }
+
+        .join-button {
+          margin-top: 1rem;
+          padding: 0.5rem 1rem;
+          font-size: 1rem;
+          color: #fff;
+          background-color: #00bfa6;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+        }
+
+        .join-button:hover {
+          background-color: #00796b;
         }
 
         .loading-msg,
