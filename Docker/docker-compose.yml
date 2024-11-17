@@ -1,11 +1,10 @@
 services:
-
   frontend:
     build: Ui/
     depends_on:
       backend:
         condition: service_started
-        restart: true
+    restart: always
     volumes:
       - '../Travel_Buddy:/home'  
     ports:
@@ -16,6 +15,7 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    restart: always
     volumes:
       - '../Travel_Buddy:/home'  
     ports:
@@ -28,5 +28,6 @@ services:
       interval: 3s
       timeout: 3s
       retries: 10
+    restart: always
     ports:
       - 5432:5432
