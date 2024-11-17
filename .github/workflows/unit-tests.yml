@@ -27,7 +27,7 @@ jobs:
       run: docker-compose -f Docker/docker-compose.yml up -d
 
     - name: Run Gradle Tests in Backend Container
-      run: docker exec -it docker-backend-1 /bin/sh ./gradlew test
+      run: docker exec -i docker-backend-1 ./gradlew test
 
     - name: Tear Down Containers
       if: always()
