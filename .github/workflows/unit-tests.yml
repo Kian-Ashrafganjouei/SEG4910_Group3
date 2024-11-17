@@ -15,21 +15,19 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Install Docker Compose
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose
-
     - name: Build Docker Containers
       run: docker-compose -f Docker/docker-compose.yml build
 
     - name: Start Containers
       run: docker-compose -f Docker/docker-compose.yml up -d
-    
-    - name: List Files in /home
-      run: docker exec -i docker-backend-1 ls -la /home 
 
-    - name: Run Gradle Tests in Backend Container
+    - name: Verify Files in Container
+      run: docker exec -i docker-backend-1 ls -la /home
+
+    - name: Ensure gradlew is Executable
+      run: docker exec -i docker-backend-1 chmod +x /home/gradlew
+
+    - name: Run Gradle Tests
       run: docker exec -i --workdir /home docker-backend-1 ./gradlew test
 
     - name: Tear Down Containers

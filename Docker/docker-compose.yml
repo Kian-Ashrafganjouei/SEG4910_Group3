@@ -19,6 +19,7 @@ services:
     restart: always
     volumes:
       - '../Travel_Buddy:/home'  
+      - './Travel_Buddy/gradlew:/home/gradlew'
     ports:
       - 8080:8080
 
