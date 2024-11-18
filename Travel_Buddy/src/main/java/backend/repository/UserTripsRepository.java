@@ -17,6 +17,10 @@ public interface UserTripsRepository extends JpaRepository<UserTrips, Long> {
 
     @Query("SELECT ut FROM UserTrips ut WHERE ut.userId = :userId")
     List<UserTrips> findByUserId(Long userId);
+
+    @Query("SELECT ut FROM UserTrips ut WHERE ut.tripId = :tripId")
+    List<UserTrips> findByTripId(Long tripId);
+
 }
 
 

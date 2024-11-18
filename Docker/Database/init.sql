@@ -41,6 +41,16 @@ VALUES (
     'profile_pictures/johndoe.jpg'
 );
 
+INSERT INTO Users (
+    username, name, email, password
+) 
+VALUES (
+    'test', 
+    'John Doe', 
+    'test@example.com', 
+    'test'
+);
+
 -- Create a new join table for user languages
 CREATE TABLE User_Languages (
     user_id INT REFERENCES Users(user_id) ON DELETE CASCADE,
@@ -74,7 +84,7 @@ VALUES (
     '2024-12-15', 
     '2024-12-22', 
     'Christmas vacation exploring Paris.', 
-    1 
+    2 
 );
 
 CREATE TABLE interests (
@@ -116,6 +126,15 @@ CREATE TABLE UserTrips (
 );
 
 ALTER TABLE UserTrips ADD CONSTRAINT unique_user_trip UNIQUE (user_id, trip_id);
+
+INSERT INTO UserTrips (
+    user_id, trip_id, status
+) 
+VALUES (
+    1, 
+    1, 
+    'requested'
+);
 
 -- Posts Table
 CREATE TABLE Posts (
