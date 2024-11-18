@@ -14,7 +14,12 @@ interface Trip {
   endDate: string;
   description: string;
   interests: { interestId: number; name: string }[];
-  createdBy: { email: string }; // Add createdBy to the Trip interface
+  createdBy: { email: string }; // Creator of the trip
+}
+
+interface UserTrip {
+  tripId: number;
+  status: string; // "requested", "joined", or "declined"
 }
 
 interface Interest {
@@ -25,6 +30,7 @@ interface Interest {
 export default function ViewTrips() {
   const { data: session } = useSession();
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [userTrips, setUserTrips] = useState<UserTrip[]>([]);
   const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
   const [interests, setInterests] = useState<Interest[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
@@ -58,46 +64,59 @@ export default function ViewTrips() {
       }
     };
 
-    const fetchInterests = async () => {
+    const fetchUserTrips = async () => {
+      if (!session?.user?.email) return;
       try {
-        const response = await fetch("http://localhost:8080/backend/interests");
-        if (!response.ok) throw new Error("Failed to fetch interests.");
+        const response = await fetch(
+          `http://localhost:8080/backend/user-trips?email=${session.user.email}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch user trips");
 
         const data = await response.json();
-        setInterests(data);
+        setUserTrips(data);
       } catch (error) {
-        console.error("Error fetching interests:", error);
-        setErrorMessage("An error occurred while fetching interests.");
+        console.error("Error fetching user trips:", error);
       }
     };
 
     fetchTrips();
-    fetchInterests();
-  }, []);
+    fetchUserTrips();
+  }, [session]);
 
   const handleJoinTrip = async (tripId: number) => {
     try {
+      const payload = {
+        tripId,
+        userEmail: session?.user?.email,
+        status: "requested",
+      };
+  
+      console.log("Payload being sent:", payload);
+  
       const response = await fetch("http://localhost:8080/backend/user-trips", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          tripId,
-          userEmail: session?.user?.email,
-          status: "requested",
-        }),
+        body: JSON.stringify(payload),
       });
-
+  
       if (!response.ok) {
-        throw new Error("Failed to join the trip.");
+        const errorResponse = await response.text();
+        throw new Error(errorResponse);
       }
-
+  
       alert("Trip join request sent successfully.");
     } catch (error) {
       console.error("Error joining trip:", error);
-      alert("An error occurred while joining the trip.");
+      alert(`An error occurred while joining the trip: ${error.message}`);
     }
+  };
+  
+
+  const getUserTripStatus = (tripId: number): string | null => {
+    const userTrip = userTrips.find((ut) => ut.tripId === tripId);
+    return userTrip ? userTrip.status : null;
   };
 
   useEffect(() => {
@@ -271,8 +290,12 @@ export default function ViewTrips() {
                   {trip.createdBy.email !== session?.user?.email && (
                     <button
                       onClick={() => handleJoinTrip(trip.tripId)}
-                      className="join-button">
-                      Join
+                      className="join-button"
+                      disabled={getUserTripStatus(trip.tripId) === "requested"}
+                    >
+                      {getUserTripStatus(trip.tripId) === "requested"
+                        ? "Requested"
+                        : "Join"}
                     </button>
                   )}
                 </div>
@@ -412,8 +435,9 @@ export default function ViewTrips() {
           transition: background-color 0.2s ease;
         }
 
-        .join-button:hover {
-          background-color: #00796b;
+        .join-button:disabled {
+          background-color: #aaa;
+          cursor: not-allowed;
         }
 
         .loading-msg,

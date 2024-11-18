@@ -115,6 +115,8 @@ CREATE TABLE UserTrips (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+ALTER TABLE UserTrips ADD CONSTRAINT unique_user_trip UNIQUE (user_id, trip_id);
+
 -- Posts Table
 CREATE TABLE Posts (
     post_id SERIAL PRIMARY KEY,
