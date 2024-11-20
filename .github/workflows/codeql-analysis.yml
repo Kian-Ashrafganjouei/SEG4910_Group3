@@ -29,7 +29,6 @@ jobs:
             config: '/path/to/codeql-config.yml'
 
     steps:
-
     - name: Debug Repository Access
       run: |
       echo "Verifying repository access"
