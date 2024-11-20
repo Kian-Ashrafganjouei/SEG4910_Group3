@@ -5,7 +5,7 @@ on:
     # Analyze on PRs to main
     branches:
       - main
-
+      
 permissions:
   actions: read
   security-events: write
@@ -29,11 +29,6 @@ jobs:
             config: '/path/to/codeql-config.yml'
 
     steps:
-    - name: Debug Repository Access
-      run: |
-      echo "Verifying repository access"
-      git ls-remote https://github.com/Kian-Ashrafganjouei/SEG4910_Group3.git
-
     - name: Checkout repository
       uses: actions/checkout@v3
 
