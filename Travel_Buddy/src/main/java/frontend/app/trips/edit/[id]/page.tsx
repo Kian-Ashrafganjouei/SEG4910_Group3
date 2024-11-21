@@ -24,7 +24,7 @@ export default function EditTrip({ params }: { params: { id: string } }) {
     const fetchTrip = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/backend/trips/${params.id}`
+          `http://docker-backend-1:8080/backend/trips/${params.id}`
         );
         if (!response.ok) throw new Error("Failed to fetch trip data.");
 
@@ -53,7 +53,7 @@ export default function EditTrip({ params }: { params: { id: string } }) {
   const handleSave = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/backend/trips/${params.id}`,
+        `http://docker-backend-1:8080/backend/trips/${params.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

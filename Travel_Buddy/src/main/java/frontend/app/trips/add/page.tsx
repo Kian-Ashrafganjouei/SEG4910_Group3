@@ -31,7 +31,7 @@ export default function AddTrip() {
   useEffect(() => {
     const fetchInterests = async () => {
       try {
-        const response = await fetch("http://localhost:8080/backend/interests");
+        const response = await fetch("http://docker-backend-1:8080/backend/interests");
         if (!response.ok) throw new Error("Failed to fetch interests.");
 
         const data = await response.json();
@@ -79,7 +79,7 @@ export default function AddTrip() {
 
       console.log("Sending trip data to backend:", tripData);
 
-      const response = await fetch("http://localhost:8080/backend/trips", {
+      const response = await fetch("http://docker-backend-1:8080/backend/trips", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(tripData),

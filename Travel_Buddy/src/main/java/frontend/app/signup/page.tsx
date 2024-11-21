@@ -23,7 +23,7 @@ export default function SignUpForm() {
         return;
       }
 
-      const res = await fetch("http://localhost:8080/backend/signup", {
+      const res = await fetch("http://docker-backend-1:8080/backend/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
