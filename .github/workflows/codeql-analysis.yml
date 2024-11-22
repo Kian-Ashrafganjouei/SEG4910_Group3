@@ -18,6 +18,7 @@ jobs:
     permissions:
       actions: read
       security-events: write
+      contents: write # Ensure write permissions for private repository checkout
 
     strategy:
       fail-fast: false
@@ -29,13 +30,28 @@ jobs:
             config: '/path/to/codeql-config.yml'
 
     steps:
+    # Debug Step: Verify trigger and matrix setup
+    - name: Debug Trigger and Matrix
+      run: |
+        echo "Workflow triggered successfully"
+        echo "Matrix Language: ${{ matrix.language }}"
+
+    # Checkout Repository with Permissions for Private Repos
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
+    # Initialize CodeQL
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
         languages: ${{ matrix.language }}
 
+    # Perform CodeQL Analysis
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
+
+    # Debug Step: Verify CodeQL output directory
+    - name: Debug CodeQL Output Directory
+      run: ls -R .github/codeql || echo "No CodeQL directory found"
