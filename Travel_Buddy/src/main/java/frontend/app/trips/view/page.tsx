@@ -291,9 +291,13 @@ export default function ViewTrips() {
                     <button
                       onClick={() => handleJoinTrip(trip.tripId)}
                       className="join-button"
-                      disabled={getUserTripStatus(trip.tripId) === "requested"}
+                      disabled={getUserTripStatus(trip.tripId) !== null}
                     >
-                      {getUserTripStatus(trip.tripId) === "requested"
+                      {getUserTripStatus(trip.tripId) === "joined"
+                        ? "Joined"
+                        : getUserTripStatus(trip.tripId) === "declined"
+                        ? "Declined"
+                        : getUserTripStatus(trip.tripId) === "requested"
                         ? "Requested"
                         : "Join"}
                     </button>
