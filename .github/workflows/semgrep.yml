@@ -21,6 +21,8 @@ jobs:
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
-          config: "auto" # Automatically detects relevant rules
-          include: "**/*" # Scan all files in the repository
-          baseline-ref: ""
+          config: "auto"            # Automatically detects relevant rules
+          include: "**/*"           # Scan all files in the repository
+          baseline-ref: ""          # Force Semgrep to ignore the baseline
+          disable-gitignore: true   # Ensure no files are excluded
+          scan-all: true            # Explicitly enable full repository scan
