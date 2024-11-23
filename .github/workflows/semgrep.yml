@@ -22,3 +22,4 @@ jobs:
         uses: returntocorp/semgrep-action@v1
         with:
           config: "auto" # Automatically detects relevant rules
+          include: "**/*" # Scan all files in the repository
