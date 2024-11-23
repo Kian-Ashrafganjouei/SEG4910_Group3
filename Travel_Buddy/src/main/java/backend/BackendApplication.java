@@ -1,7 +1,10 @@
 package backend;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,21 +13,24 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.DeleteMapping;
 
 import backend.model.Interest;
 import backend.model.Trip;
 import backend.model.User;
+import backend.model.UserTrips;
 import backend.repository.InterestRepository;
 import backend.repository.TripRepository;
 import backend.repository.UserRepository;
+import backend.repository.UserTripsRepository;
 import jakarta.transaction.Transactional;
 
 @RestController
@@ -40,9 +46,171 @@ public class BackendApplication {
     @Autowired
     private TripRepository trip_repository;  // Ensure proper @Autowired for TripRepository
 
+    @Autowired
+    private UserTripsRepository userTripsRepository;
+
     public static void main(String[] args) {
         SpringApplication.run(BackendApplication.class, args);
     }
+
+@CrossOrigin(origins = "http://localhost:3000")
+@PostMapping("/backend/user-trips")
+public ResponseEntity<?> joinTrip(@RequestBody Map<String, String> payload) {
+    System.out.println("Payload received: " + payload);
+
+    try {
+        String userEmail = payload.get("userEmail");
+        Long tripId = Long.parseLong(payload.get("tripId"));
+        String status = payload.get("status");
+
+        System.out.println("Parsed values - userEmail: " + userEmail + ", tripId: " + tripId + ", status: " + status);
+
+        // Validate user
+        Optional<User> userOptional = user_repository.findByEmail(userEmail);
+        if (userOptional.isEmpty()) {
+            System.err.println("Error: User not found for email " + userEmail);
+            return ResponseEntity.badRequest().body("User not found.");
+        }
+
+        User user = userOptional.get();
+        System.out.println("User found: " + user.getUserId());
+
+        // Check if UserTrip already exists
+        Optional<UserTrips> existingUserTrip = userTripsRepository.findByUserIdAndTripId(user.getUserId(), tripId);
+        if (existingUserTrip.isPresent()) {
+            // Update status if already exists
+            UserTrips userTrip = existingUserTrip.get();
+            userTrip.setStatus(status);
+            userTripsRepository.save(userTrip);
+            System.out.println("Updated user trip status to: " + status);
+        } else {
+            // Create a new UserTrip if it doesn't exist
+            UserTrips newUserTrip = new UserTrips();
+            newUserTrip.setUserId(user.getUserId());
+            newUserTrip.setTripId(tripId);
+            newUserTrip.setStatus(status);
+            userTripsRepository.save(newUserTrip);
+            System.out.println("Created new user trip with status: " + status);
+        }
+
+        return ResponseEntity.ok("Trip join status updated.");
+    } catch (NumberFormatException e) {
+        System.err.println("Error parsing trip ID: " + e.getMessage());
+        return ResponseEntity.badRequest().body("Invalid trip ID.");
+    } catch (Exception e) {
+        System.err.println("Error saving user trip: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
+    }
+}
+
+    
+
+@CrossOrigin(origins = "http://localhost:3000")
+@GetMapping("/backend/user-trips")
+public ResponseEntity<?> getUserTrips(@RequestParam String email) {
+    // Find the user by their email
+    Optional<User> userOptional = user_repository.findByEmail(email);
+    if (userOptional.isEmpty()) {
+        return ResponseEntity.badRequest().body("User not found.");
+    }
+
+    User user = userOptional.get();
+
+    // Fetch all UserTrips for the given user
+    List<UserTrips> userTripsList = userTripsRepository.findByUserId(user.getUserId());
+
+    // Map UserTrips to include Trip details
+    List<Map<String, Object>> tripsWithDetails = new ArrayList<>();
+    for (UserTrips userTrip : userTripsList) {
+        Optional<Trip> tripOptional = trip_repository.findById(userTrip.getTripId());
+        if (tripOptional.isPresent()) {
+            Trip trip = tripOptional.get();
+            Map<String, Object> tripDetails = new HashMap<>();
+            tripDetails.put("tripId", trip.getTripId());
+            tripDetails.put("location", trip.getLocation());
+            tripDetails.put("startDate", trip.getStartDate());
+            tripDetails.put("endDate", trip.getEndDate());
+            tripDetails.put("description", trip.getDescription());
+            tripDetails.put("status", userTrip.getStatus()); // Add status from UserTrips
+            tripsWithDetails.add(tripDetails);
+        }
+    }
+
+    return ResponseEntity.ok(tripsWithDetails);
+}
+
+@CrossOrigin(origins = "http://localhost:3000")
+@GetMapping("/backend/trips/{tripId}/requests")
+public ResponseEntity<List<Map<String, Object>>> getTripRequests(@PathVariable Long tripId) {
+    Optional<Trip> tripOptional = trip_repository.findById(tripId);
+    if (tripOptional.isEmpty()) {
+        return ResponseEntity.badRequest().body(null);
+    }
+
+    List<UserTrips> userTrips = userTripsRepository.findByTripId(tripId);
+    List<Map<String, Object>> requests = new ArrayList<>();
+
+    for (UserTrips userTrip : userTrips) {
+        Map<String, Object> request = new HashMap<>();
+        Optional<User> userOptional = user_repository.findById(userTrip.getUserId());
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            request.put("userTripId", userTrip.getUserTripId());
+            request.put("username", user.getUsername());
+            request.put("status", userTrip.getStatus());
+            request.put("userId", userTrip.getUserId());
+            requests.add(request);
+        }
+    }
+
+    return ResponseEntity.ok(requests);
+}
+
+
+@PutMapping("/backend/user-trips/update")
+public ResponseEntity<?> updateRequest(@RequestBody Map<String, Object> payload) {
+    Long tripId = Long.valueOf((Integer) payload.get("tripId"));
+    Long userId = Long.valueOf((Integer) payload.get("userId"));
+    String status = (String) payload.get("status");
+
+    Optional<UserTrips> userTripsOptional = userTripsRepository.findByUserIdAndTripId(userId, tripId);
+    if (userTripsOptional.isEmpty()) {
+        return ResponseEntity.badRequest().body("Request not found.");
+    }
+
+    UserTrips userTrip = userTripsOptional.get();
+    userTrip.setStatus(status);
+    userTripsRepository.save(userTrip);
+    return ResponseEntity.ok("Request updated successfully.");
+}
+
+@CrossOrigin(origins = "http://localhost:3000")
+@PutMapping("/backend/user-trips/{userTripId}")
+public ResponseEntity<?> updateUserTripStatus(
+        @PathVariable Long userTripId,
+        @RequestBody Map<String, String> payload) {
+    try {
+        String status = payload.get("status");
+
+        Optional<UserTrips> userTripOptional = userTripsRepository.findById(userTripId);
+        if (userTripOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("UserTrip not found.");
+        }
+
+        UserTrips userTrip = userTripOptional.get();
+        userTrip.setStatus(status);
+        userTripsRepository.save(userTrip);
+
+        return ResponseEntity.ok("Status updated successfully.");
+    } catch (Exception e) {
+        System.err.println("Error updating UserTrip status: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An error occurred while updating the UserTrip status.");
+    }
+}
+
+
+
 
 @CrossOrigin(origins = "http://localhost:3000")
 @PostMapping("/backend/credentials/signin")
