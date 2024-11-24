@@ -54,6 +54,7 @@ export default function AddTrip() {
   };
 
   const toggleInterest = (interestId: number) => {
+    console.log(`Interest id: ${interestId}`);
     setTrip((prevTrip) => {
       const updatedInterests = prevTrip.interestIds.includes(interestId)
         ? prevTrip.interestIds.filter((id) => id !== interestId)
@@ -76,6 +77,10 @@ export default function AddTrip() {
         ...trip,
         createdByEmail: session?.user?.email,
       };
+
+      for (var i in tripData.interestIds) {
+        console.log(`-->  ${i}`);
+      }
 
       console.log("Sending trip data to backend:", tripData);
 

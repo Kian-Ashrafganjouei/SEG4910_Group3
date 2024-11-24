@@ -457,7 +457,7 @@ export default function ViewTrips() {
         }
 
         .interests {
-          margin-top: 1rem;
+          margin-top: 1rem; D
           font-size: 1.1rem;
         }
 
