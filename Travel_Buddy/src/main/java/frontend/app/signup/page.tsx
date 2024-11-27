@@ -23,7 +23,8 @@ export default function SignUpForm() {
         return;
       }
 
-      const res = await fetch("http://localhost:8080/backend/signup", {
+      const res = await fetch("https://capstoneg3.ddns.net/backend/signup", {
+        mode: "no-cors",
         method: "POST",
         headers: {
           "Content-Type": "application/json",

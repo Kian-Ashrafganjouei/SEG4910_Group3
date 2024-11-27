@@ -45,7 +45,7 @@ export default function ViewTrips() {
   useEffect(() => {
     const fetchTrips = async () => {
       try {
-        const response = await fetch("http://localhost:8080/backend/trips");
+        const response = await fetch("https://capstoneg3.ddns.net/backend/trips", { mode: "no-cors" });
         if (!response.ok) throw new Error("Failed to fetch trips");
 
         const data = await response.json();
@@ -68,7 +68,7 @@ export default function ViewTrips() {
       if (!session?.user?.email) return;
       try {
         const response = await fetch(
-          `http://localhost:8080/backend/user-trips?email=${session.user.email}`
+          `https://capstoneg3.ddns.net/backend/user-trips?email=${session.user.email}`, { mode: "no-cors" }
         );
         if (!response.ok) throw new Error("Failed to fetch user trips");
 
@@ -93,7 +93,8 @@ export default function ViewTrips() {
   
       console.log("Payload being sent:", payload);
   
-      const response = await fetch("http://localhost:8080/backend/user-trips", {
+      const response = await fetch("https://capstoneg3.ddns.net/backend/user-trips", {
+        mode: "no-cors",
         method: "POST",
         headers: {
           "Content-Type": "application/json",

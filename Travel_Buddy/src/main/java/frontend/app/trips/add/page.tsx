@@ -31,7 +31,7 @@ export default function AddTrip() {
   useEffect(() => {
     const fetchInterests = async () => {
       try {
-        const response = await fetch("http://localhost:8080/backend/interests");
+        const response = await fetch("https://capstoneg3.ddns.net/backend/interests", { mode: "no-cors" });
         if (!response.ok) throw new Error("Failed to fetch interests.");
 
         const data = await response.json();
@@ -84,7 +84,8 @@ export default function AddTrip() {
 
       console.log("Sending trip data to backend:", tripData);
 
-      const response = await fetch("http://localhost:8080/backend/trips", {
+      const response = await fetch("https://capstoneg3.ddns.net/backend/trips", {
+        mode: "no-cors",
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(tripData),

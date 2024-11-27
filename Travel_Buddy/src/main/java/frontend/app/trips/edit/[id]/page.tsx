@@ -24,7 +24,7 @@ export default function EditTrip({ params }: { params: { id: string } }) {
     const fetchTrip = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/backend/trips/${params.id}`
+          `https://capstoneg3.ddns.net/backend/trips/${params.id}` { mode: "no-cors" }
         );
         if (!response.ok) throw new Error("Failed to fetch trip data.");
 
@@ -53,8 +53,9 @@ export default function EditTrip({ params }: { params: { id: string } }) {
   const handleSave = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/backend/trips/${params.id}`,
+        `https://capstoneg3.ddns.net/backend/trips/${params.id}`,
         {
+          mode: "no-cors",
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(trip),

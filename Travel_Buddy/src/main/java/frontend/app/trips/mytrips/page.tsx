@@ -35,7 +35,7 @@ export default function MyTrips() {
       const requestsByTrip: { [tripId: number]: Request[] } = {};
       for (const tripId of tripIds) {
         const response = await fetch(
-          `http://localhost:8080/backend/trips/${tripId}/requests`
+          `https://capstoneg3.ddns.net/backend/trips/${tripId}/requests`, { mode: "no-cors" }
         );
         if (!response.ok) {
           console.error(`Failed to fetch requests for tripId: ${tripId}`);
@@ -54,8 +54,9 @@ export default function MyTrips() {
     const fetchTrips = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/backend/trips/created",
+          "https://capstoneg3.ddns.net/backend/trips/created",
           {
+            mode: "no-cors",
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -102,8 +103,9 @@ export default function MyTrips() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/backend/trips/${tripId}`,
+        `https://capstoneg3.ddns.net/backend/trips/${tripId}`,
         {
+          mode: "no-cors",
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -127,8 +129,9 @@ export default function MyTrips() {
   const handleRequestAction = async (userTripId: number, status: string) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/backend/user-trips/${userTripId}`,
+        `https://capstoneg3.ddns.net/backend/user-trips/${userTripId}`,
         {
+          mode: "no-cors",
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
