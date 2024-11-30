@@ -40,7 +40,7 @@ export default function Profile() {
   // Fetch Nationalities and Languages from APIs
   useEffect(() => {
     const fetchNationalities = async () => {
-      const response = await fetch("https://restcountries.com/v3.1/all");
+      const response = await fetch("https://restcountries.com/v3.1/all?fields=cca2,name");
       const data = await response.json();
       const options = data.map((country: any) => ({
         value: country.cca2, // Country code
