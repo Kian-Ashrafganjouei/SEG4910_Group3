@@ -87,6 +87,39 @@ VALUES (
     2 
 );
 
+INSERT INTO Trips (
+    location, start_date, end_date, description, created_by
+) 
+VALUES (
+    'Moscow, Russia', 
+    '2024-12-11', 
+    '2024-12-14', 
+    'Drinking vodka with bears while wearing a fuzzy hat in -30°C.', 
+    2 
+);
+
+INSERT INTO Trips (
+    location, start_date, end_date, description, created_by
+) 
+VALUES (
+    'Tehran, Iran', 
+    '2024-12-17', 
+    '2024-12-28', 
+    'Trip to try Persian cusine.', 
+    2 
+);
+
+INSERT INTO Trips (
+    location, start_date, end_date, description, created_by
+) 
+VALUES (
+    'Oslo, Norway', 
+    '2025-6-17', 
+    '2025-6-28', 
+    'Viking adventure in Scandinavian mountains.', 
+    2 
+);
+
 CREATE TABLE interests (
     interest_id SERIAL PRIMARY KEY,  
     name VARCHAR(100) NOT NULL UNIQUE 
