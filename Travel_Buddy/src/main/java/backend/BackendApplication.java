@@ -33,6 +33,8 @@ import backend.repository.UserRepository;
 import backend.repository.UserTripsRepository;
 import jakarta.transaction.Transactional;
 
+
+// Declares this class as a REST controller and Spring Boot application
 @RestController
 @SpringBootApplication
 public class BackendApplication {
@@ -49,185 +51,186 @@ public class BackendApplication {
     @Autowired
     private UserTripsRepository userTripsRepository;
 
+    // Main method to run the Spring Boot applicatio
     public static void main(String[] args) {
         SpringApplication.run(BackendApplication.class, args);
     }
 
-@CrossOrigin(origins = "http://localhost:3000")
-@PostMapping("/backend/user-trips")
-public ResponseEntity<?> joinTrip(@RequestBody Map<String, String> payload) {
-    System.out.println("Payload received: " + payload);
+    // API to join a trip or update the status of an existing user-trip association
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/backend/user-trips")
+    public ResponseEntity<?> joinTrip(@RequestBody Map<String, String> payload) {
+        System.out.println("Payload received: " + payload);
 
-    try {
-        String userEmail = payload.get("userEmail");
-        Long tripId = Long.parseLong(payload.get("tripId"));
-        String status = payload.get("status");
+        try {
+            String userEmail = payload.get("userEmail");
+            Long tripId = Long.parseLong(payload.get("tripId"));
+            String status = payload.get("status");
 
-        System.out.println("Parsed values - userEmail: " + userEmail + ", tripId: " + tripId + ", status: " + status);
+            System.out.println("Parsed values - userEmail: " + userEmail + ", tripId: " + tripId + ", status: " + status);
 
-        // Validate user
-        Optional<User> userOptional = user_repository.findByEmail(userEmail);
+            // Validate user
+            Optional<User> userOptional = user_repository.findByEmail(userEmail);
+            if (userOptional.isEmpty()) {
+                System.err.println("Error: User not found for email " + userEmail);
+                return ResponseEntity.badRequest().body("User not found.");
+            }
+
+            User user = userOptional.get();
+            System.out.println("User found: " + user.getUserId());
+
+            // Check if UserTrip already exists
+            Optional<UserTrips> existingUserTrip = userTripsRepository.findByUserIdAndTripId(user.getUserId(), tripId);
+            if (existingUserTrip.isPresent()) {
+                // Update status if already exists
+                UserTrips userTrip = existingUserTrip.get();
+                userTrip.setStatus(status);
+                userTripsRepository.save(userTrip);
+                System.out.println("Updated user trip status to: " + status);
+            } else {
+                // Create a new UserTrip if it doesn't exist
+                UserTrips newUserTrip = new UserTrips();
+                newUserTrip.setUserId(user.getUserId());
+                newUserTrip.setTripId(tripId);
+                newUserTrip.setStatus(status);
+                userTripsRepository.save(newUserTrip);
+                System.out.println("Created new user trip with status: " + status);
+            }
+
+            return ResponseEntity.ok("Trip join status updated.");
+        } catch (NumberFormatException e) {
+            System.err.println("Error parsing trip ID: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Invalid trip ID.");
+        } catch (Exception e) {
+            System.err.println("Error saving user trip: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
+        }
+    }
+
+    // API to get trips associated with a user
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/user-trips")
+    public ResponseEntity<?> getUserTrips(@RequestParam String email) {
+        // Find the user by their email
+        Optional<User> userOptional = user_repository.findByEmail(email);
         if (userOptional.isEmpty()) {
-            System.err.println("Error: User not found for email " + userEmail);
             return ResponseEntity.badRequest().body("User not found.");
         }
 
         User user = userOptional.get();
-        System.out.println("User found: " + user.getUserId());
 
-        // Check if UserTrip already exists
-        Optional<UserTrips> existingUserTrip = userTripsRepository.findByUserIdAndTripId(user.getUserId(), tripId);
-        if (existingUserTrip.isPresent()) {
-            // Update status if already exists
-            UserTrips userTrip = existingUserTrip.get();
-            userTrip.setStatus(status);
-            userTripsRepository.save(userTrip);
-            System.out.println("Updated user trip status to: " + status);
-        } else {
-            // Create a new UserTrip if it doesn't exist
-            UserTrips newUserTrip = new UserTrips();
-            newUserTrip.setUserId(user.getUserId());
-            newUserTrip.setTripId(tripId);
-            newUserTrip.setStatus(status);
-            userTripsRepository.save(newUserTrip);
-            System.out.println("Created new user trip with status: " + status);
+        // Fetch all UserTrips for the given user
+        List<UserTrips> userTripsList = userTripsRepository.findByUserId(user.getUserId());
+
+        // Map UserTrips to include Trip details
+        List<Map<String, Object>> tripsWithDetails = new ArrayList<>();
+        for (UserTrips userTrip : userTripsList) {
+            Optional<Trip> tripOptional = trip_repository.findById(userTrip.getTripId());
+            if (tripOptional.isPresent()) {
+                Trip trip = tripOptional.get();
+                Map<String, Object> tripDetails = new HashMap<>();
+                tripDetails.put("tripId", trip.getTripId());
+                tripDetails.put("location", trip.getLocation());
+                tripDetails.put("startDate", trip.getStartDate());
+                tripDetails.put("endDate", trip.getEndDate());
+                tripDetails.put("description", trip.getDescription());
+                tripDetails.put("status", userTrip.getStatus()); // Add status from UserTrips
+                tripsWithDetails.add(tripDetails);
+            }
         }
 
-        return ResponseEntity.ok("Trip join status updated.");
-    } catch (NumberFormatException e) {
-        System.err.println("Error parsing trip ID: " + e.getMessage());
-        return ResponseEntity.badRequest().body("Invalid trip ID.");
-    } catch (Exception e) {
-        System.err.println("Error saving user trip: " + e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
-    }
-}
-
-    
-
-@CrossOrigin(origins = "http://localhost:3000")
-@GetMapping("/backend/user-trips")
-public ResponseEntity<?> getUserTrips(@RequestParam String email) {
-    // Find the user by their email
-    Optional<User> userOptional = user_repository.findByEmail(email);
-    if (userOptional.isEmpty()) {
-        return ResponseEntity.badRequest().body("User not found.");
+        return ResponseEntity.ok(tripsWithDetails);
     }
 
-    User user = userOptional.get();
-
-    // Fetch all UserTrips for the given user
-    List<UserTrips> userTripsList = userTripsRepository.findByUserId(user.getUserId());
-
-    // Map UserTrips to include Trip details
-    List<Map<String, Object>> tripsWithDetails = new ArrayList<>();
-    for (UserTrips userTrip : userTripsList) {
-        Optional<Trip> tripOptional = trip_repository.findById(userTrip.getTripId());
-        if (tripOptional.isPresent()) {
-            Trip trip = tripOptional.get();
-            Map<String, Object> tripDetails = new HashMap<>();
-            tripDetails.put("tripId", trip.getTripId());
-            tripDetails.put("location", trip.getLocation());
-            tripDetails.put("startDate", trip.getStartDate());
-            tripDetails.put("endDate", trip.getEndDate());
-            tripDetails.put("description", trip.getDescription());
-            tripDetails.put("status", userTrip.getStatus()); // Add status from UserTrips
-            tripsWithDetails.add(tripDetails);
-        }
-    }
-
-    return ResponseEntity.ok(tripsWithDetails);
-}
-
-@CrossOrigin(origins = "http://localhost:3000")
-@GetMapping("/backend/trips/{tripId}/requests")
-public ResponseEntity<List<Map<String, Object>>> getTripRequests(@PathVariable Long tripId) {
-    Optional<Trip> tripOptional = trip_repository.findById(tripId);
-    if (tripOptional.isEmpty()) {
-        return ResponseEntity.badRequest().body(null);
-    }
-
-    List<UserTrips> userTrips = userTripsRepository.findByTripId(tripId);
-    List<Map<String, Object>> requests = new ArrayList<>();
-
-    for (UserTrips userTrip : userTrips) {
-        Map<String, Object> request = new HashMap<>();
-        Optional<User> userOptional = user_repository.findById(userTrip.getUserId());
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            request.put("userTripId", userTrip.getUserTripId());
-            request.put("username", user.getUsername());
-            request.put("status", userTrip.getStatus());
-            request.put("userId", userTrip.getUserId());
-            requests.add(request);
-        }
-    }
-
-    return ResponseEntity.ok(requests);
-}
-
-
-@PutMapping("/backend/user-trips/update")
-public ResponseEntity<?> updateRequest(@RequestBody Map<String, Object> payload) {
-    Long tripId = Long.valueOf((Integer) payload.get("tripId"));
-    Long userId = Long.valueOf((Integer) payload.get("userId"));
-    String status = (String) payload.get("status");
-
-    Optional<UserTrips> userTripsOptional = userTripsRepository.findByUserIdAndTripId(userId, tripId);
-    if (userTripsOptional.isEmpty()) {
-        return ResponseEntity.badRequest().body("Request not found.");
-    }
-
-    UserTrips userTrip = userTripsOptional.get();
-    userTrip.setStatus(status);
-    userTripsRepository.save(userTrip);
-    return ResponseEntity.ok("Request updated successfully.");
-}
-
-@CrossOrigin(origins = "http://localhost:3000")
-@PutMapping("/backend/user-trips/{userTripId}")
-public ResponseEntity<?> updateUserTripStatus(
-        @PathVariable Long userTripId,
-        @RequestBody Map<String, String> payload) {
-    try {
-        String status = payload.get("status");
-
-        Optional<UserTrips> userTripOptional = userTripsRepository.findById(userTripId);
-        if (userTripOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("UserTrip not found.");
+    // API to get user requests for a specific trip
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/trips/{tripId}/requests")
+    public ResponseEntity<List<Map<String, Object>>> getTripRequests(@PathVariable Long tripId) {
+        Optional<Trip> tripOptional = trip_repository.findById(tripId);
+        if (tripOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
         }
 
-        UserTrips userTrip = userTripOptional.get();
+        List<UserTrips> userTrips = userTripsRepository.findByTripId(tripId);
+        List<Map<String, Object>> requests = new ArrayList<>();
+
+        for (UserTrips userTrip : userTrips) {
+            Map<String, Object> request = new HashMap<>();
+            Optional<User> userOptional = user_repository.findById(userTrip.getUserId());
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                request.put("userTripId", userTrip.getUserTripId());
+                request.put("username", user.getUsername());
+                request.put("status", userTrip.getStatus());
+                request.put("userId", userTrip.getUserId());
+                requests.add(request);
+            }
+        }
+
+        return ResponseEntity.ok(requests);
+    }
+
+    // API to update the status of a user-trip association
+    @PutMapping("/backend/user-trips/update")
+    public ResponseEntity<?> updateRequest(@RequestBody Map<String, Object> payload) {
+        Long tripId = Long.valueOf((Integer) payload.get("tripId"));
+        Long userId = Long.valueOf((Integer) payload.get("userId"));
+        String status = (String) payload.get("status");
+
+        Optional<UserTrips> userTripsOptional = userTripsRepository.findByUserIdAndTripId(userId, tripId);
+        if (userTripsOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Request not found.");
+        }
+
+        UserTrips userTrip = userTripsOptional.get();
         userTrip.setStatus(status);
         userTripsRepository.save(userTrip);
-
-        return ResponseEntity.ok("Status updated successfully.");
-    } catch (Exception e) {
-        System.err.println("Error updating UserTrip status: " + e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("An error occurred while updating the UserTrip status.");
+        return ResponseEntity.ok("Request updated successfully.");
     }
-}
 
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PutMapping("/backend/user-trips/{userTripId}")
+    public ResponseEntity<?> updateUserTripStatus(
+            @PathVariable Long userTripId,
+            @RequestBody Map<String, String> payload) {
+        try {
+            String status = payload.get("status");
 
+            Optional<UserTrips> userTripOptional = userTripsRepository.findById(userTripId);
+            if (userTripOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("UserTrip not found.");
+            }
 
+            UserTrips userTrip = userTripOptional.get();
+            userTrip.setStatus(status);
+            userTripsRepository.save(userTrip);
 
-@CrossOrigin(origins = "http://localhost:3000")
-@PostMapping("/backend/credentials/signin")
-public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
-    List<User> all_users = user_repository.findAll();
-    for (User u : all_users) {
-        if (u.getUsername().equals(user.getUsername()) &&
-            u.getPassword().equals(user.getPassword())) {
-            System.out.println("User authenticated successfully.");
-            return ResponseEntity.ok(u);
+            return ResponseEntity.ok("Status updated successfully.");
+        } catch (Exception e) {
+            System.err.println("Error updating UserTrip status: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while updating the UserTrip status.");
         }
     }
 
-    System.out.println("Invalid email or password.");
-    return ResponseEntity.badRequest().body("Invalid email or password.");
-}
+    // API to sign-in a user locally 
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/backend/credentials/signin")
+    public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
+        List<User> all_users = user_repository.findAll();
+        for (User u : all_users) {
+            if (u.getUsername().equals(user.getUsername()) &&
+                u.getPassword().equals(user.getPassword())) {
+                System.out.println("User authenticated successfully.");
+                return ResponseEntity.ok(u);
+            }
+        }
 
+        System.out.println("Invalid email or password.");
+        return ResponseEntity.badRequest().body("Invalid email or password.");
+    }
+
+    // API to handle google sign in
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/google/signin")
     public ResponseEntity<User> handle_google_signin(@RequestBody User user) {
@@ -250,6 +253,7 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         return ResponseEntity.ok(user_repository.save(user));
     }
 
+    // API to register a user locally 
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/signup")
     public ResponseEntity<?> handle_signup(@RequestBody User user) {
@@ -273,6 +277,7 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         return ResponseEntity.ok(user_repository.save(user));
     }
 
+    // API to delete user account
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/forgetme")
     public ResponseEntity<?> handle_forgetme(@RequestBody User user) {
@@ -287,6 +292,7 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
     }
 
 
+    // API to get user data by email
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/user")
     public ResponseEntity<?> get_user_data(@RequestHeader("Email") String email) {
@@ -301,6 +307,7 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         }
     }
 
+    // API to update user data
     @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/backend/user")
     public ResponseEntity<?> update_user(@RequestHeader("Email") String email, @RequestBody User updatedUser) {
@@ -354,6 +361,8 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         }
     }
 
+
+    // API to get all the trips
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/trips")
     public ResponseEntity<List<Trip>> getAllTrips() {
@@ -364,11 +373,13 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         return ResponseEntity.ok(trips);
     }
 
+    // API to update trip details
     @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/backend/trips/{id}")
     public ResponseEntity<?> updateTrip(@PathVariable Long id, @RequestBody Trip updatedTrip) {
         System.out.println("Request to update trip with ID: " + id);
 
+        // Update trip details based on ID
         Optional<Trip> optionalTrip = trip_repository.findById(id);
         if (optionalTrip.isPresent()) {
             Trip existingTrip = optionalTrip.get();
@@ -397,8 +408,7 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         }
     }
 
-
-
+    // Retrieve trip details using ID
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/trips/{id}")
     public ResponseEntity<Trip> getTripById(@PathVariable Long id) {
@@ -410,6 +420,7 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         }
     }
 
+    // API to fetch trips created by a specific user
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/trips/created")
     public ResponseEntity<?> getTripsByCreator(@RequestHeader("Email") String email) {
@@ -421,6 +432,7 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
             return ResponseEntity.badRequest().body("User not found.");
         }
 
+        // Fetch trips created by the user associated with the provided email
         List<Trip> trips = trip_repository.findByCreatedByUserId(user.get().getUserId());
         if (trips.isEmpty()) {
             System.out.println("No trips found for user ID: " + user.get().getUserId());
@@ -435,6 +447,7 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         return ResponseEntity.ok(trips);
     }
 
+    // API to delete a trip
     @CrossOrigin(origins = "http://localhost:3000")
     @DeleteMapping("/backend/trips/{tripId}")
     public ResponseEntity<?> deleteTrip(@PathVariable Long tripId, @RequestHeader("Email") String email) {
@@ -451,6 +464,7 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
             System.err.println("Trip not found with ID: " + tripId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found.");
         }
+        // Delete a trip if the requesting user is its creator
         if (trip.get().getCreatedBy().getUserId() != user.get().getUserId()) {
             System.err.println("User is not authorized to delete this trip.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this trip.");
@@ -465,12 +479,14 @@ public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
         }
     }
 
+    // API to fetch all interests
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/interests")
     public ResponseEntity<List<Interest>> getAllInterests() {
         return ResponseEntity.ok(interestRepository.findAll());
     }
 
+    // API to add a new trip
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/trips")
     @Transactional
