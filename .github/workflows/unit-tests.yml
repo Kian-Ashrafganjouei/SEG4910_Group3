@@ -40,7 +40,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: jacoco-coverage-report
-        path: ./coverage-report/html/
+        path: ./coverage-report/
 
     - name: Verify Files in Container
       run: docker exec -i docker-backend-1 ls -la /home
