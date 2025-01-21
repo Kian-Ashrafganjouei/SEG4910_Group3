@@ -13,3 +13,5 @@
 
 # Vscode
 **/.vscode
+
+**/coverage-report

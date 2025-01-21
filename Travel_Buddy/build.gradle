@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.4'
 	id 'io.spring.dependency-management' version '1.1.6'
+	id 'jacoco'  // Add this line for JaCoCo
 }
 
 group = 'com.example'
@@ -36,5 +37,23 @@ tasks.test {
         events "PASSED", "FAILED", "SKIPPED" // Show detailed output for tests
         exceptionFormat "full" // Show full stack trace for failed tests
         showStandardStreams = true // Show standard output and error streams
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+tasks.test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // Run coverage report after tests
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.required = true  // Generates an HTML report
+        xml.required = true   // Useful for CI tools like SonarQube
+        csv.required = false  // CSV report (optional)
     }
 }
