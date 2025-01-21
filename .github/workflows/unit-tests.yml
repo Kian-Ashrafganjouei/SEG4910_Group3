@@ -26,6 +26,19 @@ jobs:
     - name: Start Containers
       run: docker-compose -f Docker/docker-compose.yml up -d
 
+    - name: Run Gradle Tests and Generate Coverage Report
+      run: docker exec -i docker-backend-1 ./gradlew test jacocoTestReport
+
+    - name: Copy Jacoco Coverage Report to Host
+      run: |
+        docker cp docker-backend-1:/home/build/reports/jacoco/test/html ./coverage-report
+
+    - name: Upload Coverage Report as Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: jacoco-coverage-report
+        path: ./coverage-report/html/
+
     - name: Verify Files in Container
       run: docker exec -i docker-backend-1 ls -la /home
 
