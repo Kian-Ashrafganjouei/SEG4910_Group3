@@ -29,6 +29,9 @@ jobs:
     - name: Run Gradle Tests and Generate Coverage Report
       run: docker exec -i docker-backend-1 ./gradlew test jacocoTestReport
 
+    - name: Verify Files in Container Before Copy
+      run: docker exec -i docker-backend-1 ls -la /home/build/reports/jacoco/test/html
+
     - name: Copy Jacoco Coverage Report to Host
       run: |
         docker cp docker-backend-1:/home/build/reports/jacoco/test/html ./coverage-report
@@ -41,6 +44,9 @@ jobs:
 
     - name: Verify Files in Container
       run: docker exec -i docker-backend-1 ls -la /home
+
+    - name: Verify Coverage Report Files
+      run: ls -la ./coverage-report
 
     - name: Run Gradle Tests
       run: docker exec -i docker-backend-1 ./gradlew test
