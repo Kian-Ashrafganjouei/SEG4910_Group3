@@ -42,6 +42,16 @@ jobs:
         name: jacoco-coverage-report
         path: ./coverage-report/
 
+    - name: Copy Test Report to Host
+      run: |
+        docker cp docker-backend-1:/home/build/reports/tests/test/ ./test-report
+
+    - name: Upload Test Report as Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-report
+        path: ./test-report/
+        
     - name: Verify Files in Container
       run: docker exec -i docker-backend-1 ls -la /home
 
