@@ -1,7 +1,12 @@
 package backend;
 
 import backend.model.User;
+import backend.model.UserTrips;
+import backend.model.Trip;
 import backend.repository.UserRepository;
+import backend.repository.UserTripsRepository;
+import backend.repository.TripRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -9,16 +14,20 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class BackendApplicationTests {
-
     @Mock
     private UserRepository user_repository;
+
+    @Mock
+    private UserTripsRepository userTripsRepository;
+
+    @Mock
+    private TripRepository trip_repository;
 
     @InjectMocks
     private BackendApplication backendApplication;
@@ -186,5 +195,101 @@ class BackendApplicationTests {
         // Assert
         assertEquals(400, response.getStatusCodeValue());
         assertEquals("Invalid email or password.", response.getBody());
+    }
+
+     @Test
+    void shouldReturnBadRequestWhenUserNotFound() {
+        // Arrange
+        String email = "nonexistentuser@example.com";
+        when(user_repository.findByEmail(email)).thenReturn(Optional.empty());
+
+        // Act
+        ResponseEntity<?> response = backendApplication.getUserTrips(email);
+
+        // Assert
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("User not found.", response.getBody());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenUserHasNoTrips() {
+        // Arrange
+        String email = "user@example.com";
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        when(userTripsRepository.findByUserId(mockUser.getUserId())).thenReturn(Collections.emptyList());
+
+        // Act
+        ResponseEntity<?> response = backendApplication.getUserTrips(email);
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertTrue(((List<?>) response.getBody()).isEmpty());
+    }
+    
+     @Test
+    void shouldReturnTripsWithDetailsWhenUserHasTrips() {
+        // Arrange
+        String email = "user@example.com";
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+
+        UserTrips mockUserTrip = new UserTrips();
+        mockUserTrip.setUserId(1L);
+        mockUserTrip.setTripId(101L);
+        mockUserTrip.setStatus("Booked");
+
+        List<UserTrips> mockUserTripsList = Collections.singletonList(mockUserTrip);
+        when(userTripsRepository.findByUserId(mockUser.getUserId())).thenReturn(mockUserTripsList);
+
+        Trip mockTrip = new Trip();
+        mockTrip.setTripId(101L);
+        mockTrip.setLocation("Paris");
+     
+        mockTrip.setDescription("Trip to Paris");
+
+        when(trip_repository.findById(mockUserTrip.getTripId())).thenReturn(Optional.of(mockTrip));
+
+        // Act
+        ResponseEntity<?> response = backendApplication.getUserTrips(email);
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> trips = (List<Map<String, Object>>) response.getBody();
+        assertEquals(1, trips.size());
+        assertEquals("Paris", trips.get(0).get("location"));
+        assertEquals("Booked", trips.get(0).get("status"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenTripNotFoundForUser() {
+        // Arrange
+        String email = "user@example.com";
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+
+        UserTrips mockUserTrip = new UserTrips();
+        mockUserTrip.setUserId(1L);
+        mockUserTrip.setTripId(101L);
+        mockUserTrip.setStatus("Booked");
+
+        List<UserTrips> mockUserTripsList = Collections.singletonList(mockUserTrip);
+        when(userTripsRepository.findByUserId(mockUser.getUserId())).thenReturn(mockUserTripsList);
+        when(trip_repository.findById(mockUserTrip.getTripId())).thenReturn(Optional.empty());
+
+        // Act
+        ResponseEntity<?> response = backendApplication.getUserTrips(email);
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> trips = (List<Map<String, Object>>) response.getBody();
+        assertTrue(trips.isEmpty());
     }
 }
