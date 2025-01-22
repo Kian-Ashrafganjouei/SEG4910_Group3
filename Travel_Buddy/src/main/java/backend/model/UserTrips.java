@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -21,11 +23,13 @@ public class UserTrips {
     @Column(name = "user_trip_id")
     private Long userTripId;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user; 
 
-    @Column(name = "trip_id", nullable = false)
-    private Long tripId;
+    @ManyToOne
+    @JoinColumn(name = "trip_id", nullable = false)
+    private Trip trip; 
 
     @Column(name = "role")
     private String role;
@@ -50,19 +54,25 @@ public class UserTrips {
     }
 
     public Long getUserId() {
-        return userId;
+        return user != null ? user.getUserId() : null;
     }
 
     public void setUserId(Long userId) {
-        this.userId = userId;
+        if (this.user == null) {
+            this.user = new User();
+        }
+        this.user.setUserId(userId);
     }
 
     public Long getTripId() {
-        return tripId;
+        return trip != null ? trip.getTripId() : null;
     }
 
     public void setTripId(Long tripId) {
-        this.tripId = tripId;
+        if (this.trip == null) {
+            this.trip = new Trip();
+        }
+        this.trip.setTripId(tripId);
     }
 
     public String getRole() {
@@ -87,5 +97,21 @@ public class UserTrips {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Trip getTrip() {
+        return trip;
+    }
+
+    public void setTrip(Trip trip) {
+        this.trip = trip;
     }
 }
