@@ -13,7 +13,7 @@ export default function ForgetMeForm() {
   const forgetme_form_submission_handler = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:8080/backend/forgetme", {
+      const res = await fetch("/backend/forgetme", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -35,7 +35,7 @@ export default function MyTrips() {
       const requestsByTrip: { [tripId: number]: Request[] } = {};
       for (const tripId of tripIds) {
         const response = await fetch(
-          `http://localhost:8080/backend/trips/${tripId}/requests`
+          `/backend/trips/${tripId}/requests`
         );
         if (!response.ok) {
           console.error(`Failed to fetch requests for tripId: ${tripId}`);
@@ -54,7 +54,7 @@ export default function MyTrips() {
     const fetchTrips = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/backend/trips/created",
+          "/backend/trips/created",
           {
             method: "GET",
             headers: {
@@ -102,7 +102,7 @@ export default function MyTrips() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/backend/trips/${tripId}`,
+        `/backend/trips/${tripId}`,
         {
           method: "DELETE",
           headers: {
@@ -127,7 +127,7 @@ export default function MyTrips() {
   const handleRequestAction = async (userTripId: number, status: string) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/backend/user-trips/${userTripId}`,
+        `/backend/user-trips/${userTripId}`,
         {
           method: "PUT",
           headers: {

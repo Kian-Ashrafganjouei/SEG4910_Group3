@@ -77,7 +77,7 @@ export default function ExploreTripsComponent() {
   useEffect(() => {
     const fetchTrips = async () => {
       try {
-        const response = await fetch("http://localhost:8080/backend/trips");
+        const response = await fetch("/backend/trips");
         if (!response.ok) {
           throw new Error("Failed to fetch trips.");
         }
@@ -99,7 +99,7 @@ export default function ExploreTripsComponent() {
 
     const fetchInterests = async () => {
       try {
-        const response = await fetch("http://localhost:8080/backend/interests");
+        const response = await fetch("/backend/interests");
         if (!response.ok) throw new Error("Failed to fetch interests.");
 
         const data = await response.json();
@@ -114,7 +114,7 @@ export default function ExploreTripsComponent() {
       if (!session?.user?.email) return;
       try {
         const response = await fetch(
-          `http://localhost:8080/backend/user-trips?email=${session.user.email}`
+          `/backend/user-trips?email=${session.user.email}`
         );
         if (!response.ok) throw new Error("Failed to fetch user trips");
 
@@ -140,7 +140,7 @@ export default function ExploreTripsComponent() {
   
       console.log("Payload being sent:", payload);
   
-      const response = await fetch("http://localhost:8080/backend/user-trips", {
+      const response = await fetch("/backend/user-trips", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
