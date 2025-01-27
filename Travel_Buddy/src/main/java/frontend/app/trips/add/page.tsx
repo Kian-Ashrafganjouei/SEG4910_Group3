@@ -9,49 +9,69 @@ import Footer from "../../layout/footer/page";
 import Select from "react-select";
 import { useDropzone } from "react-dropzone";
 
-interface Trip {
-  location: string;
-  startDate: string;
-  endDate: string;
-  description: string;
-  interests: string[]; // Define interests as an array of strings
-}
+// interface Trip {
+//   location: string;
+//   startDate: string;
+//   endDate: string;
+//   description: string;
+//   interestIds: [] as number[];
+// }
 
 export default function AddTrip() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  const [trip, setTrip] = useState<Trip>({
+  const [trip, setTrip] = useState({
     location: "",
     startDate: "",
     endDate: "",
     description: "",
-    interests: [],
+    interestIds: [] as number[],
   });
 
-  const staticInterests = [
-    { value: "hiking", label: "Hiking" },
-    { value: "photography", label: "Photography" },
-    { value: "gaming", label: "Gaming" },
-    { value: "cooking", label: "Cooking" },
-    { value: "reading", label: "Reading" },
-    { value: "traveling", label: "Traveling" },
-    { value: "sports", label: "Sports" },
-    { value: "sightseeing", label: "Sightseeing" },
-    { value: "local cuisine", label: "Local Cuisine" },
-    { value: "cultural tours", label: "Cultural Tours" },
-    { value: "adventure sports", label: "Adventure Sports" },
-    { value: "wildlife safari", label: "Wildlife Safari" },
-    { value: "beach activities", label: "Beach Activities" },
-    { value: "historical sites", label: "Historical Sites" },
-    { value: "shopping", label: "Shopping" },
-    { value: "nightlife", label: "Nightlife" },
-    { value: "cruises", label: "Cruises" },
-  ];
+  // const staticInterests = [
+  //   { value: "hiking", label: "Hiking" },
+  //   { value: "photography", label: "Photography" },
+  //   { value: "gaming", label: "Gaming" },
+  //   { value: "cooking", label: "Cooking" },
+  //   { value: "reading", label: "Reading" },
+  //   { value: "traveling", label: "Traveling" },
+  //   { value: "sports", label: "Sports" },
+  //   { value: "sightseeing", label: "Sightseeing" },
+  //   { value: "local cuisine", label: "Local Cuisine" },
+  //   { value: "cultural tours", label: "Cultural Tours" },
+  //   { value: "adventure sports", label: "Adventure Sports" },
+  //   { value: "wildlife safari", label: "Wildlife Safari" },
+  //   { value: "beach activities", label: "Beach Activities" },
+  //   { value: "historical sites", label: "Historical Sites" },
+  //   { value: "shopping", label: "Shopping" },
+  //   { value: "nightlife", label: "Nightlife" },
+  //   { value: "cruises", label: "Cruises" },
+  // ];
 
   const [selectedInterests, setSelectedInterests] = useState([]);
+  const [interests, setInterests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Fetching the interests that are in the db and then use them
+  useEffect(() => {
+    const fetchInterests = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/backend/interests");
+        if (!response.ok) throw new Error("Failed to fetch interests.");
+
+        const data = await response.json();
+        setInterests(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching interests:", error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchInterests();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -90,7 +110,7 @@ export default function AddTrip() {
         createdByEmail: session?.user?.email,
       };
 
-      for (var i in tripData.interests) {
+      for (var i in tripData.interestIds) {
         console.log(`-->  ${i}`);
       }
 
@@ -238,16 +258,31 @@ export default function AddTrip() {
               <label>Interests</label>
               <div className="input-field">
                 <Select
-                  options={staticInterests}
+                  options={interests.map((interest) => ({
+                    value: interest.interestId,
+                    label: interest.name,
+                  }))}
                   isMulti
-                  value={selectedInterests}
+                  value={trip.interestIds
+                    .map((interestId) => {
+                      const matchedInterest = interests.find(
+                        (interest) => interest.interestId === interestId
+                      );
+                      return matchedInterest
+                        ? {
+                            value: matchedInterest.interestId,
+                            label: matchedInterest.name,
+                          }
+                        : null;
+                    })
+                    .filter((interest) => interest !== null)}
                   onChange={(newSelected) => {
-                    setSelectedInterests(newSelected || []);
+                    const newInterestIds = newSelected.map(
+                      (item) => item.value
+                    );
                     setTrip((prev) => ({
                       ...prev,
-                      interests: (newSelected || []).map(
-                        (interest) => interest.value
-                      ),
+                      interestIds: newInterestIds,
                     }));
                   }}
                   placeholder="Select your interests"
