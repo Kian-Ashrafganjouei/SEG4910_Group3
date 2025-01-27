@@ -40,7 +40,9 @@ export default function Profile() {
   // Fetch Nationalities and Languages from APIs
   useEffect(() => {
     const fetchNationalities = async () => {
-      const response = await fetch("https://restcountries.com/v3.1/all?fields=cca2,name");
+      const response = await fetch(
+        "https://restcountries.com/v3.1/all?fields=cca2,name"
+      );
       const data = await response.json();
       const options = data.map((country: any) => ({
         value: country.cca2, // Country code
@@ -127,13 +129,55 @@ export default function Profile() {
     <div className=" profile-page mt-16">
       <Navbar />
       <div className="flex justify-center">
-        <div className="profile-container w-5/12 p-8 m-12 bg-violet-200 rounded-2xl">
-          <h1 className="title">Your Profile</h1>
+        <div className="profile-container w-1/2 m-12 grid grid-rows-[auto,1fr,auto] gap-10 pt-5 pb-5">
+          <div className="profile-header flex items-center gap-5">
+            <div className="relative w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center font-bold text-white overflow-hidden">
+              {/* Profile Picture */}
+              {userData?.profilePicture ? (
+                <img
+                  src={userData.profilePicture}
+                  alt="Profile"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : (
+                <span className="text-xl">+</span>
+              )}
+
+              {/* Add Picture Button */}
+              <label
+                htmlFor="profilePicture"
+                className="absolute bottom-0 right-0 w-6 h-6 bg-purple-500 rounded-full text-white text-sm cursor-pointer hover:bg-purple-600">
+                +
+              </label>
+              <input
+                id="profilePicture"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const imageUrl = event.target?.result as string;
+                      setUserData({ ...userData, profilePicture: imageUrl });
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </div>
+            <div className="profile-name">
+              <span className="user-name text-3xl">
+                {userData?.name || "Name Name"}
+              </span>
+            </div>
+          </div>
           {userData && (
-            <div className="form-container">
+            <div className="form-container grid grid-rows-5 gap-3">
               {/* Name Field */}
-              <div className="form-group">
-                <label>Name:</label>
+              <div className="form-group mb-4 text-color">
+                <label>Name</label>
                 <input
                   type="text"
                   value={userData.name || ""}
@@ -144,141 +188,140 @@ export default function Profile() {
                 />
               </div>
 
-              {/* Phone Number Field */}
-              <div className="form-group">
-                <label>Phone Number:</label>
-                <input
-                  type="text"
-                  value={userData.phoneNumber || ""}
-                  onChange={(e) =>
-                    setUserData({ ...userData, phoneNumber: e.target.value })
-                  }
-                  className="input-field"
-                />
-              </div>
+              <div className="row2 grid grid-cols-2 gap-5">
+                {/* Nationality Dropdown */}
+                <div className="nationality-form form-group mb-4 ">
+                  <label>Nationality</label>
+                  <select
+                    className="input-field"
+                    value={nationalities.find(
+                      (option) => option.value === userData.nationality
+                    )}
+                    onChange={(selectedOption) =>
+                      setUserData({
+                        ...userData,
+                        nationality: selectedOption?.value || "",
+                      })
+                    }>
+                    <option value="">Select</option>
+                    {nationalities.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              {/* Nationality Dropdown */}
-              <div className="form-group">
-                <label>Nationality:</label>
-                <Select
-                  options={nationalities}
-                  value={nationalities.find(
-                    (option) => option.value === userData.nationality
-                  )}
-                  onChange={(selectedOption) =>
-                    setUserData({
-                      ...userData,
-                      nationality: selectedOption?.value || "",
-                    })
-                  }
-                />
+                {/* Sex Dropdown */}
+                <div className="sex-form form-group mb-4 text-color">
+                  <label>Sex</label>
+                  <select
+                    value={userData.sex || ""}
+                    onChange={(e) =>
+                      setUserData({ ...userData, sex: e.target.value })
+                    }
+                    className="input-field">
+                    <option value="">Select</option>
+                    {["Male", "Female", "Other"].map((sex) => (
+                      <option key={sex} value={sex}>
+                        {sex}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Languages Multi-Select Dropdown */}
-              <div className="form-group">
-                <label>Languages:</label>
-                <Select
-                  isMulti
-                  options={languages}
-                  value={languages.filter((option) =>
-                    userData.languages?.includes(option.value)
-                  )}
-                  onChange={(selectedOptions) =>
-                    setUserData({
-                      ...userData,
-                      languages: selectedOptions.map((option) => option.value),
-                    })
-                  }
-                />
+              <div className="language-form form-group mb-4 text-color">
+                <label>Languages</label>
+                <div className="input-field">
+                  <Select
+                    className="input-field"
+                    isMulti
+                    options={languages}
+                    value={languages.filter((option) =>
+                      userData.languages?.includes(option.value)
+                    )}
+                    onChange={(selectedOptions) =>
+                      setUserData({
+                        ...userData,
+                        languages: selectedOptions.map(
+                          (option) => option.value
+                        ),
+                      })
+                    }
+                  />
+                </div>
               </div>
 
-              {/* Age Field */}
-              <div className="form-group">
-                <label>Age:</label>
-                <input
-                  type="number"
-                  value={userData.age || ""}
-                  onChange={(e) =>
-                    setUserData({ ...userData, age: Number(e.target.value) })
-                  }
-                  className="input-field"
-                />
-              </div>
+              <div className="age-num grid grid-cols-2 gap-5">
+                {/* Age Field */}
+                <div className="age-form form-group mb-4 text-color">
+                  <label>Age:</label>
+                  <input
+                    type="number"
+                    placeholder="1"
+                    value={userData.age || ""}
+                    onChange={(e) =>
+                      setUserData({ ...userData, age: Number(e.target.value) })
+                    }
+                    className="input-field"
+                  />
+                </div>
 
-              {/* Sex Dropdown */}
-              <div className="form-group">
-                <label>Sex:</label>
-                <select
-                  value={userData.sex || ""}
-                  onChange={(e) =>
-                    setUserData({ ...userData, sex: e.target.value })
-                  }
-                  className="input-field">
-                  <option value="">Select</option>
-                  {["Male", "Female", "Other"].map((sex) => (
-                    <option key={sex} value={sex}>
-                      {sex}
-                    </option>
-                  ))}
-                </select>
+                {/* Phone Number Field */}
+                <div className="phonenum-form form-group mb-4 text-color">
+                  <label>Phone Number</label>
+                  <input
+                    type="text"
+                    placeholder="1234567890"
+                    value={userData.phoneNumber || ""}
+                    onChange={(e) =>
+                      setUserData({ ...userData, phoneNumber: e.target.value })
+                    }
+                    className="input-field"
+                  />
+                </div>
               </div>
 
               {/* Interests Multi-Select Dropdown */}
-              <div className="form-group">
-                <label>Interests:</label>
-                <Select
-                  isMulti
-                  options={staticInterests}
-                  value={staticInterests.filter((option) =>
-                    userData?.interests?.includes(option.value)
-                  )}
-                  onChange={(selectedOptions) =>
-                    setUserData({
-                      ...userData,
-                      interests: selectedOptions.map((option) => option.value),
-                    })
-                  }
-                />
+              <div className="interest-form form-group mb-4 ">
+                <label>Interests</label>
+                <div className="input-field">
+                  <Select
+                    isMulti
+                    options={staticInterests}
+                    value={staticInterests.filter((option) =>
+                      userData?.interests?.includes(option.value)
+                    )}
+                    onChange={(selectedOptions) =>
+                      setUserData({
+                        ...userData,
+                        interests: selectedOptions.map(
+                          (option) => option.value
+                        ),
+                      })
+                    }
+                  />
+                </div>
               </div>
-
-              <button className="update-button" onClick={handleUpdate}>
-                Update Profile
-              </button>
             </div>
           )}
+          <div className="submit-button grid justify-end">
+            <button
+              className="update-button w-28 h-12 text-xl font-bold bg-purple-500 text-white rounded-lg hover:bg-white hover:text-purple-500 hover:border-2 hover: border-purple-500"
+              onClick={handleUpdate}>
+              Update
+            </button>
+          </div>
         </div>
       </div>
 
       <style jsx>{`
-        .profile-container {
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-          font-family: "Poppins", sans-serif;
-        }
-
-        .title {
-          text-align: center;
-          font-size: 3rem;
-          color: #512da8;
-          margin-bottom: 2rem;
-          font-weight: 700;
-        }
-
-        .form-container {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-
-        .form-group {
-          margin-bottom: 1rem;
-          color: #512da8;
-        }
-
         label {
           display: block;
           margin-bottom: 0.5rem;
           font-weight: 600;
-          color: #4a148c;
         }
 
         .input-field {
@@ -287,22 +330,7 @@ export default function Profile() {
           border: 1px solid #ccc;
           border-radius: 8px;
           font-size: 1rem;
-          background-color: #ede7f6;
           color: #000;
-        }
-
-        .update-button {
-          padding: 0.7rem 1.5rem;
-          background-color: #008cba;
-          color: white;
-          border: none;
-          border-radius: 12px;
-          font-size: 1rem;
-          cursor: pointer;
-        }
-
-        .update-button:hover {
-          background-color: #005f7a;
         }
 
         /* Customize react-select options */
