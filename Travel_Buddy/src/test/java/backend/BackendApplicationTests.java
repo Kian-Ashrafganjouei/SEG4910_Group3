@@ -264,7 +264,7 @@ class BackendApplicationTests {
 
         // Access nested trip details correctly
         Map<String, Object> tripDetails = (Map<String, Object>) trips.get(0).get("trip");
-        assertEquals("Paris", tripDetails.get("locationn"));
+        assertEquals("Paris", tripDetails.get("location"));
 
         assertEquals("Booked", trips.get(0).get("status"));
     }
