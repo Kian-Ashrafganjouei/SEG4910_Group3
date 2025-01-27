@@ -68,6 +68,11 @@ const Navbar = () => {
                         className="block px-4 py-2 hover:bg-gray-100 text-black">
                         Create Trip
                       </a>
+                      <a
+                        href="/trips/profile"
+                        className="block px-4 py-2 hover:bg-gray-100 text-black">
+                        My Profile View
+                      </a>
                     </div>
                   )}
                 </div>

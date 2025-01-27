@@ -53,24 +53,6 @@ export default function AddTrip() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   const fetchInterests = async () => {
-  //     try {
-  //       const response = await fetch("http://localhost:8080/backend/interests");
-  //       if (!response.ok) throw new Error("Failed to fetch interests.");
-
-  //       const data = await response.json();
-  //       setInterests(data);
-  //       setIsLoading(false);
-  //     } catch (error) {
-  //       console.error("Error fetching interests:", error);
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchInterests();
-  // }, []);
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -114,7 +96,7 @@ export default function AddTrip() {
 
       console.log("Sending trip data to backend:", tripData);
 
-      const response = await fetch("http://localhost:8080/backend/trips", {
+      const response = await fetch("/backend/trips", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(tripData),

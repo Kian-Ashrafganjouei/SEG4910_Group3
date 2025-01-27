@@ -1,5 +1,9 @@
 package backend;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,12 +26,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import backend.model.Interest;
+import backend.model.Post;
 import backend.model.Trip;
 import backend.model.User;
 import backend.model.UserTrips;
 import backend.repository.InterestRepository;
+import backend.repository.PostRepository;
 import backend.repository.TripRepository;
 import backend.repository.UserRepository;
 import backend.repository.UserTripsRepository;
@@ -50,6 +57,9 @@ public class BackendApplication {
 
     @Autowired
     private UserTripsRepository userTripsRepository;
+
+    @Autowired
+    private PostRepository postRepository;
 
     // Main method to run the Spring Boot applicatio
     public static void main(String[] args) {
@@ -107,39 +117,50 @@ public class BackendApplication {
         }
     }
 
-    // API to get trips associated with a user
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/user-trips")
     public ResponseEntity<?> getUserTrips(@RequestParam String email) {
-        // Find the user by their email
-        Optional<User> userOptional = user_repository.findByEmail(email);
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found.");
-        }
-
-        User user = userOptional.get();
-
-        // Fetch all UserTrips for the given user
-        List<UserTrips> userTripsList = userTripsRepository.findByUserId(user.getUserId());
-
-        // Map UserTrips to include Trip details
-        List<Map<String, Object>> tripsWithDetails = new ArrayList<>();
-        for (UserTrips userTrip : userTripsList) {
-            Optional<Trip> tripOptional = trip_repository.findById(userTrip.getTripId());
-            if (tripOptional.isPresent()) {
-                Trip trip = tripOptional.get();
-                Map<String, Object> tripDetails = new HashMap<>();
-                tripDetails.put("tripId", trip.getTripId());
-                tripDetails.put("location", trip.getLocation());
-                tripDetails.put("startDate", trip.getStartDate());
-                tripDetails.put("endDate", trip.getEndDate());
-                tripDetails.put("description", trip.getDescription());
-                tripDetails.put("status", userTrip.getStatus()); // Add status from UserTrips
-                tripsWithDetails.add(tripDetails);
+        try {
+            // Find the user by their email
+            Optional<User> userOptional = user_repository.findByEmail(email);
+            if (userOptional.isEmpty()) {
+                return ResponseEntity.badRequest().body("User not found.");
             }
-        }
 
-        return ResponseEntity.ok(tripsWithDetails);
+            User user = userOptional.get();
+
+            // Fetch all UserTrips for the given user
+            List<UserTrips> userTripsList = userTripsRepository.findByUserId(user.getUserId());
+
+            // Map UserTrips to include Trip details
+            List<Map<String, Object>> tripsWithDetails = new ArrayList<>();
+            for (UserTrips userTrip : userTripsList) {
+                Optional<Trip> tripOptional = trip_repository.findById(userTrip.getTripId());
+                if (tripOptional.isPresent()) {
+                    Trip trip = tripOptional.get();
+                    Map<String, Object> tripDetails = new HashMap<>();
+                    tripDetails.put("userTripId", userTrip.getUserTripId());
+                    tripDetails.put("status", userTrip.getStatus());
+                    
+                    // Include Trip details
+                    Map<String, Object> tripInfo = new HashMap<>();
+                    tripInfo.put("tripId", trip.getTripId());
+                    tripInfo.put("location", trip.getLocation());
+                    tripInfo.put("startDate", trip.getStartDate());
+                    tripInfo.put("endDate", trip.getEndDate());
+                    tripInfo.put("description", trip.getDescription());
+
+                    tripDetails.put("trip", tripInfo); // Add trip details to the response
+
+                    tripsWithDetails.add(tripDetails);
+                }
+            }
+
+            return ResponseEntity.ok(tripsWithDetails);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching user trips.");
+        }
     }
 
     // API to get user requests for a specific trip
@@ -361,6 +382,18 @@ public class BackendApplication {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        try {
+            List<User> users = user_repository.findAll();
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
 
     // API to get all the trips
     @CrossOrigin(origins = "http://localhost:3000")
@@ -526,5 +559,63 @@ public class BackendApplication {
             return ResponseEntity.status(500).body("An error occurred while adding the trip.");
         }
     }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/posts")
+    public ResponseEntity<List<Post>> getAllPosts() {
+        return ResponseEntity.ok(postRepository.findAll());
+    }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/backend/posts")
+    public ResponseEntity<?> addPost(
+            @RequestParam("caption") String caption,
+            @RequestParam("image") MultipartFile image,
+            @RequestParam("userTripId") Long userTripId) {
+        try {
+            // Retrieve the UserTrip associated with the userTripId
+            Optional<UserTrips> userTripOptional = userTripsRepository.findById(userTripId);
+            if (userTripOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("UserTrip not found for the given ID.");
+            }
+
+            UserTrips userTrip = userTripOptional.get();
+
+            // Save the image to disk
+            String imagePath = saveImageToDisk(image);
+
+            // Create and save the post
+            Post post = new Post();
+            post.setCaption(caption);
+            post.setImage(imagePath);
+            post.setUserTrip(userTrip); // Associate with the correct UserTrip
+            post.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            post.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+            Post savedPost = postRepository.save(post);
+
+            return ResponseEntity.ok(savedPost);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error adding post: " + e.getMessage());
+        }
+    }
+
+
+
+    private String saveImageToDisk(MultipartFile image) {
+        // Save the image to the "public/images/posts" directory
+        String filePath = "src/main/java/frontend/public/images/posts/" + image.getOriginalFilename(); // Physical path
+        try {
+            Path path = Paths.get(filePath);
+            Files.createDirectories(path.getParent()); // Ensure the directories exist
+            Files.write(path, image.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("Error saving image", e);
+        }
+        // Return the relative path used by the frontend
+        return "/images/posts/" + image.getOriginalFilename();
+    }        
 
 }
