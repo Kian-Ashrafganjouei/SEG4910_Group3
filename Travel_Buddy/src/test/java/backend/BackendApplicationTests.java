@@ -228,7 +228,7 @@ class BackendApplicationTests {
         assertTrue(((List<?>) response.getBody()).isEmpty());
     }
     
-     @Test
+    @Test
     void shouldReturnTripsWithDetailsWhenUserHasTrips() {
         // Arrange
         String email = "user@example.com";
@@ -261,7 +261,11 @@ class BackendApplicationTests {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> trips = (List<Map<String, Object>>) response.getBody();
         assertEquals(1, trips.size());
-        assertEquals("Paris", trips.get(0).get("location"));
+
+        // Access nested trip details correctly
+        Map<String, Object> tripDetails = (Map<String, Object>) trips.get(0).get("trip");
+        assertEquals("Paris", tripDetails.get("location"));
+
         assertEquals("Booked", trips.get(0).get("status"));
     }
 
