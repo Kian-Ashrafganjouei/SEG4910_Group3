@@ -32,23 +32,24 @@ VALUES (
     'johndoe', 
     'John Doe', 
     'johndoe@example.com', 
-    'hashed_password123', 
+    'password123', 
     '+1234567890', 
     'Canadian', 
     30, 
     'Male', 
     'Software engineer with a passion for travel and photography.', 
-    'profile_pictures/johndoe.jpg'
+    'https://upload.wikimedia.org/wikipedia/commons/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg'
 );
 
 INSERT INTO Users (
-    username, name, email, password
+    username, name, email, password, profile_picture
 ) 
 VALUES (
     'test', 
     'John Doe', 
     'test@example.com', 
-    'test'
+    'test',
+    'https://upload.wikimedia.org/wikipedia/commons/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg'
 );
 
 -- Create a new join table for user languages
@@ -164,7 +165,7 @@ INSERT INTO UserTrips (
     user_id, trip_id, status
 ) 
 VALUES (
-    1, 
+    2, 
     1, 
     'requested'
 );
@@ -172,13 +173,15 @@ VALUES (
 -- Posts Table
 CREATE TABLE Posts (
     post_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES Users(user_id),
-    content TEXT NOT NULL,
-    location VARCHAR(100),
-    interests VARCHAR(255),
+    usertrip_id INT REFERENCES UserTrips(user_trip_id) NULL,
+    caption TEXT NOT NULL,
+    image VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+INSERT INTO Posts (usertrip_id, caption, image)
+VALUES (1, 'Loving the beautiful Eiffel Tower views!', 'https://upload.wikimedia.org/wikipedia/commons/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg');
 
 -- Comments Table
 CREATE TABLE Comments (

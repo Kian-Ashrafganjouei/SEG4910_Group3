@@ -75,7 +75,7 @@ export default function Profile() {
   // Fetch User Data
   useEffect(() => {
     if (session) {
-      fetch("http://localhost:8080/backend/user", {
+      fetch("/backend/user", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +96,7 @@ export default function Profile() {
 
   const handleUpdate = async () => {
     try {
-      const res = await fetch("http://localhost:8080/backend/user", {
+      const res = await fetch("/backend/user", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -12,15 +12,13 @@ import backend.model.UserTrips;
 @Repository
 public interface UserTripsRepository extends JpaRepository<UserTrips, Long> {
 
-    @Query("SELECT ut FROM UserTrips ut WHERE ut.userId = :userId AND ut.tripId = :tripId")
+    @Query("SELECT ut FROM UserTrips ut WHERE ut.user.userId = :userId AND ut.trip.tripId = :tripId")
     Optional<UserTrips> findByUserIdAndTripId(Long userId, Long tripId);
 
-    @Query("SELECT ut FROM UserTrips ut WHERE ut.userId = :userId")
+    @Query("SELECT ut FROM UserTrips ut WHERE ut.user.userId = :userId")
     List<UserTrips> findByUserId(Long userId);
 
-    @Query("SELECT ut FROM UserTrips ut WHERE ut.tripId = :tripId")
+    @Query("SELECT ut FROM UserTrips ut WHERE ut.trip.tripId = :tripId")
     List<UserTrips> findByTripId(Long tripId);
 
 }
-
-
