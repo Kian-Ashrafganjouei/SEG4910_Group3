@@ -59,7 +59,7 @@ export default function Profile() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch("http://localhost:8080/backend/posts", {
+      const response = await fetch("/backend/posts", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -84,7 +84,7 @@ export default function Profile() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("http://localhost:8080/backend/users");
+      const response = await fetch("/backend/users");
       if (!response.ok) throw new Error("Failed to fetch users");
 
       const data: User[] = await response.json();
@@ -98,7 +98,7 @@ export default function Profile() {
     if (!session?.user?.email) return;
     try {
       const response = await fetch(
-        `http://localhost:8080/backend/user-trips?email=${session.user.email}`
+        `/backend/user-trips?email=${session.user.email}`
       );
       if (!response.ok) throw new Error("Failed to fetch user trips");
 
@@ -121,7 +121,7 @@ export default function Profile() {
     formData.append("userTripId", String(selectedUserTripId));
 
     try {
-      const response = await fetch("http://localhost:8080/backend/posts", {
+      const response = await fetch("/backend/posts", {
         method: "POST",
         body: formData,
       });
