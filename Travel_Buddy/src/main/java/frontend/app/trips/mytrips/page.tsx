@@ -220,9 +220,11 @@ export default function MyTrips() {
                       <h3 className="requests-title text-lg font-bold mb-4 text-blue-800">
                         Requests
                       </h3>
-                      {requests[trip.tripId]?.length > 0 ? (
-                        <ul className="space-y-2">
-                          {requests[trip.tripId].map((req) => (
+                      {requests[trip.tripId]?.filter(req => req.status !== "created").length > 0 ? (
+                      <ul className="space-y-2">
+                        {requests[trip.tripId]
+                          .filter((req) => req.status !== "created")
+                          .map((req) => (
                             <li
                               key={req.userTripId}
                               className="request-item flex justify-between items-center bg-gray-200 p-2 rounded-lg"
@@ -247,10 +249,7 @@ export default function MyTrips() {
                                   </button>
                                   <button
                                     onClick={() =>
-                                      handleRequestAction(
-                                        req.userTripId,
-                                        "declined"
-                                      )
+                                      handleRequestAction(req.userTripId, "declined")
                                     }
                                     className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-700"
                                   >
@@ -260,10 +259,11 @@ export default function MyTrips() {
                               )}
                             </li>
                           ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500">No requests.</p>
-                      )}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-500">No requests.</p>
+                    )}
+
                     </div>
 
                   </div>                     
