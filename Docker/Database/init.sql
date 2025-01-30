@@ -155,7 +155,7 @@ CREATE TABLE UserTrips (
     user_id INT REFERENCES Users(user_id),
     trip_id INT REFERENCES Trips(trip_id),
     role VARCHAR(50),
-    status VARCHAR(50) CHECK (status IN ('requested', 'joined', 'declined')),
+    status VARCHAR(50) CHECK (status IN ('requested', 'joined', 'declined', 'created')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -169,6 +169,23 @@ VALUES (
     1, 
     'requested'
 );
+
+-- Create a function for the trigger
+CREATE OR REPLACE FUNCTION insert_user_trip()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Insert a new record into UserTrips table
+    INSERT INTO UserTrips (user_id, trip_id, role, status, created_at)
+    VALUES (NEW.created_by, NEW.trip_id, 'creator', 'created', CURRENT_TIMESTAMP);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create the trigger
+CREATE TRIGGER after_trip_insert
+AFTER INSERT ON Trips
+FOR EACH ROW
+EXECUTE FUNCTION insert_user_trip();
 
 -- Posts Table
 CREATE TABLE Posts (
