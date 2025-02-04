@@ -118,6 +118,34 @@ public class BackendApplication {
     }
 
     @CrossOrigin(origins = "http://localhost:3000")
+@GetMapping("/backend/user-profile/{userId}")
+public ResponseEntity<?> getUserProfile(@PathVariable Long userId) {
+    try {
+        // Fetch user details
+        Optional<User> userOptional = user_repository.findById(userId);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("User not found.");
+        }
+        User user = userOptional.get();
+
+        // Fetch trips created by the user
+        List<Trip> userTrips = trip_repository.findByCreatedByUserId(userId);
+
+        // Fetch posts by the user
+        List<Post> userPosts = postRepository.findByUserTrip_User_UserId(userId);
+
+        // Create a response object
+        Map<String, Object> profileData = new HashMap<>();
+        profileData.put("user", user);
+        profileData.put("trips", userTrips);
+        profileData.put("posts", userPosts);
+
+        return ResponseEntity.ok(profileData);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching user profile.");
+    }
+}
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/user-trips")
     public ResponseEntity<?> getUserTrips(@RequestParam String email) {
         try {
