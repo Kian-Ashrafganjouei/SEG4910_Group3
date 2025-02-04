@@ -37,7 +37,7 @@ jobs:
         docker cp docker-backend-1:/home/build/reports/jacoco/test/html ./coverage-report
 
     - name: Upload Coverage Report as Artifact
-      uses: actions/upload-artifact@v4s
+      uses: actions/upload-artifact@v4
       with:
         name: jacoco-coverage-report
         path: ./coverage-report/
