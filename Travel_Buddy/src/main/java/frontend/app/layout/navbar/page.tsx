@@ -5,11 +5,17 @@ import "../../styles/Navbar.css";
 
 const Navbar = () => {
   const [isTripsDropdownOpen, setIsTripsDropdownOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
 
+
   const toggleTripsDropdown = () => {
-    setIsTripsDropdownOpen((prev) => !prev);
+    setIsTripsDropdownOpen(!isTripsDropdownOpen);
+  };
+
+  const toggleProfileDropdown = () => {
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
   };
 
   const handleSignOut = async () => {
@@ -26,59 +32,58 @@ const Navbar = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 items-center h-16 pl-2 pr-2 bg-white text-black">
           <div className="text-xl font-bold">
             <a href="/">
-              <h1 className="text-2xl">
-                {" "}
-                {/* Keep the heading larger */}
-                Travel Companion
-              </h1>
+              <h1 className="text-2xl">Travel Companion</h1>
             </a>
             <p className="text-sm mt-1">
-              {" "}
-              {/* Make the "Welcome" message smaller */}
-              Welcome
-              {session?.user?.username ? `, ${session.user.username}` : "!"}
+              Welcome {session?.user?.username ? `, ${session.user.username}` : "!"}
             </p>
           </div>
           <div className="hidden md:flex space-x-4 justify-center relative">
             <a href="/home" className="relative group">
               <span className="hover-underline-animation">Home</span>
             </a>
-            {session && ( // Only show this section if session exists
+            {session && (
               <>
                 <div className="relative">
                   <button
-                    className="relative group "
+                    className="relative group"
                     onClick={toggleTripsDropdown}>
                     <span className="hover-underline-animation">Trips</span>
                   </button>
                   {isTripsDropdownOpen && (
                     <div className="absolute top-8 left-0 bg-white shadow-lg border rounded-md w-40 z-20">
-                      <a
-                        href="/trips/view"
-                        className="block px-4 py-2 hover:bg-gray-100 text-black">
+                      <a href="/trips/view" className="block px-4 py-2 hover:bg-gray-100 text-black">
                         Explore Trips
                       </a>
-                      <a
-                        href="/trips/mytrips"
-                        className="block px-4 py-2 hover:bg-gray-100 text-black">
+                      <a href="/trips/mytrips" className="block px-4 py-2 hover:bg-gray-100 text-black">
                         My Trips
                       </a>
-                      <a
-                        href="/trips/add"
-                        className="block px-4 py-2 hover:bg-gray-100 text-black">
+                      <a href="/trips/add" className="block px-4 py-2 hover:bg-gray-100 text-black">
                         Create Trip
                       </a>
-                      <a
-                        href="/trips/profile"
-                        className="block px-4 py-2 hover:bg-gray-100 text-black">
+                      <a href="/trips/profile" className="block px-4 py-2 hover:bg-gray-100 text-black">
                         My Profile View
                       </a>
                     </div>
                   )}
                 </div>
-                <a href="/profile" className="relative group">
-                  <span className="hover-underline-animation">Profile</span>
-                </a>
+                <div className="relative">
+                  <button
+                    className="relative group"
+                    onClick={toggleProfileDropdown}>
+                    <span className="hover-underline-animation">Profile</span>
+                  </button>
+                  {isProfileDropdownOpen && (
+                    <div className="absolute top-8 left-0 bg-white shadow-lg border rounded-md w-40 z-20">
+                      <a href="/profile" className="block px-4 py-2 hover:bg-gray-100 text-black">
+                        View Profile
+                      </a>
+                      <a href="/profileview" className="block px-4 py-2 hover:bg-gray-100 text-black">
+                        Settings
+                      </a>
+                    </div>
+                  )}
+                </div>
               </>
             )}
             <a href="/about" className="relative group">
