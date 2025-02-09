@@ -194,15 +194,14 @@ export default function Profile() {
                   <label>Nationality</label>
                   <select
                     className="input-field"
-                    value={nationalities.find(
-                      (option) => option.value === userData.nationality
-                    )}
-                    onChange={(selectedOption) =>
+                    value={userData.nationality} // Should be a string
+                    onChange={(event) =>
                       setUserData({
                         ...userData,
-                        nationality: selectedOption?.value || "",
+                        nationality: event.target.value,
                       })
-                    }>
+                    }
+                  >
                     <option value="">Select</option>
                     {nationalities.map((option) => (
                       <option key={option.value} value={option.value}>

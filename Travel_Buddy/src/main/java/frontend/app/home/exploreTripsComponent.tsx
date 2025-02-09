@@ -25,9 +25,17 @@ interface User {
 }
 
 interface UserTrip {
-  tripId: number;
+  userTripId: number;
   status: string; // "requested", "joined", or "declined"
+  trip: {
+    tripId: number;
+    location: string;
+    startDate: string;
+    endDate: string;
+    description: string;
+  };
 }
+
 
 interface Trip {
   tripId: number;
@@ -117,13 +125,15 @@ export default function ExploreTripsComponent() {
           `/backend/user-trips?email=${session.user.email}`
         );
         if (!response.ok) throw new Error("Failed to fetch user trips");
-
+    
         const data = await response.json();
+        console.log("Fetched userTrips:", data); // Debugging
         setUserTrips(data);
       } catch (error) {
         console.error("Error fetching user trips:", error);
       }
     };
+    
 
     fetchTrips();
     fetchUserTrips();
@@ -161,9 +171,10 @@ export default function ExploreTripsComponent() {
   };
 
   const getUserTripStatus = (tripId: number): string | null => {
-    const userTrip = userTrips.find((ut) => ut.tripId === tripId);
+    const userTrip = userTrips.find((ut) => ut.trip?.tripId === tripId);
+    console.log("Checking status for tripId:", tripId, "Status:", userTrip?.status); // Debugging
     return userTrip ? userTrip.status : null;
-  };
+  };  
 
   useEffect(() => {
     setFilteredTrips(
@@ -521,27 +532,39 @@ export default function ExploreTripsComponent() {
 
                     </span>
                     <span className="flex-auto py-1">@{trip.createdBy.username}</span>
-                    <span className="float-right py-2 px-2">
-                      {getUserTripStatus(trip.tripId) === "joined"
-                          ? "Joined"
-                          : getUserTripStatus(trip.tripId) === "declined"
-                          ? "Declined"
-                          : getUserTripStatus(trip.tripId) === "requested"
-                          ? "Requested"
-                          : "" } 
+                    {(getUserTripStatus(trip.tripId) === "joined" ||
+                    getUserTripStatus(trip.tripId) === "declined" ||
+                    getUserTripStatus(trip.tripId) === "requested" ||
+                    trip.createdBy.email === session?.user?.email) && (
+                    <span
+                      className="float-right flex items-center justify-center py-1 px-2 text-sm font-medium rounded border bg-gray-300 text-gray-700 border-gray-400"
+                    >
+                      {trip.createdBy.email === session?.user?.email
+                        ? "Created"
+                        : getUserTripStatus(trip.tripId) === "joined"
+                        ? "Joined"
+                        : getUserTripStatus(trip.tripId) === "declined"
+                        ? "Declined"
+                        : getUserTripStatus(trip.tripId) === "requested"
+                        ? "Requested"
+                        : ""}
                     </span>
-                    <button onClick={() => handleRequestToggle(trip.tripId)} 
-                            className={`float-right py-1 px-2 font-semibold rounded border transition ${
-                              getUserTripStatus(trip.tripId) === "requested"
-                                ? "bg-transparent text-blue-700 border-blue-500 hover:bg-blue-50"
-                                : "bg-blue-500 text-white border-transparent hover:bg-blue-600"
-                            } ${getUserTripStatus(trip.tripId) === "joined" || getUserTripStatus(trip.tripId) === "declined" 
-                              ? "hidden" 
-                              : ""
-                            }`}>
-                      {getUserTripStatus(trip.tripId) === "requested" ? "Cancel Request" : "Request Join"}
-                    </button>
-                    
+                  )}
+                    <button
+                    onClick={() => handleRequestToggle(trip.tripId)}
+                    className={`float-right py-1 px-2 font-semibold rounded border transition ${
+                      getUserTripStatus(trip.tripId) === "requested"
+                        ? "bg-transparent text-blue-700 border-blue-500 hover:bg-blue-50"
+                        : "bg-blue-500 text-white border-transparent hover:bg-blue-600"
+                    } ${getUserTripStatus(trip.tripId) || trip.createdBy.email === session?.user?.email
+                        ? "hidden" 
+                        : ""
+                    }`}
+                  >
+                    {getUserTripStatus(trip.tripId) === "requested"
+                      ? "Requested"
+                      : getUserTripStatus(trip.tripId) || "Request Join"}
+                  </button>
                   </div>
                   <div className="block p-6">
                     <div className="flex">
