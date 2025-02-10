@@ -19,6 +19,32 @@ interface UserData {
   bio?: string;
 }
 
+interface Post {
+  postId: number;
+  caption: string;
+  image: string;
+  createdAt: string;
+  userTrip?: {
+    user: {
+      userId: number;
+      username: string;
+      name: string;
+      profilePicture: string;
+    };
+    trip: {
+      location: string;
+    };
+  };
+}
+
+interface UserTrip {
+  userTripId: number;
+  trip: {
+    location: string;
+    startDate: string;
+  };
+}
+
 export default function Profile() {
   const { data: session } = useSession();
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -36,6 +62,13 @@ export default function Profile() {
     { value: "traveling", label: "Traveling" },
     { value: "sports", label: "Sports" },
   ];
+
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newCaption, setNewCaption] = useState("");
+  const [newImage, setNewImage] = useState<File | null>(null);
+  const [selectedUserTripId, setSelectedUserTripId] = useState<number | null>(null);
+  const [userTrips, setUserTrips] = useState<UserTrip[]>([]);
 
   // Fetch Nationalities and Languages from APIs
   useEffect(() => {
@@ -71,6 +104,15 @@ export default function Profile() {
     fetchNationalities();
     fetchLanguages();
   }, []);
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetch(`/backend/user-trips?email=${session.user.email}`)
+        .then((res) => res.json())
+        .then((data) => setUserTrips(data))
+        .catch((err) => console.error("Error fetching user trips:", err));
+    }
+  }, [session]);
 
   // Fetch User Data
   useEffect(() => {
@@ -117,6 +159,39 @@ export default function Profile() {
     }
   };
 
+  const handleAddPost = async () => {
+    if (!newImage || !newCaption || !selectedUserTripId) {
+      alert("Please provide a caption, image, and select a trip.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("caption", newCaption);
+    formData.append("image", newImage);
+    formData.append("userTripId", String(selectedUserTripId));
+
+    try {
+      const response = await fetch("/backend/posts", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add post.");
+      }
+
+      alert("Post added successfully!");
+      setNewCaption("");
+      setNewImage(null);
+      setSelectedUserTripId(null);
+      setIsModalOpen(false);
+      router.push("/trips/profile"); // Redirect to the posts page
+    } catch (error) {
+      console.error("Error adding post:", error);
+      alert("An error occurred while adding the post.");
+    }
+  };
+
   if (!session) {
     return <p className="login-msg">Please log in to view your profile.</p>;
   }
@@ -126,7 +201,7 @@ export default function Profile() {
   }
 
   return (
-    <div className=" profile-page mt-16">
+    <div className="profile-page mt-16">
       <Navbar />
       <div className="flex justify-center">
         <div className="profile-container w-1/2 m-12 grid grid-rows-[auto,1fr,auto] gap-10 pt-5 pb-5">
@@ -313,9 +388,80 @@ export default function Profile() {
               onClick={handleUpdate}>
               Update
             </button>
+
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="mt-6 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700"
+            >
+              Add Post
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Add Post Modal */}
+      {isModalOpen && (
+        <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="modal-content bg-white p-8 rounded-lg w-1/2">
+            <h2 className="text-xl font-bold mb-4">Add a New Post</h2>
+            <label className="block mb-4">
+              Caption:
+              <input
+                type="text"
+                value={newCaption}
+                onChange={(e) => setNewCaption(e.target.value)}
+                className="w-full p-2 border rounded-lg mt-1"
+              />
+            </label>
+            <label className="block mb-4">
+              Image:
+              <input
+                type="file"
+                onChange={(e) =>
+                  setNewImage(e.target.files ? e.target.files[0] : null)
+                }
+                className="w-full p-2 border rounded-lg mt-1"
+              />
+            </label>
+            <label className="block mb-4">
+              Select a Trip:
+              <select
+                value={selectedUserTripId || ""}
+                onChange={(e) =>
+                  setSelectedUserTripId(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
+                className="w-full p-2 border rounded-lg mt-1"
+              >
+                <option value="">Select a trip</option>
+                {userTrips.map((userTrip) => (
+                  <option
+                    key={userTrip.userTripId}
+                    value={userTrip.userTripId}
+                  >
+                    {userTrip.trip?.location} ({userTrip.trip?.startDate})
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddPost}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700"
+              >
+                Add Post
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         label {
