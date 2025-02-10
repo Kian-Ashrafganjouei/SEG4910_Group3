@@ -328,6 +328,21 @@ public class BackendApplication {
         }
     }
 
+    // API to get user data by ID
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/user/{id}")
+    public ResponseEntity<?> get_user_data(@PathVariable("id") long id) {
+        System.out.println("Request to get user data for email: " + id);
+        Optional<User> user = user_repository.findById(id);
+
+        if (user.isPresent()) {
+            System.out.println("Found Username: " + user.get().getUsername());
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+    }
+
     // API to update user data
     @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/backend/user")

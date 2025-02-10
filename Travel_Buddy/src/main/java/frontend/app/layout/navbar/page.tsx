@@ -76,10 +76,10 @@ const Navbar = () => {
                   {isProfileDropdownOpen && (
                     <div className="absolute top-8 left-0 bg-white shadow-lg border rounded-md w-40 z-20">
                       <a href="/profile" className="block px-4 py-2 hover:bg-gray-100 text-black">
-                        View Profile
+                        My Profile
                       </a>
-                      <a href="/profileview" className="block px-4 py-2 hover:bg-gray-100 text-black">
-                        Settings
+                      <a href="/searchusers" className="block px-4 py-2 hover:bg-gray-100 text-black">
+                        Search User
                       </a>
                     </div>
                   )}
