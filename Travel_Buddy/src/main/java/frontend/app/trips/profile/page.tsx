@@ -181,13 +181,17 @@ export default function Profile() {
             <select
               value={selectedUserId || ""}
               onChange={(e) =>
-                setSelectedUserId(e.target.value ? Number(e.target.value) : null)
+                setSelectedUserId(
+                  e.target.value ? Number(e.target.value) : null
+                )
               }
-              className="w-full p-2 border rounded-lg mt-1 bg-white text-black"
-            >
+              className="w-full p-2 border rounded-lg mt-1 bg-white text-black">
               <option value="">Show all posts</option>
               {users.map((user) => (
-                <option key={user.userId} value={user.userId} className="text-black">
+                <option
+                  key={user.userId}
+                  value={user.userId}
+                  className="text-black">
                   {user.name} ({user.username})
                 </option>
               ))}
@@ -195,8 +199,7 @@ export default function Profile() {
           </label>
           <button
             onClick={handleFilterPosts}
-            className="mb-8 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700"
-          >
+            className="mb-8 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700">
             Apply Filter
           </button>
 
@@ -213,8 +216,7 @@ export default function Profile() {
               {filteredPosts.map((post) => (
                 <div
                   key={post.postId}
-                  className="post-card flex flex-col items-start p-6 rounded-xl shadow-lg bg-white text-black relative"
-                >
+                  className="post-card flex flex-col items-start p-6 rounded-xl shadow-lg bg-white text-black relative">
                   {/* Display Profile Picture and Username */}
                   <div className="flex items-center mb-4">
                     <img
@@ -259,8 +261,7 @@ export default function Profile() {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="mt-6 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700"
-          >
+            className="mt-6 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700">
             Add Post
           </button>
         </div>
@@ -298,14 +299,10 @@ export default function Profile() {
                     e.target.value ? Number(e.target.value) : null
                   )
                 }
-                className="w-full p-2 border rounded-lg mt-1"
-              >
+                className="w-full p-2 border rounded-lg mt-1">
                 <option value="">Select a trip</option>
                 {userTrips.map((userTrip) => (
-                  <option
-                    key={userTrip.userTripId}
-                    value={userTrip.userTripId}
-                  >
+                  <option key={userTrip.userTripId} value={userTrip.userTripId}>
                     {userTrip.trip?.location} ({userTrip.trip?.startDate})
                   </option>
                 ))}
@@ -314,14 +311,12 @@ export default function Profile() {
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-700"
-              >
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-700">
                 Cancel
               </button>
               <button
                 onClick={handleAddPost}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700"
-              >
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700">
                 Add Post
               </button>
             </div>
