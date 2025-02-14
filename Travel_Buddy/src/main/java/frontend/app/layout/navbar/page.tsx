@@ -5,11 +5,17 @@ import "../../styles/Navbar.css";
 
 const Navbar = () => {
   const [isTripsDropdownOpen, setIsTripsDropdownOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
 
+
   const toggleTripsDropdown = () => {
-    setIsTripsDropdownOpen((prev) => !prev);
+    setIsTripsDropdownOpen(!isTripsDropdownOpen);
+  };
+
+  const toggleProfileDropdown = () => {
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
   };
 
   const handleSignOut = async () => {
