@@ -16,7 +16,7 @@ const options = {
       async authorize(credentials) {
         try {
           const res = await fetch(
-            "http://docker-backend-1:8080/backend/credentials/signin",
+            "/backend/credentials/signin",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -54,7 +54,7 @@ const options = {
       if (account.provider === "google") {
         try {
           const res = await fetch(
-            "http://docker-backend-1:8080/backend/google/signin",
+            "/backend/google/signin",
             {
               method: "POST",
               headers: {
