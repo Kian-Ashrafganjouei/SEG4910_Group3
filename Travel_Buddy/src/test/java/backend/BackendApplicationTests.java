@@ -485,5 +485,34 @@ class BackendApplicationTests {
         assertEquals("An error occurred while updating the UserTrip status.", response.getBody());
     }
 
+    @Test
+    void shouldReturnBadRequestForExistingUser() {
+        User U = new User();
+        U.setUsername("user0");
+        U.setPassword("pass0");
+        U.setEmail("email0@gmail.com");
 
+        when(user_repository.findByEmail(U.getEmail())).thenReturn(Optional.of(U));
+        when(user_repository.findByUsername(U.getUsername())).thenReturn(Optional.of(U));
+
+        ResponseEntity<?> res = backendApplication.handle_signup(U);
+
+        assertEquals("Email already exists", res.getBody());
+        assertEquals(400, res.getStatusCodeValue());
+    }
+
+    @Test
+    void shouldReturnSuccessForNonExistingUser() {
+        User U = new User();
+        U.setUsername("user0");
+        U.setPassword("pass0");
+        U.setEmail("email0@gmail.com");
+
+        when(user_repository.findByEmail(U.getEmail())).thenReturn(Optional.empty());
+        when(user_repository.findByUsername(U.getUsername())).thenReturn(Optional.empty());
+
+        ResponseEntity<?> res = backendApplication.handle_signup(U);
+
+        assertEquals(200, res.getStatusCodeValue());
+    }
 }
