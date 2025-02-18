@@ -5,18 +5,35 @@ import { useRouter } from "next/navigation";
 import Navbar from "../layout/navbar/page";
 import Footer from "../layout/footer/page";
 
-interface User {
+// Updated User Interface
+interface UserProfile {
   userId: number;
   username: string;
   name: string;
-  profilePicture: string;
+  profilePicture: string | null;
+  age?: number;
+  sex?: string;
+  nationality?: string;
+  languages?: string[];
+  interests?: string[];
+  reviewScore: number;
 }
 
-export default function Profile() {
-  const [users, setUsers] = useState<User[]>([]);
+interface Post {
+  postId: number;
+  usertripId: number | null;
+  caption: string;
+  image: string;
+  createdAt: string;
+}
+
+export default function SearchUsers() {
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -24,16 +41,15 @@ export default function Profile() {
       try {
         const response = await fetch("/backend/users");
         if (!response.ok) throw new Error("Failed to fetch users");
-        const data: User[] = await response.json();
+        const data: UserProfile[] = await response.json();
         setUsers(data);
-        setFilteredUsers(data); // Show all users initially
+        setFilteredUsers(data);
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchUsers();
   }, []);
 
@@ -48,55 +64,137 @@ export default function Profile() {
     );
   }, [searchQuery, users]);
 
-  const handleUserClick = (userId: number) => {
-    console.log("Navigating to profile of user:", userId);
-    router.push(`/profileview/${userId}`);
+  const fetchUserPosts = async (userId: number) => {
+    try {
+      const response = await fetch(`/backend/posts/user/${userId}`);
+      if (!response.ok) throw new Error("Failed to fetch user posts");
+      const data: Post[] = await response.json();
+      console.log(data);
+      setUserPosts(data);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+    }
   };
 
   return (
-    <div className="mt-16">
-      <Navbar />
-      <div className="flex flex-col items-center">
-        <div className="profile-container w-11/12 p-8 m-8 bg-gradient-to-br from-purple-500 to-indigo-700 rounded-3xl shadow-2xl text-white">
-          <h1 className="text-center text-4xl font-bold mb-8">Search Users</h1>
+    <div className="flex flex-col min-h-screen bg-gray-100">
+    <Navbar />
+    <div className="flex-grow flex flex-col items-center pt-24 pb-10">
+      <div className="w-full max-w-4xl bg-white shadow-md rounded-xl p-6 mx-4">
+        {selectedUser && (
+          <button
+            onClick={() => {
+              setSelectedUser(null);
+              setUserPosts([]);
+            }}
+            className="text-blue-500 hover:underline text-sm mb-4"
+          >
+            ← Back to Search
+          </button>
+        )}
 
-          <input
-            type="text"
-            placeholder="Search user profiles..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-2 border rounded-lg mb-4 bg-white text-black"
-          />
+        {selectedUser ? (
+          <div className="text-left">
+            <div className="flex items-start space-x-6">
+              {/* Profile Picture */}
+              <img
+                className="w-28 h-28 rounded-full border border-gray-300"
+                src={selectedUser.profilePicture || "/images/null_avatar.png"}
+                alt={selectedUser.username}
+              />
 
-          {filteredUsers.length > 0 ? (
-            <ul className="bg-white text-black rounded-lg shadow-md p-2 max-h-48 overflow-auto">
-              {filteredUsers.map((user) => (
-                <li
-                  key={user.userId}
-                  className="flex items-center p-2 hover:bg-gray-200 cursor-pointer"
-                  onClick={() => handleUserClick(user.userId)}
-                >
-                  <img
-                    className="w-10 h-10 rounded-full mr-3"
-                    src={user.profilePicture || "/images/null_avatar.png"}
-                    alt={user.username}
-                  />
-                  <span className="text-lg font-medium">@{user.username}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            !isLoading && (
-              <p className="text-center text-lg text-white">No users found.</p>
-            )
-          )}
+              {/* User Info - Takes up remaining space */}
+              <div className="flex-1">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-semibold">@{selectedUser.username}</h2>
+                    <p className="text-gray-700 text-lg">{selectedUser.name}</p>
+                  </div>
+                  
+                  {/* Star Rating */}
+                  <div className="flex space-x-1 text-yellow-500 text-3xl">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                      <span key={index}>
+                        {index < selectedUser.reviewScore ? "★" : "☆"}
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
-          {isLoading && (
-            <p className="text-center text-xl font-semibold">Loading users...</p>
-          )}
-        </div>
+                <div className="mt-4 grid grid-cols-2 gap-4 text-gray-700">
+                  {selectedUser.age && <p><strong>Age:</strong> {selectedUser.age}</p>}
+                  {selectedUser.sex && <p><strong>Sex:</strong> {selectedUser.sex}</p>}
+                  {selectedUser.nationality && <p><strong>Nationality:</strong> {selectedUser.nationality}</p>}
+                  {selectedUser.languages?.length > 0 && (
+                    <p><strong>Languages:</strong> {selectedUser.languages.join(", ")}</p>
+                  )}
+                  {selectedUser.interests?.length > 0 && (
+                    <p className="col-span-2"><strong>Interests:</strong> {selectedUser.interests.join(", ")}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <h3 className="text-lg font-bold mt-6">User Posts</h3>
+            <div className="mt-4">
+              {userPosts.length > 0 ? (
+                userPosts.map((post) => (
+                  <div key={post.postId} className="border p-3 rounded-lg shadow-md mt-2">
+                    <p className="font-medium">{post.caption}</p>
+                    <img src={post.image} alt="Post image" className="w-full mt-2 rounded-md" />
+                    <p className="text-sm text-gray-500">{new Date(post.createdAt).toLocaleString()}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-600">No posts available.</p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <>
+            <h1 className="text-2xl font-bold text-gray-800 text-center">Search Users</h1>
+            <input
+              type="text"
+              placeholder="Search for a user..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full mt-4 p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
+            />
+            {isLoading ? (
+              <p className="text-center text-gray-600 mt-4">Loading users...</p>
+            ) : filteredUsers.length > 0 ? (
+              <ul className="mt-4 divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <li
+                    key={user.userId}
+                    className="flex items-center p-3 cursor-pointer hover:bg-gray-100 rounded-lg transition"
+                    onClick={() => {
+                      console.log(user)
+                      setSelectedUser(user);
+                      fetchUserPosts(user.userId);
+                    }}
+                  >
+                    <img
+                      className="w-12 h-12 rounded-full border border-gray-300 mr-4"
+                      src={user.profilePicture || "/images/null_avatar.png"}
+                      alt={user.username}
+                    />
+                    <div className="text-left">
+                      <span className="font-medium text-gray-800">@{user.username}</span>
+                      <p className="text-sm text-gray-500">{user.name}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-gray-600 mt-4">No users found.</p>
+            )}
+          </>
+        )}
       </div>
-      <Footer />
     </div>
+    <Footer />
+  </div>
+
   );
 }

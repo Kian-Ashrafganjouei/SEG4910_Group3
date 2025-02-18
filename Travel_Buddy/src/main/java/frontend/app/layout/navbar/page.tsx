@@ -69,11 +69,11 @@ const Navbar = () => {
           </div>
           <div className="profile">
             <a
-              href="/trips/profile"
+              href="/searchusers"
               onClick={(e) => {
                 if (!session) {
                   e.preventDefault();
-                  signIn(undefined, { callbackUrl: "/trips/profile" });
+                  signIn(undefined, { callbackUrl: "/searchusers" });
                 }
               }}
               className="relative group">

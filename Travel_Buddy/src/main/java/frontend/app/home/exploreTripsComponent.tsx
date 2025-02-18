@@ -170,6 +170,28 @@ export default function ExploreTripsComponent() {
     }
   };
 
+  const handleReviewSubmit = async (tripId, rating) => {
+    if (!rating) return;
+    console.log(tripId,rating)
+  
+    try {
+      const response = await fetch("/backend/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId, rating }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to submit review");
+      }
+      alert("Review submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert("Failed to submit review. Please try again.");
+    }
+  };
+  
+
   const getUserTripStatus = (tripId: number): string | null => {
     const userTrip = userTrips.find((ut) => ut.trip?.tripId === tripId);
     console.log("Checking status for tripId:", tripId, "Status:", userTrip?.status); // Debugging
@@ -532,6 +554,19 @@ export default function ExploreTripsComponent() {
 
                     </span>
                     <span className="flex-auto py-1">@{trip.createdBy.username}</span>
+                    {getUserTripStatus(trip.tripId) === "joined" && (
+                  <div className="mt-2 flex items-center">
+                    <select
+                      className="bg-transparent text-blue-700 border-blue-500 hover:bg-blue-50"
+                      onChange={(e) => handleReviewSubmit(trip.tripId, e.target.value)}
+                    >
+                      <option value="">Rate Trip</option>
+                      {[1, 2, 3, 4, 5].map((num) => (
+                        <option key={num} value={num}>{num} ⭐</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                     {(getUserTripStatus(trip.tripId) === "joined" ||
                     getUserTripStatus(trip.tripId) === "declined" ||
                     getUserTripStatus(trip.tripId) === "requested" ||
