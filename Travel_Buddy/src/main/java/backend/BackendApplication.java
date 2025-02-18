@@ -387,6 +387,13 @@ public class BackendApplication {
             user.setBio(updatedUser.getBio());
             user.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 
+            try {
+                user.setProfilePicture(updatedUser.getProfilePicture());
+            } catch (Exception e) {
+                System.out.println("Error setting profile picture: " + e.getMessage());
+                e.printStackTrace();
+            }
+
             // Save the updated user
             user_repository.save(user);
             System.out.println("User updated successfully.");
@@ -453,6 +460,28 @@ public class BackendApplication {
         } else {
             System.out.println("Trip not found with ID: " + id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found");
+        }
+    }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/backend/reviews")
+    public ResponseEntity<?> setUserReview(@RequestBody Map<String, Object> requestBody) {
+        try {
+            Long tripId = ((Number) requestBody.get("tripId")).longValue();
+            int rating = Integer.parseInt(requestBody.get("rating").toString());
+
+            // Find the user associated with the trip
+            List<UserTrips> userTrips = userTripsRepository.findByTripId(tripId);
+            if (userTrips.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user found for this trip.");
+            }
+            User user = userTrips.get(0).getUser(); // Assuming one user per trip
+            user.setReviewScore(rating);
+            user_repository.save(user);
+            System.out.println("MEOW");
+        return ResponseEntity.ok("Review successfully updated.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating review.");
         }
     }
 
@@ -579,6 +608,13 @@ public class BackendApplication {
     @GetMapping("/backend/posts")
     public ResponseEntity<List<Post>> getAllPosts() {
         return ResponseEntity.ok(postRepository.findAll());
+    }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/posts/user/{userId}")
+    public ResponseEntity<List<Post>> getPostsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(postRepository.findPostsByUserId(userId));
+
     }
 
     @CrossOrigin(origins = "http://localhost:3000")

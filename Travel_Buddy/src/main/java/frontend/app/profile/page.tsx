@@ -17,6 +17,7 @@ interface UserData {
   sex?: string;
   interests?: string[];
   bio?: string;
+  profilePicture?: string;
 }
 
 interface Post {
@@ -185,7 +186,6 @@ export default function Profile() {
       setNewImage(null);
       setSelectedUserTripId(null);
       setIsModalOpen(false);
-      router.push("/trips/profile"); // Redirect to the posts page
     } catch (error) {
       console.error("Error adding post:", error);
       alert("An error occurred while adding the post.");
@@ -235,7 +235,10 @@ export default function Profile() {
                     const reader = new FileReader();
                     reader.onload = (event) => {
                       const imageUrl = event.target?.result as string;
-                      setUserData({ ...userData, profilePicture: imageUrl });
+                      setUserData((prevUserData) => ({
+                        ...prevUserData,
+                        profilePicture: imageUrl,
+                      }));
                     };
                     reader.readAsDataURL(file);
                   }

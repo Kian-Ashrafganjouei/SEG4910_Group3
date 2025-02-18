@@ -20,9 +20,10 @@ CREATE TABLE Users (
     age INT,
     sex VARCHAR(10),
     bio TEXT,
-    profile_picture VARCHAR(255),
+    profile_picture TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    review_score INT DEFAULT 3 CHECK (review_score BETWEEN 1 AND 5)
 );
 
 INSERT INTO Users (
@@ -153,7 +154,7 @@ CREATE TABLE trip_interests (
 CREATE TABLE UserTrips (
     user_trip_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES Users(user_id),
-    trip_id INT REFERENCES Trips(trip_id),
+    trip_id INT REFERENCES Trips(trip_id) ON DELETE CASCADE,
     role VARCHAR(50),
     status VARCHAR(50) CHECK (status IN ('requested', 'joined', 'declined', 'created')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -187,10 +188,9 @@ AFTER INSERT ON Trips
 FOR EACH ROW
 EXECUTE FUNCTION insert_user_trip();
 
--- Posts Table
 CREATE TABLE Posts (
     post_id SERIAL PRIMARY KEY,
-    usertrip_id INT REFERENCES UserTrips(user_trip_id) NULL,
+    usertrip_id INT REFERENCES UserTrips(user_trip_id) ON DELETE CASCADE,
     caption TEXT NOT NULL,
     image VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
