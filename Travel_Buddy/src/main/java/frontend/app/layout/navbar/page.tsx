@@ -192,7 +192,7 @@ const Navbar = () => {
                   >
                 
                     {notifications.length > 0 ? (
-                      <ul className="p-2 space-y-2">
+                      <ul className="p-2 space-y-2 max-h-60 overflow-y-auto"> {/* Apply scrolling */}
                         {notifications.map((notification) => (
                           <li
                             key={notification.id}
