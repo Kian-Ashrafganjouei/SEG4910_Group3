@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 
+const apiURL = process.env.API_URL;
 const options = {
   providers: [
     GoogleProvider({
@@ -16,7 +17,7 @@ const options = {
       async authorize(credentials) {
         try {
           const res = await fetch(
-            "http://docker-backend-1:8080/backend/credentials/signin",
+            `${apiURL}/backend/credentials/signin`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -54,7 +55,7 @@ const options = {
       if (account.provider === "google") {
         try {
           const res = await fetch(
-            "http://docker-backend-1:8080/backend/google/signin",
+            `${apiURL}/backend/google/signin`,
             {
               method: "POST",
               headers: {

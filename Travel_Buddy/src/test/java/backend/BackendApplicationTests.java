@@ -296,4 +296,223 @@ class BackendApplicationTests {
         List<Map<String, Object>> trips = (List<Map<String, Object>>) response.getBody();
         assertTrue(trips.isEmpty());
     }
+
+    @Test
+    void shouldReturnAllTripsSuccessfully() {
+        // Arrange
+        Trip trip1 = new Trip();
+        trip1.setTripId(1L);
+        trip1.setLocation("Paris");
+        trip1.setDescription("Trip to Paris");
+
+        Trip trip2 = new Trip();
+        trip2.setTripId(2L);
+        trip2.setLocation("Tokyo");
+        trip2.setDescription("Trip to Tokyo");
+
+        List<Trip> mockTrips = Arrays.asList(trip1, trip2);
+        when(trip_repository.findAll()).thenReturn(mockTrips);
+
+        // Act
+        ResponseEntity<List<Trip>> response = backendApplication.getAllTrips();
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().size());
+        assertEquals("Paris", response.getBody().get(0).getLocation());
+        assertEquals("Tokyo", response.getBody().get(1).getLocation());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoTripsAvailable() {
+        // Arrange
+        when(trip_repository.findAll()).thenReturn(List.of());
+
+        // Act
+        ResponseEntity<List<Trip>> response = backendApplication.getAllTrips();
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    void shouldReturnTripByIdSuccessfully() {
+        // Arrange
+        Trip trip = new Trip();
+        trip.setTripId(1L);
+        trip.setLocation("Paris");
+        trip.setDescription("Trip to Paris");
+
+        when(trip_repository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // Act
+        ResponseEntity<Trip> response = backendApplication.getTripById(1L);
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        assertEquals("Paris", response.getBody().getLocation());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenTripDoesNotExist() {
+        // Arrange
+        when(trip_repository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act
+        ResponseEntity<Trip> response = backendApplication.getTripById(99L);
+
+        // Assert
+        assertEquals(404, response.getStatusCodeValue());
+        assertNull(response.getBody());
+    }
+
+
+    @Test
+    void shouldDeleteUserAccountIfExists() {
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setEmail("test@example.com");
+        when(user_repository.findByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
+
+        ResponseEntity<?> response = backendApplication.handle_forgetme(mockUser);
+
+        assertEquals(200, response.getStatusCodeValue());
+        verify(user_repository, times(1)).deleteById(mockUser.getUserId());
+    }
+
+    @Test
+    void shouldReturnBadRequestForNonExistentEmail() {
+        when(user_repository.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
+
+        User mockUser = new User();
+        mockUser.setEmail("nonexistent@example.com");
+        ResponseEntity<?> response = backendApplication.handle_forgetme(mockUser);
+
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("Email doesn't exist.", response.getBody());
+    }
+
+    @Test
+    void shouldReturnUserDataIfEmailExists() {
+        // Arrange
+        User mockUser = new User();
+        mockUser.setEmail("test@example.com");
+        mockUser.setUsername("testuser");
+
+        when(user_repository.findByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
+
+        // Act
+        ResponseEntity<?> response = backendApplication.get_user_data("test@example.com");
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(mockUser, response.getBody());
+    }
+
+    @Test
+    void shouldReturnBadRequestIfEmailDoesNotExist() {
+        // Arrange
+        when(user_repository.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
+
+        // Act
+        ResponseEntity<?> response = backendApplication.get_user_data("nonexistent@example.com");
+
+        // Assert
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("User not found", response.getBody());
+    }
+
+    @Test
+    void shouldUpdateUserTripStatusIfExists() {
+        // Arrange
+        Long userTripId = 1L;
+        String newStatus = "Confirmed";
+
+        UserTrips mockUserTrip = new UserTrips();
+        mockUserTrip.setTripId(userTripId);
+        mockUserTrip.setStatus("Pending");
+
+        when(userTripsRepository.findById(userTripId)).thenReturn(Optional.of(mockUserTrip));
+
+        Map<String, String> payload = new HashMap<>();
+        payload.put("status", newStatus);
+
+        // Act
+        ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Status updated successfully.", response.getBody());
+        assertEquals(newStatus, mockUserTrip.getStatus());
+        verify(userTripsRepository, times(1)).save(mockUserTrip);
+    }
+
+    @Test
+    void shouldReturnNotFoundIfUserTripDoesNotExist() {
+        // Arrange
+        Long userTripId = 99L;
+        when(userTripsRepository.findById(userTripId)).thenReturn(Optional.empty());
+
+        Map<String, String> payload = new HashMap<>();
+        payload.put("status", "Cancelled");
+
+        // Act
+        ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
+
+        // Assert
+        assertEquals(404, response.getStatusCodeValue());
+        assertEquals("UserTrip not found.", response.getBody());
+    }
+
+    @Test
+    void shouldHandleExceptionGracefully() {
+        // Arrange
+        Long userTripId = 1L;
+        Map<String, String> payload = new HashMap<>();
+        payload.put("status", "Cancelled");
+
+        when(userTripsRepository.findById(userTripId)).thenThrow(new RuntimeException("Database error"));
+
+        // Act
+        ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
+
+        // Assert
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals("An error occurred while updating the UserTrip status.", response.getBody());
+    }
+
+    @Test
+    void shouldReturnBadRequestForExistingUser() {
+        User U = new User();
+        U.setUsername("user0");
+        U.setPassword("pass0");
+        U.setEmail("email0@gmail.com");
+
+        when(user_repository.findByEmail(U.getEmail())).thenReturn(Optional.of(U));
+        when(user_repository.findByUsername(U.getUsername())).thenReturn(Optional.of(U));
+
+        ResponseEntity<?> res = backendApplication.handle_signup(U);
+
+        assertEquals("Email already exists", res.getBody());
+        assertEquals(400, res.getStatusCodeValue());
+    }
+
+    @Test
+    void shouldReturnSuccessForNonExistingUser() {
+        User U = new User();
+        U.setUsername("user0");
+        U.setPassword("pass0");
+        U.setEmail("email0@gmail.com");
+
+        when(user_repository.findByEmail(U.getEmail())).thenReturn(Optional.empty());
+        when(user_repository.findByUsername(U.getUsername())).thenReturn(Optional.empty());
+
+        ResponseEntity<?> res = backendApplication.handle_signup(U);
+
+        assertEquals(200, res.getStatusCodeValue());
+    }
 }

@@ -20,9 +20,10 @@ CREATE TABLE Users (
     age INT,
     sex VARCHAR(10),
     bio TEXT,
-    profile_picture VARCHAR(255),
+    profile_picture TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    review_score INT DEFAULT 3 CHECK (review_score BETWEEN 1 AND 5)
 );
 
 -- Create a new join table for user languages
@@ -67,18 +68,35 @@ CREATE TABLE trip_interests (
 CREATE TABLE UserTrips (
     user_trip_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES Users(user_id),
-    trip_id INT REFERENCES Trips(trip_id),
+    trip_id INT REFERENCES Trips(trip_id) ON DELETE CASCADE,
     role VARCHAR(50),
-    status VARCHAR(50) CHECK (status IN ('requested', 'joined', 'declined')),
+    status VARCHAR(50) CHECK (status IN ('requested', 'joined', 'declined', 'created')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 ALTER TABLE UserTrips ADD CONSTRAINT unique_user_trip UNIQUE (user_id, trip_id);
 
+-- Create a function for the trigger
+CREATE OR REPLACE FUNCTION insert_user_trip()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Insert a new record into UserTrips table
+    INSERT INTO UserTrips (user_id, trip_id, role, status, created_at)
+    VALUES (NEW.created_by, NEW.trip_id, 'creator', 'created', CURRENT_TIMESTAMP);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create the trigger
+CREATE TRIGGER after_trip_insert
+AFTER INSERT ON Trips
+FOR EACH ROW
+EXECUTE FUNCTION insert_user_trip();
+
 -- Posts Table
 CREATE TABLE Posts (
     post_id SERIAL PRIMARY KEY,
-    usertrip_id INT REFERENCES UserTrips(user_trip_id) NULL,
+    usertrip_id INT REFERENCES UserTrips(user_trip_id) ON DELETE CASCADE,
     caption TEXT NOT NULL,
     image VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
