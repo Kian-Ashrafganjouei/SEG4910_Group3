@@ -29,11 +29,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import backend.model.Interest;
+import backend.model.Notification;
 import backend.model.Post;
 import backend.model.Trip;
 import backend.model.User;
 import backend.model.UserTrips;
 import backend.repository.InterestRepository;
+import backend.repository.NotificationRepository;
 import backend.repository.PostRepository;
 import backend.repository.TripRepository;
 import backend.repository.UserRepository;
@@ -60,6 +62,9 @@ public class BackendApplication {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     // Main method to run the Spring Boot applicatio
     public static void main(String[] args) {
@@ -617,5 +622,41 @@ public class BackendApplication {
         // Return the relative path used by the frontend
         return "/images/posts/" + image.getOriginalFilename();
     }        
+    
+    // Get all notifications for a user
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/notifications")
+    public ResponseEntity<?> getUserNotifications(@RequestParam String email) {
+        Optional<User> userOptional = user_repository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("User not found.");
+        }
+
+        List<Notification> notifications = notificationRepository.findByUserUserId(userOptional.get().getUserId());
+        return ResponseEntity.ok(notifications);
+    }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/backend/notifications/all")
+    public ResponseEntity<?> getAllNotifications() {
+        List<Notification> notifications = notificationRepository.findAll();
+        return ResponseEntity.ok(notifications);
+    }
+
+    // Mark a notification as read
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PutMapping("/backend/notifications/{notificationId}/read")
+    public ResponseEntity<?> markNotificationAsRead(@PathVariable Long notificationId) {
+        Optional<Notification> notificationOptional = notificationRepository.findById(notificationId);
+        if (notificationOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Notification not found.");
+        }
+
+        Notification notification = notificationOptional.get();
+        notification.setStatus("read");
+        notificationRepository.save(notification);
+
+        return ResponseEntity.ok("Notification marked as read.");
+    }
 
 }
