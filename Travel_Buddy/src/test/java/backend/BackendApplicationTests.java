@@ -515,4 +515,27 @@ class BackendApplicationTests {
 
         assertEquals(200, res.getStatusCodeValue());
     }
+
+    @Test
+    void shouldReturnAllUsersSuccessfully() {
+        // Arrange: Create a list of mock users.
+        List<User> mockUsers = new ArrayList<>();
+        User user1 = new User();
+        user1.setUserId(1L);
+        user1.setUsername("user1");
+        User user2 = new User();
+        user2.setUserId(2L);
+        user2.setUsername("user2");
+        mockUsers.add(user1);
+        mockUsers.add(user2);
+        
+        when(user_repository.findAll()).thenReturn(mockUsers);
+
+        // Act: Call the getAllUsers endpoint.
+        ResponseEntity<List<User>> response = backendApplication.getAllUsers();
+
+        // Assert: Verify that the response is HTTP 200 and contains the mock users.
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(mockUsers, response.getBody());
+    }
 }
