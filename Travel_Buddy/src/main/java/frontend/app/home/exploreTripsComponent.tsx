@@ -176,6 +176,27 @@ export default function ExploreTripsComponent() {
     }
   };
 
+  const handleReviewSubmit = async (tripId, rating) => {
+    if (!rating) return;
+    console.log(tripId, rating);
+
+    try {
+      const response = await fetch("/backend/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId, rating }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit review");
+      }
+      alert("Review submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert("Failed to submit review. Please try again.");
+    }
+  };
+
   const getUserTripStatus = (tripId: number): string | null => {
     const userTrip = userTrips.find((ut) => ut.trip?.tripId === tripId);
     console.log(

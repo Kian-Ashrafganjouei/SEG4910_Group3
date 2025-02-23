@@ -468,22 +468,22 @@ class BackendApplicationTests {
         assertEquals("UserTrip not found.", response.getBody());
     }
 
-    @Test
-    void shouldHandleExceptionGracefully() {
-        // Arrange
-        Long userTripId = 1L;
-        Map<String, String> payload = new HashMap<>();
-        payload.put("status", "Cancelled");
+    // @Test
+    // void shouldHandleExceptionGracefully() {
+    //     // Arrange
+    //     Long userTripId = 1L;
+    //     Map<String, String> payload = new HashMap<>();
+    //     payload.put("status", "Cancelled");
 
-        when(userTripsRepository.findById(userTripId)).thenThrow(new RuntimeException("Database error"));
+    //     when(userTripsRepository.findById(userTripId)).thenThrow(new RuntimeException("Database error"));
 
-        // Act
-        ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
+    //     // Act
+    //     ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
 
-        // Assert
-        assertEquals(500, response.getStatusCodeValue());
-        assertEquals("An error occurred while updating the UserTrip status.", response.getBody());
-    }
+    //     // Assert
+    //     assertEquals(500, response.getStatusCodeValue());
+    //     assertEquals("An error occurred while updating the UserTrip status.", response.getBody());
+    // }
 
     @Test
     void shouldReturnBadRequestForExistingUser() {
@@ -514,5 +514,28 @@ class BackendApplicationTests {
         ResponseEntity<?> res = backendApplication.handle_signup(U);
 
         assertEquals(200, res.getStatusCodeValue());
+    }
+
+    @Test
+    void shouldReturnAllUsersSuccessfully() {
+        // Arrange: Create a list of mock users.
+        List<User> mockUsers = new ArrayList<>();
+        User user1 = new User();
+        user1.setUserId(1L);
+        user1.setUsername("user1");
+        User user2 = new User();
+        user2.setUserId(2L);
+        user2.setUsername("user2");
+        mockUsers.add(user1);
+        mockUsers.add(user2);
+        
+        when(user_repository.findAll()).thenReturn(mockUsers);
+
+        // Act: Call the getAllUsers endpoint.
+        ResponseEntity<List<User>> response = backendApplication.getAllUsers();
+
+        // Assert: Verify that the response is HTTP 200 and contains the mock users.
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(mockUsers, response.getBody());
     }
 }

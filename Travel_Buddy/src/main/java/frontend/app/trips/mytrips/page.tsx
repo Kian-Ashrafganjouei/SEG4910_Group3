@@ -157,127 +157,124 @@ export default function MyTrips() {
 
   return (
     <div className="mt-16">
-      <Navbar />
-      <div className="flex justify-center">
-        <div className="trips-container trips-container block m-auto max-w-[800px] mt-7 mb-6"> 
-          <h1 className="title text-center text-4xl font-bold mb-8">
-            My Trips
-          </h1>
-          {isLoading ? (
-            <p className="loading-msg text-center text-xl font-semibold">
-              Loading trips...
-            </p>
-          ) : errorMessage ? (
-            <p className="error-msg text-center text-xl text-red-300">
-              {errorMessage}
-            </p>
-          ) : trips.length > 0 ? (
-            <div className="trip-list space-y-6">
-              {trips.map((trip) => (
-                <div
-                  key={trip.tripId}
-                  className="block mb-3.5 w-full rounded-lg border border-lightgray-600 bg-white shadow-secondary-1"
-                >
-                  <div className="flex border-b border-gray-300 px-6 py-3 text-surface h-[max-content]" style={{color: "black"}}>
-                    <span className="flex-auto py-1 trip-location text-2xl">{trip.location}</span>
-                    <span className="float-right">
-                      <button
-                        onClick={() => handleDeleteTrip(trip.tripId)}
-                        className="px-2 py-1 text-red-600 text-lg rounded-lg hover:bg-red-700 hover:text-white"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                      <button
-                          onClick={() => handleEditTrip(trip.tripId)}
-                          className="ml-3 px-2 py-1 text-blue-600 text-lg rounded-lg hover:bg-blue-600 hover:text-white"
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                        </button>
-                    </span>
-                  </div>
-                    
-                  <div className="flex justify-between p-6">               
-                    <div className="trip-info w-3/5">
-                      <p className="trip-dates text-lg text-gray-600 mb-4">
-                        {moment(trip.startDate).format('MMM D, YYYY')} - {moment(trip.endDate).format('MMM D, YYYY')}
-                      </p>
-                      <p className="description text-gray-700 mb-4">
-                        {trip.description}
-                      </p>
-                      {trip.interests && trip.interests.length > 0 && (
-                        <div className="interests text-gray-700">
-                          <h3 className="font-semibold mb-2">Interests:</h3>
-                          <ul className="list-disc ml-6">
-                            {trip.interests.map((interest) => (
-                              <li key={interest.interestId}>{interest.name}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="requests-section w-2/5 bg-gray-100 p-4 rounded-lg">
-                      <h3 className="requests-title text-lg font-bold mb-4 text-blue-800">
-                        Requests
-                      </h3>
-                      {requests[trip.tripId]?.filter(req => req.status !== "created").length > 0 ? (
-                      <ul className="space-y-2">
-                        {requests[trip.tripId]
-                          .filter((req) => req.status !== "created")
-                          .map((req) => (
-                            <li
-                              key={req.userTripId}
-                              className="request-item flex justify-between items-center bg-gray-200 p-2 rounded-lg"
-                            >
-                              <div>
-                                <span className="username font-semibold">
-                                  {req.username}
-                                </span>{" "}
-                                <span className="status text-sm">
-                                  ({req.status})
-                                </span>
-                              </div>
-                              {req.status === "requested" && (
-                                <div className="actions flex space-x-2">
-                                  <button
-                                    onClick={() =>
-                                      handleRequestAction(req.userTripId, "joined")
-                                    }
-                                    className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-700"
-                                  >
-                                    Accept
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleRequestAction(req.userTripId, "declined")
-                                    }
-                                    className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-700"
-                                  >
-                                    Decline
-                                  </button>
-                                </div>
-                              )}
-                            </li>
-                          ))}
-                      </ul>
-                    ) : (
-                      <p className="text-gray-500">No requests.</p>
-                    )}
-
-                    </div>
-
-                  </div>                     
-
-
+    <Navbar />
+    <div className="flex justify-center">
+      <div className="trips-container block m-auto max-w-[1400px] min-w-[1100px] mt-7 mb-6"> 
+        <h1 className="title text-center text-4xl font-bold mb-8">
+          My Trips
+        </h1>
+        {isLoading ? (
+          <p className="loading-msg text-center text-xl font-semibold">
+            Loading trips...
+          </p>
+        ) : errorMessage ? (
+          <p className="error-msg text-center text-xl text-red-300">
+            {errorMessage}
+          </p>
+        ) : trips.length > 0 ? (
+          <div className="trip-list space-y-6">
+            {trips.map((trip) => (
+              <div
+                key={trip.tripId}
+                className="block mb-3.5 w-full rounded-lg border border-gray-300 bg-white shadow-lg p-6"
+              >
+                <div className="flex justify-between items-center border-b border-gray-300 px-6 py-3 text-black">
+                  <span className="trip-location text-2xl">{trip.location}</span>
+                  <span className="flex space-x-3">
+                    <button
+                      onClick={() => handleDeleteTrip(trip.tripId)}
+                      className="px-3 py-1 text-red-600 text-lg rounded-lg hover:bg-red-700 hover:text-white"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                    <button
+                      onClick={() => handleEditTrip(trip.tripId)}
+                      className="px-3 py-1 text-blue-600 text-lg rounded-lg hover:bg-blue-600 hover:text-white"
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                  </span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="no-trips-msg text-center text-xl">No trips found.</p>
-          )}
-        </div>
+                  
+                <div className="flex justify-between p-6">               
+                  <div className="trip-info w-3/5">
+                    <p className="trip-dates text-lg text-gray-600 mb-4">
+                      {moment(trip.startDate).format('MMM D, YYYY')} - {moment(trip.endDate).format('MMM D, YYYY')}
+                    </p>
+                    <p className="description text-gray-700 mb-4">
+                      {trip.description}
+                    </p>
+                    {trip.interests && trip.interests.length > 0 && (
+                      <div className="interests text-gray-700">
+                        <h3 className="font-semibold mb-2">Interests:</h3>
+                        <ul className="list-disc ml-6">
+                          {trip.interests.map((interest) => (
+                            <li key={interest.interestId}>{interest.name}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+  
+                  <div className="requests-section w-2/5 bg-gray-100 p-4 rounded-lg">
+                    <h3 className="requests-title text-lg font-bold mb-4 text-blue-800">
+                      Requests
+                    </h3>
+                    {requests[trip.tripId]?.filter(req => req.status !== "created").length > 0 ? (
+                    <ul className="space-y-2">
+                      {requests[trip.tripId]
+                        .filter((req) => req.status !== "created")
+                        .map((req) => (
+                          <li
+                            key={req.userTripId}
+                            className="request-item flex justify-between items-center bg-gray-200 p-3 rounded-lg"
+                          >
+                            <div>
+                              <span className="username font-semibold">
+                                {req.username}
+                              </span>{" "}
+                              <span className="status text-sm">
+                                ({req.status})
+                              </span>
+                            </div>
+                            {req.status === "requested" && (
+                              <div className="actions flex space-x-2">
+                                <button
+                                  onClick={() =>
+                                    handleRequestAction(req.userTripId, "joined")
+                                  }
+                                  className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-700"
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleRequestAction(req.userTripId, "declined")
+                                  }
+                                  className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-700"
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            )}
+                          </li>
+                        ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500">No requests.</p>
+                  )}
+                  </div>
+                </div>                     
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="no-trips-msg text-center text-xl">No trips found.</p>
+        )}
       </div>
-      <Footer />
     </div>
+    <Footer />
+  </div>
+  
   );
 }

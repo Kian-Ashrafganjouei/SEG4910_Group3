@@ -73,6 +73,9 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private Timestamp updatedAt;
 
+    @Column(name = "review_score")
+    private Integer reviewScore = 3;
+
     @PrePersist
     protected void onCreate() {
         Timestamp now = new Timestamp(System.currentTimeMillis());
@@ -157,6 +160,14 @@ public class User {
 
     public void setAge(Integer age) {
         this.age = age;
+    }
+
+    public Integer getReviewScore() {
+        return reviewScore;
+    }
+
+    public void setReviewScore(Integer score) {
+        this.reviewScore = score;
     }
 
     public String getSex() {
