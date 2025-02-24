@@ -693,6 +693,19 @@ export default function ExploreTripsComponent() {
                 <span className="flex-auto py-1">
                   @{trip.createdBy.username}
                 </span>
+                {getUserTripStatus(trip.tripId) === "joined" && (
+                  <div className="mt-2 flex items-center">
+                    <select
+                      className="bg-transparent text-blue-700 border-blue-500 hover:bg-blue-50"
+                      onChange={(e) => handleReviewSubmit(trip.tripId, e.target.value)}
+                    >
+                      <option value="">Rate Trip</option>
+                      {[1, 2, 3, 4, 5].map((num) => (
+                        <option key={num} value={num}>{num} ⭐</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 {(getUserTripStatus(trip.tripId) === "joined" ||
                   getUserTripStatus(trip.tripId) === "declined" ||
                   getUserTripStatus(trip.tripId) === "requested" ||
@@ -709,6 +722,7 @@ export default function ExploreTripsComponent() {
                       : ""}
                   </span>
                 )}
+                
                 <button
                   onClick={() => handleRequestToggle(trip.tripId)}
                   className={`float-right py-1 px-2 font-semibold rounded border transition ${
