@@ -330,14 +330,14 @@ VALUES (
     2 
 );
 
-INSERT INTO UserTrips (
-    user_id, trip_id, status
-) 
-VALUES (
-    2, 
-    1, 
-    'requested'
-);
+-- INSERT INTO UserTrips (
+--     user_id, trip_id, status
+-- ) 
+-- VALUES (
+--     2, 
+--     1, 
+--     'requested'
+-- );
 
 INSERT INTO Posts (usertrip_id, caption, image)
 VALUES (1, 'Loving the beautiful Eiffel Tower views!', 'https://upload.wikimedia.org/wikipedia/commons/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg');

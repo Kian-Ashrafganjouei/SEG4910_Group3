@@ -221,9 +221,11 @@ public class BackendApplication {
             @RequestBody Map<String, String> payload) {
         try {
             String status = payload.get("status");
+            System.out.println("Received update request for UserTrip ID: " + userTripId + " with status: " + status);
 
             Optional<UserTrips> userTripOptional = userTripsRepository.findById(userTripId);
             if (userTripOptional.isEmpty()) {
+                System.out.println("UserTrip with ID " + userTripId + " not found.");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("UserTrip not found.");
             }
 
@@ -233,7 +235,7 @@ public class BackendApplication {
 
             return ResponseEntity.ok("Status updated successfully.");
         } catch (Exception e) {
-            System.err.println("Error updating UserTrip status: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while updating the UserTrip status.");
         }
