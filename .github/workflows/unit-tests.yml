@@ -29,19 +29,19 @@ jobs:
     - name: Start containers
       run: docker compose -f Docker/docker-compose.yml up -d --wait --wait-timeout 300
 
-    - name: Wait for Backend to be Healthy
-      run: |
-        for i in {1..30}; do
-          STATUS=$(docker inspect --format='{{.State.Health.Status}}' docker-backend-1 || echo "not found")
-          echo "Backend status: $STATUS"
-          if [ "$STATUS" == "healthy" ]; then
-            echo "Backend is healthy!"
-            exit 0
-          fi
-          sleep 5
-        done
-        echo "Backend did not become healthy in time."
-        exit 1
+    # - name: Wait for Backend to be Healthy
+    #   run: |
+    #     for i in {1..30}; do
+    #       STATUS=$(docker inspect --format='{{.State.Health.Status}}' docker-backend-1 || echo "not found")
+    #       echo "Backend status: $STATUS"
+    #       if [ "$STATUS" == "healthy" ]; then
+    #         echo "Backend is healthy!"
+    #         exit 0
+    #       fi
+    #       sleep 5
+    #     done
+    #     echo "Backend did not become healthy in time."
+    #     exit 1
 
     - name: Run Gradle Tests and Generate Coverage Report
       run: docker exec -i docker-backend-1 ./gradlew test jacocoTestReport
