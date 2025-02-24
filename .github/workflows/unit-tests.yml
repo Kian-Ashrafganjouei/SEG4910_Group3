@@ -25,9 +25,9 @@ jobs:
 
     - name: Rebuild Docker Images
       run: docker-compose -f Docker/docker-compose.yml build --no-cache
-
-    - name: Start Containers
-      run: docker-compose -f Docker/docker-compose.yml up -d
+      
+    - name: Start containers
+      run: docker compose -f Docker/docker-compose.yml up -d --wait --wait-timeout 300
 
     - name: Wait for Backend to be Healthy
       run: |
