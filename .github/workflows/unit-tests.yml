@@ -23,8 +23,8 @@ jobs:
     - name: Clean Docker Environment
       run: docker system prune -a -f
 
-    - name: Build Docker Containers
-      run: docker-compose -f Docker/docker-compose.yml build
+    - name: Rebuild Docker Images
+      run: docker-compose -f Docker/docker-compose.yml build --no-cache
 
     - name: Start Containers
       run: docker-compose -f Docker/docker-compose.yml up -d
