@@ -20,6 +20,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y docker-compose
 
+    - name: Clean Docker Environment
+      run: docker system prune -a -f
+
     - name: Build Docker Containers
       run: docker-compose -f Docker/docker-compose.yml build
 
