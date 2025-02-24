@@ -4,6 +4,8 @@ import Navbar from "../../layout/navbar/page";
 import Footer from "../../layout/footer/page";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface Post {
   postId: number;
@@ -21,6 +23,15 @@ interface Post {
       location: string;
     };
   };
+}
+
+interface Review {
+  post: Post;
+  reviewer?:{
+    userId: number;
+  }  
+  rating: number;
+  comment: string;
 }
 
 interface User {
@@ -46,6 +57,7 @@ export default function Profile() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [userTrips, setUserTrips] = useState<UserTrip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -56,6 +68,68 @@ export default function Profile() {
     null
   );
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [newReview, setNewReview] = useState<Review>({post: {postId: -1, caption: "", image: "", createdAt: ""}, rating: -1, comment: ""});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setNewReview((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  useEffect (() => {
+    if (isSubmitting) {
+      // console.log(`currUser.username: ${currUser?.username}`);
+      console.log(`newReview.reviewer?.userId: ${newReview.reviewer?.userId}`);
+      console.log(`newReview.postId: ${newReview.post.postId}`);
+      console.log(`newReview.rating: ${newReview.rating}`);
+      console.log(`newReview.reviewer.userId: ${newReview.reviewer?.userId}`);
+      console.log(`newReview.comment: ${newReview.comment}`);  
+      
+      (async () => {
+        try {
+          const response = await fetch(`/backend/reviews`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newReview),
+          });
+    
+          if (!response.ok) throw new Error("Failed to submit review");
+          
+          setShowPopup(false);
+          fetchPosts();
+          fetchReviews();
+          fetchUsers();
+          fetchUserTrips();
+        } catch (error) {
+          console.error("Error adding review:", error);
+        } finally {
+          setIsSubmitting(false);
+        }
+      })();
+    }
+  }, [newReview, isSubmitting])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setIsSubmitting(true);
+    // const currUser = users.find( (user) => user.name === session?.user.name && user.username === session?.user.username);
+
+    setNewReview((prev) => ({ ...prev, reviewer: {userId: Number(3)}}));
+
+  };
+
+  const onAddReviewClick = (postId: number) => {
+    setShowPopup(true);
+    console.log(`postId: ${postId}`);
+    const post = posts.find((p) => p.postId === postId);
+
+    if (post === undefined) {
+      throw new Error(`Post with id ${postId} is undefined.`);
+    }
+
+    setNewReview((prev) => ({...prev, post: post}));
+  }
 
   const fetchPosts = async () => {
     try {
@@ -91,6 +165,19 @@ export default function Profile() {
       setUsers(data);
     } catch (error) {
       console.error("Error fetching users:", error);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const response = await fetch("/backend/reviews");
+      if (!response.ok) throw new Error("Failed to fetch reviews");
+
+      const data: Review[] = await response.json();
+      setReviews(data);
+      console.log(reviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
     }
   };
 
@@ -161,8 +248,37 @@ export default function Profile() {
     setFilteredPosts(userPosts);
   };
 
+  const toggleReviews = (postId: number) => {
+    const reviewsList = document.getElementById(`reviews-list-${postId}`) as HTMLElement;
+    const button = document.querySelector(`#reviews-section-${postId} .toggle-reviews-btn`) as HTMLElement;
+
+    if (reviewsList.style.display === "none" || reviewsList.style.display === "") {
+      reviewsList.style.display = "block";
+      button.textContent = "Hide Reviews";
+    } else {
+      reviewsList.style.display = "none";
+      button.textContent = "Show Reviews";
+    }
+  };
+
+  const renderStars = (rating: number) => {
+    const emptyStars = 5 - rating; 
+    const stars = [];
+
+    for (let i = 0; i < rating; i++) {
+      stars.push(<FontAwesomeIcon key={`full-${i}`} icon={faStar} className="text-yellow-500" />);
+    }
+
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(<FontAwesomeIcon key={`empty-${i}`} icon={faStar} className="text-gray-400" />);
+    }
+
+    return stars;
+  };
+
   useEffect(() => {
     fetchPosts();
+    fetchReviews();
     fetchUsers();
     fetchUserTrips();
   }, [session]);
@@ -252,6 +368,108 @@ export default function Profile() {
                   <p className="post-date text-sm text-gray-500">
                     Posted on {new Date(post.createdAt).toLocaleDateString()}
                   </p>
+
+
+
+
+
+
+
+
+                  <div>
+                    {/* Button to open popup */}
+                    <button onClick={() => onAddReviewClick(post.postId)} className="bg-blue-500 text-white px-4 py-2 rounded">
+                      Add Review
+                    </button>
+
+                    {/* Popup Modal */}
+                    {showPopup && (
+                      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                          <h2 className="text-xl font-bold mb-4">Add a Review</h2>
+                          <form>
+
+                            <label className="block mb-2">Rating (1-5):</label>
+                            <input
+                              type="number"
+                              name="rating"
+                              value={newReview.rating}
+                              onChange={handleInputChange}
+                              min="1"
+                              max="5"
+                              required
+                              className="border p-2 w-full mb-3"
+                            />
+
+                            <label className="block mb-2">Comment:</label>
+                            <textarea
+                              name="comment"
+                              value={newReview.comment}
+                              onChange={handleInputChange}
+                              required
+                              className="border p-2 w-full mb-3"
+                            />
+
+                            <div className="flex justify-end">
+                              <button
+                                className="px-4 py-2 bg-gray-300 rounded mr-2"
+                                onClick={() => setShowPopup(false)}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                onClick={(e) => handleSubmit(e)}
+                                disabled={newReview.rating === 0 || newReview.comment.trim() === ""}
+                              >
+                                Submit Review
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  
+            <div id={`reviews-section-${post.postId}`} className="reviews-section mt-4">
+              <button
+                className="toggle-reviews-btn text-sm text-blue-500"
+                onClick={() => toggleReviews(post.postId)}
+              >
+                Show Reviews
+              </button>
+              <div
+                id={`reviews-list-${post.postId}`}
+                className="reviews-list mt-4"
+                style={{ display: "none" }}
+              >
+                {reviews
+                  .filter((review) => review.post.postId === post.postId)
+                  .map((review) => {
+                    const reviewer = users.find((user) => user.userId === review.reviewer?.userId);
+
+                    return (
+                      <div className="review-item mb-3">
+                        <div className="reviewer text-sm font-semibold text-gray-700">
+                          {reviewer ? `${reviewer.name} - ${reviewer.username}` : "User not found"}
+                        </div>
+                        <div className="rating text-sm">
+                          {renderStars(review.rating)}
+                        </div>
+                        <div className="comment text-sm text-gray-600">{review.comment}</div>
+                      </div>
+                    )
+                  })
+                }
+              </div>
+            </div>
+          
+
+
+
+
+
                 </div>
               ))}
             </div>
