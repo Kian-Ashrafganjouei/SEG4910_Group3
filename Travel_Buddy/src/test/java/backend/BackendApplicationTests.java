@@ -468,22 +468,25 @@ class BackendApplicationTests {
         assertEquals("UserTrip not found.", response.getBody());
     }
 
-    // @Test
-    // void shouldHandleExceptionGracefully() {
-    //     // Arrange
-    //     Long userTripId = 1L;
-    //     Map<String, String> payload = new HashMap<>();
-    //     payload.put("status", "Cancelled");
+    @Test
+    void shouldHandleExceptionGracefully() {
+        // Arrange
+        Long userTripId = 1L;
+        Map<String, String> payload = new HashMap<>();
+        payload.put("status", "Cancelled");
 
-    //     when(userTripsRepository.findById(userTripId)).thenThrow(new RuntimeException("Database error"));
+        // Ensure the mock repository throws an exception on save
+        when(userTripsRepository.findById(userTripId)).thenReturn(Optional.of(new UserTrips()));
+        doThrow(new RuntimeException("Database error"))
+            .when(userTripsRepository).save(any(UserTrips.class));
 
-    //     // Act
-    //     ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
+        // Act
+        ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
 
-    //     // Assert
-    //     assertEquals(500, response.getStatusCodeValue());
-    //     assertEquals("An error occurred while updating the UserTrip status.", response.getBody());
-    // }
+        // Assert
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals("An error occurred while updating the UserTrip status.", response.getBody());
+    }
 
     @Test
     void shouldReturnBadRequestForExistingUser() {
