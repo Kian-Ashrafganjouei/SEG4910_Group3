@@ -169,7 +169,7 @@ const Navbar = () => {
 
         <div className="white-space col-span-1"></div>
 
-        <div className="right-links flex space-x-10 col-span-3 justify-end pr-9">
+        <div className="right-links flex space-x-10 col-span-4 justify-end pr-9 items-center">
           <div className="friends">
             <a
               href="/profile"
@@ -193,51 +193,54 @@ const Navbar = () => {
               <span className="hover-underline-animation">Contact</span>
             </a>
           </div>
-          <div className="hidden md:flex justify-end items-center space-x-4 relative">
+          
             {session && (
-              <div className="relative flex items-center">
-                {unreadCount > 0 && (
-                  <span className="absolute -left-3 -top-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                    {unreadCount}
-                  </span>
-                )}
-                <button onClick={toggleNotificationsDropdown} className="relative ml-6">
-                  <FontAwesomeIcon icon={faBell} className="text-gray-700 text-xl hover:text-black" />
-                </button>
+                <div className=" notification-bell flex justify-center">
+                  {unreadCount > 0 && (
+                    <span className="-left-3 -top-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
+                  <button onClick={toggleNotificationsDropdown} className="bell-icon-button">
+                    <FontAwesomeIcon icon={faBell} className="text-gray-700 text-xl hover:text-black" />
+                  </button>
 
-                {isNotificationsOpen && (
-                  <div
-                    className="absolute right-0 top-full mt-2 w-60 bg-white border shadow-md rounded-md z-30"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                
-                    {notifications.length > 0 ? (
-                      <ul className="p-2 space-y-2 max-h-60 overflow-y-auto"> {/* Apply scrolling */}
-                        {notifications.map((notification) => (
-                          <li
-                            key={notification.id}
-                            className={`px-3 py-2 border-b last:border-b-0 text-sm cursor-pointer ${
-                              notification.status === "unread" ? "font-bold text-black" : "text-gray-600"
-                            }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              markNotificationAsRead(notification.id);
-                            }}
-                          >
-                            <p className="text-xs text-gray-500">
-                              {notification.createdAt.toLocaleString()} {/* Show formatted date & time */}
-                            </p>
-                            <p>{notification.message}</p>
-                          </li>
-                        ))}
-                      </ul>                    
-                    ) : (
-                      <p className="p-3 text-gray-500 text-sm">No new notifications</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                  {isNotificationsOpen && (
+                    <div
+                      className="absolute right-0 top-full mt-2 w-60 bg-white border shadow-md rounded-md z-30"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                  
+                      {notifications.length > 0 ? (
+                        <ul className="p-2 space-y-2 max-h-60 overflow-y-auto"> {/* Apply scrolling */}
+                          {notifications.map((notification) => (
+                            <li
+                              key={notification.id}
+                              className={`px-3 py-2 border-b last:border-b-0 text-sm cursor-pointer ${
+                                notification.status === "unread" ? "font-bold text-black" : "text-gray-600"
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markNotificationAsRead(notification.id);
+                              }}
+                            >
+                              <p className="text-xs text-gray-500">
+                                {notification.createdAt.toLocaleString()} {/* Show formatted date & time */}
+                              </p>
+                              <p>{notification.message}</p>
+                            </li>
+                          ))}
+                        </ul>                    
+                      ) : (
+                        <p className="p-3 text-gray-500 text-sm">No new notifications</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+          
+          <div className="hidden md:flex justify-end items-center space-x-4 relative">
+            {/* Signin/Signout button div */}
             {session ? (
               <button
                 onClick={handleSignOut}

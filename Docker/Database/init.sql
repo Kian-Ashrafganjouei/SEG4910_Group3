@@ -137,10 +137,12 @@ CREATE TABLE Reviews (
     reviewer_id INT REFERENCES Users(user_id),
     reviewee_id INT REFERENCES Users(user_id),
     trip_id INT REFERENCES Trips(trip_id),
+    post_id INT REFERENCES Posts(post_id) ON DELETE CASCADE,
     rating INT CHECK (rating >= 1 AND rating <= 5),
     comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- Events Table
 CREATE TABLE Events (
@@ -286,6 +288,17 @@ VALUES (
     'https://upload.wikimedia.org/wikipedia/commons/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg'
 );
 
+INSERT INTO Users (
+    username, name, email, password, profile_picture
+) 
+VALUES (
+    'ekoro061', 
+    'Lisa Koro', 
+    'ekoro061@uottawa.ca', 
+    'temp',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Sarah_Douglas_Photo_Op_GalaxyCon_Richmond_2023.jpg/220px-Sarah_Douglas_Photo_Op_GalaxyCon_Richmond_2023.jpg'
+);
+
 INSERT INTO Trips (
     location, start_date, end_date, description, created_by
 ) 
@@ -330,14 +343,23 @@ VALUES (
     2 
 );
 
--- INSERT INTO UserTrips (
---     user_id, trip_id, status
--- ) 
--- VALUES (
---     2, 
---     1, 
---     'requested'
--- );
+INSERT INTO UserTrips (user_id, trip_id, status)
+VALUES 
+    (2, 1, 'requested')
+ON CONFLICT (user_id, trip_id) DO UPDATE SET status = 'requested';
+
+INSERT INTO UserTrips (user_id, trip_id, status)
+VALUES 
+    (2, 2, 'joined')
+ON CONFLICT (user_id, trip_id) DO UPDATE SET status = 'joined';
 
 INSERT INTO Posts (usertrip_id, caption, image)
 VALUES (1, 'Loving the beautiful Eiffel Tower views!', 'https://upload.wikimedia.org/wikipedia/commons/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg');
+
+INSERT INTO Posts (usertrip_id, caption, image)
+VALUES (2, 'Exploring Moscow’s Red Square', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/0169_-_Moskau_2015_-_Roter_Platz_%2825795529393%29.jpg/800px-0169_-_Moskau_2015_-_Roter_Platz_%2825795529393%29.jpg');
+
+INSERT INTO Reviews (reviewer_id, post_id, rating, comment) 
+VALUES 
+    (1, 1, 5, 'Had an amazing time in Paris! The Eiffel Tower was breathtaking and the food was out of this world!'),
+    (2, 1, 1, 'John was pretty inconsiderate. He made plans without even consulting some of us, which kinda defeats the purpose of making this a group trip in the first place.')
