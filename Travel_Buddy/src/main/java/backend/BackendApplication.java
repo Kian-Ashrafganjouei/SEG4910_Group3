@@ -484,27 +484,27 @@ public class BackendApplication {
         }
     }
 
-    // @CrossOrigin(origins = "http://localhost:3000")
-    // @PostMapping("/backend/reviews")
-    // public ResponseEntity<?> setUserReview(@RequestBody Map<String, Object> requestBody) {
-    //     try {
-    //         Long tripId = ((Number) requestBody.get("tripId")).longValue();
-    //         int rating = Integer.parseInt(requestBody.get("rating").toString());
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/backend/reviewstemp")
+    public ResponseEntity<?> setUserReview(@RequestBody Map<String, Object> requestBody) {
+        try {
+            Long tripId = ((Number) requestBody.get("tripId")).longValue();
+            int rating = Integer.parseInt(requestBody.get("rating").toString());
 
-    //         // Find the user associated with the trip
-    //         List<UserTrips> userTrips = userTripsRepository.findByTripId(tripId);
-    //         if (userTrips.isEmpty()) {
-    //             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user found for this trip.");
-    //         }
-    //         User user = userTrips.get(0).getUser(); // Assuming one user per trip
-    //         user.setReviewScore(rating);
-    //         user_repository.save(user);
-    //         System.out.println("MEOW");
-    //     return ResponseEntity.ok("Review successfully updated.");
-    //     } catch (Exception e) {
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating review.");
-    //     }
-    // }
+            // Find the user associated with the trip
+            List<UserTrips> userTrips = userTripsRepository.findByTripId(tripId);
+            if (userTrips.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user found for this trip.");
+            }
+            User user = userTrips.get(0).getUser(); // Assuming one user per trip
+            user.setReviewScore(rating);
+            user_repository.save(user);
+            System.out.println("MEOW");
+        return ResponseEntity.ok("Review successfully updated.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating review.");
+        }
+    }
 
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/reviews")

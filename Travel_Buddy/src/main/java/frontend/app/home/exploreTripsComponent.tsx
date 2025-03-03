@@ -181,7 +181,7 @@ export default function ExploreTripsComponent() {
     console.log(tripId, rating);
 
     try {
-      const response = await fetch("/backend/reviews", {
+      const response = await fetch("/backend/reviewstemp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tripId, rating }),
