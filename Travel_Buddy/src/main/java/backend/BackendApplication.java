@@ -91,10 +91,19 @@ public class BackendApplication {
                 return ResponseEntity.badRequest().body("User not found.");
             }
 
+            Optional<Trip> tripOptional = trip_repository.findById(tripId);
+            if (tripOptional.isEmpty()) {
+                System.err.println("Error: Trip not found for ID :" + tripId);
+                return ResponseEntity.badRequest().body("Trip not found.");
+            }
+
             User user = userOptional.get();
             System.out.println("User found: " + user.getUserId());
 
-            // Check if UserTrip already exists
+            Trip trip = tripOptional.get();
+            System.out.println("Trip found: " + trip.getTripId());
+
+            //Check if UserTrip already exists
             Optional<UserTrips> existingUserTrip = userTripsRepository.findByUserIdAndTripId(user.getUserId(), tripId);
             if (existingUserTrip.isPresent()) {
                 // Update status if already exists
