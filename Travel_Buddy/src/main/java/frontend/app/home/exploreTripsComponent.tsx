@@ -293,6 +293,7 @@ export default function ExploreTripsComponent() {
       [tripId]: !oldVal[tripId],
     }));
     await handleJoinTrip(tripId);
+    window.location.reload();
   };
 
   const sortTrips = (sortType: string) => {
@@ -336,31 +337,28 @@ export default function ExploreTripsComponent() {
     setFilteredTrips(sortedTrips);
   };
 
-  const handleSearchInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setSearchKeyword(event.target.value);
-    // search();
+  const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const keyword = event.target.value;
+    setSearchKeyword(keyword);
+    search(keyword); // Call search function immediately
   };
+  
 
-  // const search = () => {
-  //   if (!searchKeyword.trim()) {
-  //     return;
-  //   }
-
-  //   const keyword = searchKeyword.trim().toLowerCase();
-
-  //   const results = [...filteredTrips].filter((trip) => {
-  //     const createdByMatch = trip.createdBy.name.toLowerCase().includes(keyword);
-  //     const locationMatch = trip.location.toLowerCase().includes(keyword);
-  //     const descriptionMatch = trip.description.toLowerCase().includes(keyword);
-  //     const interestMatch = trip.interests.some((interest) => interest.name.toLowerCase().includes(keyword));
-
-  //     return createdByMatch || locationMatch || descriptionMatch || interestMatch;
-  //   });
-
-  //   setFilteredTrips(results);
-  // };
+  const search = (keyword: string) => {
+    if (!keyword.trim()) {
+      setFilteredTrips([...trips]); // ✅ Use trips instead of allTrips
+      return;
+    }
+  
+    const lowerCaseKeyword = keyword.trim().toLowerCase();
+  
+    const results = trips.filter((trip) =>
+      trip.location.toLowerCase().includes(lowerCaseKeyword)
+    );
+  
+    setFilteredTrips(results);
+  };
+  
 
   {
     /* <script src="/js/flowbite.min.js"></script> */
@@ -382,16 +380,11 @@ export default function ExploreTripsComponent() {
             <input
               type="search"
               className="peer block min-h-[auto] w-full rounded border-0 bg-transparent px-3 py-[0.32rem] leading-[1.6] outline-none"
-              placeholder="Search"
+              placeholder={searchKeyword ? "" : "Search"}
               id="search-input"
               value={searchKeyword}
               onChange={handleSearchInputChange}
             />
-            <label
-              htmlFor="search-input"
-              className="absolute left-3 top-0 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-neutral-500">
-              Search
-            </label>
             <button
               className="border border-lightgray-600 rounded relative z-[2] -ms-0.5 flex items-center bg-primary px-5 text-xs shadow-primary-3 transition duration-150 ease-in-out hover:bg-primary-accent-300 hover:shadow-primary-2 focus:bg-primary-accent-300 focus:shadow-primary-2 focus:outline-none focus:ring-0 active:bg-primary-600 active:shadow-primary-2"
               type="button"

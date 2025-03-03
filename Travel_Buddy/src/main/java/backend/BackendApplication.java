@@ -202,10 +202,12 @@ public class BackendApplication {
     }
 
     // API to update the status of a user-trip association
+    @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/backend/user-trips/update")
     public ResponseEntity<?> updateRequest(@RequestBody Map<String, Object> payload) {
-        Long tripId = Long.valueOf((Integer) payload.get("tripId"));
-        Long userId = Long.valueOf((Integer) payload.get("userId"));
+        // Update the casting to Long
+        Long tripId = Long.valueOf(String.valueOf(payload.get("tripId")));
+        Long userId = Long.valueOf(String.valueOf(payload.get("userId")));
         String status = (String) payload.get("status");
 
         Optional<UserTrips> userTripsOptional = userTripsRepository.findByUserIdAndTripId(userId, tripId);
