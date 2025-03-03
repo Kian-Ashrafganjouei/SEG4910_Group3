@@ -609,4 +609,163 @@ class BackendApplicationTests {
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(mockUsers, response.getBody());
     }
+
+    // Unit tests for deleteTrip(Long, String)
+    @Test
+    void shouldDeleteTripSuccessfully() {
+        // Arrange
+        Long tripId = 1L;
+        String email = "email0@gmail.com";
+
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setEmail(email);
+
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        
+        Trip mockTrip = new Trip();
+        mockTrip.setTripId(tripId);
+        mockTrip.setLocation("Paris");
+        mockTrip.setCreatedBy(mockUser);
+
+        when(trip_repository.findById(tripId)).thenReturn(Optional.of(mockTrip));
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.deleteTrip(tripId, email);
+        
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Trip deleted successfully.", response.getBody());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingNonexistentTrip() {
+        // Arrange
+        Long tripId = 99L;
+        String email = "email0@gmail.com";
+
+        User mockUser = new User();
+        mockUser.setUserId(99L);
+        mockUser.setEmail(email);
+
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+
+        Trip mockTrip = new Trip();
+        mockTrip.setTripId(tripId);
+        mockTrip.setLocation("Paris");
+
+        when(trip_repository.findById(tripId)).thenReturn(Optional.empty());
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.deleteTrip(tripId, email);
+        
+        // Assert
+        assertEquals(404, response.getStatusCodeValue());
+        assertEquals("Trip not found.", response.getBody());
+    }
+
+
+    // Unit tests for joinTrip(Map)
+    @Test
+    void shouldJoinTripSuccessfully() {
+        // Arrange
+        Long tripId = 1L;
+        String email = "email0@gmail.com";
+        
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setEmail(email);
+        
+        Trip mockTrip = new Trip();
+        mockTrip.setTripId(tripId);
+        mockTrip.setLocation("Paris");
+
+        Map<String, String> payload = new HashMap<>();
+        payload.put("tripId", String.valueOf(tripId));
+        payload.put("userEmail", email);
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        when(trip_repository.findById(tripId)).thenReturn(Optional.of(mockTrip));
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.joinTrip(payload);
+        
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Trip join status updated.", response.getBody());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenTripNotFoundOnJoinTrip() {
+        // Arrange
+        Long tripId = 9L;
+        String email = "email0@example.com";
+        
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setEmail(email);
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        when(trip_repository.findById(tripId)).thenReturn(Optional.empty());
+        
+        Map<String, String> payload = new HashMap<>();
+        payload.put("tripId", String.valueOf(tripId));
+        payload.put("userEmail", email);
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.joinTrip(payload);
+        
+        // Assert
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("Trip not found.", response.getBody());
+    }
+
+
+    // Unit tests for update_user(String, User)
+    @Test
+    void shouldUpdateUserSuccessfully() {
+        // Arrange
+        String email = "email0@gmail.com";
+        
+        User existingUser = new User();
+        existingUser.setUserId(1L);
+        existingUser.setEmail(email);
+        existingUser.setUsername("oldName");
+        existingUser.setSex("Male");
+        existingUser.setPhoneNumber("8191112222");
+        
+        User updatedUser = new User();
+        updatedUser.setUsername("newName");
+        existingUser.setSex("Female");
+        existingUser.setPhoneNumber("8192221111");
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(existingUser));
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.update_user(email, updatedUser);
+        
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("User updated successfully.", response.getBody());
+        assertEquals("newName", updatedUser.getUsername());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenUserNotFoundOnUpdate() {
+        // Arrange
+        String email = "nonexistent@example.com";
+        
+        User updatedUser = new User();
+        updatedUser.setUsername("newName");
+        updatedUser.setPassword("newPassword");
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.empty());
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.update_user(email, updatedUser);
+        
+        // Assert
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("User not found.", response.getBody());
+    }
 }
