@@ -14,6 +14,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -150,6 +158,66 @@ class BackendApplicationTests {
         assertEquals(400, response.getStatusCodeValue());
         assertEquals("Invalid email or password.", response.getBody());
     }
+
+    @Test
+    void shouldUpdateRequestSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+        Long tripId = 100L;
+        String status = "APPROVED";
+
+        UserTrips mockUserTrip = new UserTrips();
+        mockUserTrip.setUserId(userId);
+        mockUserTrip.setTripId(tripId);
+        mockUserTrip.setStatus("PENDING");
+
+        when(userTripsRepository.findByUserIdAndTripId(userId, tripId))
+                .thenReturn(Optional.of(mockUserTrip));
+
+        Map<String, Object> requestPayload = new HashMap<>();
+        requestPayload.put("userId", userId);
+        requestPayload.put("tripId", tripId);
+        requestPayload.put("status", status);
+
+        // Act: Call the method directly on backendApplication (instead of service)
+        ResponseEntity<?> response = backendApplication.updateRequest(requestPayload);
+
+        // Assert: Verify the response and the status update
+        assertEquals(200, response.getStatusCodeValue());  // Status code should be OK (200)
+        assertEquals("Request updated successfully.", response.getBody());  // Response body should match
+
+        assertEquals("APPROVED", mockUserTrip.getStatus());  // Ensure status was updated
+
+        // Verify that save was called once to persist the changes
+        verify(userTripsRepository, times(1)).save(mockUserTrip);
+    }
+
+
+    @Test
+    void shouldReturnBadRequestWhenRequestNotFound() {
+        // Arrange
+        Long userId = 2L;
+        Long tripId = 200L;
+
+        when(userTripsRepository.findByUserIdAndTripId(userId, tripId))
+                .thenReturn(Optional.empty()); // Simulate no matching user trip
+
+        Map<String, Object> requestPayload = new HashMap<>();
+        requestPayload.put("userId", userId);
+        requestPayload.put("tripId", tripId);
+        requestPayload.put("status", "REJECTED");
+
+        // Act: Call the method directly on backendApplication (instead of service)
+        ResponseEntity<?> response = backendApplication.updateRequest(requestPayload);
+
+        // Assert: Verify the response when request is not found
+        assertEquals(400, response.getStatusCodeValue());  // Status code should be BadRequest (400)
+        assertEquals("Request not found.", response.getBody());  // Response body should match
+
+        // Verify that save was never called
+        verify(userTripsRepository, never()).save(any(UserTrips.class));
+    }
+
 
     @Test
     void shouldHandleMultipleUsersAndAuthenticateCorrectOne() {
@@ -475,7 +543,10 @@ class BackendApplicationTests {
         Map<String, String> payload = new HashMap<>();
         payload.put("status", "Cancelled");
 
-        when(userTripsRepository.findById(userTripId)).thenThrow(new RuntimeException("Database error"));
+        // Ensure the mock repository throws an exception on save
+        when(userTripsRepository.findById(userTripId)).thenReturn(Optional.of(new UserTrips()));
+        doThrow(new RuntimeException("Database error"))
+            .when(userTripsRepository).save(any(UserTrips.class));
 
         // Act
         ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
