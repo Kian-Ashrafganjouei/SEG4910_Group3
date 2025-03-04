@@ -109,26 +109,41 @@ export default function AddTrip() {
         ...trip,
         createdByEmail: session?.user?.email,
       };
-
-      for (var i in tripData.interestIds) {
-        console.log(`-->  ${i}`);
-      }
-
+  
       console.log("Sending trip data to backend:", tripData);
-
-      const response = await fetch("/backend/trips", {
+  
+      const tripResponse = await fetch("/backend/trips", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(tripData),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
+  
+      if (!tripResponse.ok) {
+        const errorData = await tripResponse.json();
         console.error("Backend error:", errorData);
         throw new Error(errorData.message || "Failed to add trip.");
       }
-
-      alert("Trip added successfully!");
+  
+      const savedTrip = await tripResponse.json();
+      console.log("Trip created:", savedTrip);
+  
+      // Step 2: Upload images for the created trip
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append("images", file);
+      });
+  
+      const imageResponse = await fetch(`/backend/trips/${savedTrip.tripId}/images`, {
+        method: "POST",
+        body: formData, // Send images as multipart/form-data
+      });
+  
+      if (!imageResponse.ok) {
+        console.error("Failed to upload images.");
+        throw new Error("Failed to upload images.");
+      }
+  
+      alert("Trip and images uploaded successfully!");
       router.push("/trips/mytrips");
     } catch (error) {
       console.error("Error adding trip:", error);
