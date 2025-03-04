@@ -719,7 +719,8 @@ class BackendApplicationTests {
         });
         Throwable cause = exception.getCause();
         assertTrue(cause instanceof RuntimeException);
-        assertTrue(cause.getMessage().contains("Error saving image"))
+        assertTrue(cause.getMessage().contains("Error saving image"));
+    }
         
     // Unit tests for deleteTrip(Long, String)
     @Test
