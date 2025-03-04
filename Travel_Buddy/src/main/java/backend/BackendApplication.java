@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -838,17 +839,21 @@ public class BackendApplication {
     }
 
     private String saveTripImageToDisk(MultipartFile image) {
-        // Save the image to the "public/images/posts" directory
-        String filePath = "src/main/java/frontend/public/images/trips/" + image.getOriginalFilename(); // Physical path
         try {
+            // Generate a unique file name using UUID
+            String uniqueFileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+            
+            // Define the file path where the image will be stored
+            String filePath = "src/main/java/frontend/public/images/trips/" + uniqueFileName;
             Path path = Paths.get(filePath);
             Files.createDirectories(path.getParent()); // Ensure the directories exist
             Files.write(path, image.getBytes());
+
+            // Return the relative URL path for the frontend to access
+            return "/images/trips/" + uniqueFileName;
         } catch (IOException e) {
             throw new RuntimeException("Error saving image", e);
         }
-        // Return the relative path used by the frontend
-        return "/images/posts/" + image.getOriginalFilename();
     }
 
     @CrossOrigin(origins = "http://localhost:3000")
