@@ -33,12 +33,14 @@ import backend.model.Notification;
 import backend.model.Post;
 import backend.model.Review;
 import backend.model.Trip;
+import backend.model.TripImage;
 import backend.model.User;
 import backend.model.UserTrips;
 import backend.repository.InterestRepository;
 import backend.repository.NotificationRepository;
 import backend.repository.PostRepository;
 import backend.repository.ReviewRepository;
+import backend.repository.TripImageRepository;
 import backend.repository.TripRepository;
 import backend.repository.UserRepository;
 import backend.repository.UserTripsRepository;
@@ -70,6 +72,9 @@ public class BackendApplication {
 
     @Autowired
     private ReviewRepository reviewRepository;
+
+    @Autowired
+    private TripImageRepository tripImageRepository;
 
     // Main method to run the Spring Boot applicatio
     public static void main(String[] args) {
@@ -831,5 +836,49 @@ public class BackendApplication {
 
         return ResponseEntity.ok("Notification marked as read.");
     }
+
+    private String saveTripImageToDisk(MultipartFile image) {
+        // Save the image to the "public/images/posts" directory
+        String filePath = "src/main/java/frontend/public/images/trips/" + image.getOriginalFilename(); // Physical path
+        try {
+            Path path = Paths.get(filePath);
+            Files.createDirectories(path.getParent()); // Ensure the directories exist
+            Files.write(path, image.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("Error saving image", e);
+        }
+        // Return the relative path used by the frontend
+        return "/images/posts/" + image.getOriginalFilename();
+    }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/backend/trips/{tripId}/images")
+    public ResponseEntity<?> uploadTripImages(@PathVariable Long tripId, @RequestParam("images") List<MultipartFile> images) {
+        try {
+            Optional<Trip> tripOptional = trip_repository.findById(tripId);
+            if (tripOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found.");
+            }
+
+            Trip trip = tripOptional.get();
+            List<TripImage> tripImages = new ArrayList<>();
+
+            for (MultipartFile image : images) {
+                // Save image to disk
+                String imagePath = saveTripImageToDisk(image);
+
+                // Create and save TripImage entity
+                TripImage tripImage = new TripImage(trip, imagePath);
+                tripImages.add(tripImage);
+            }
+
+            tripImageRepository.saveAll(tripImages);
+            return ResponseEntity.ok("Images uploaded successfully.");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading images.");
+        }
+    }
+
 
 }

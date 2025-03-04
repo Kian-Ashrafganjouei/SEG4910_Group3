@@ -51,6 +51,12 @@ CREATE TABLE Trips (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE TripImages (
+    image_id SERIAL PRIMARY KEY,
+    trip_id INT REFERENCES Trips(trip_id) ON DELETE CASCADE,
+    image VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE interests (
     interest_id SERIAL PRIMARY KEY,  
     name VARCHAR(100) NOT NULL UNIQUE 
