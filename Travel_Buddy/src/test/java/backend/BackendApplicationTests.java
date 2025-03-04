@@ -40,6 +40,20 @@ import backend.repository.TripRepository;
 import backend.repository.UserRepository;
 import backend.repository.UserTripsRepository;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+
 class BackendApplicationTests {
     @Mock
     private UserRepository user_repository;
@@ -171,6 +185,66 @@ class BackendApplicationTests {
         assertEquals(400, response.getStatusCodeValue());
         assertEquals("Invalid email or password.", response.getBody());
     }
+
+    @Test
+    void shouldUpdateRequestSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+        Long tripId = 100L;
+        String status = "APPROVED";
+
+        UserTrips mockUserTrip = new UserTrips();
+        mockUserTrip.setUserId(userId);
+        mockUserTrip.setTripId(tripId);
+        mockUserTrip.setStatus("PENDING");
+
+        when(userTripsRepository.findByUserIdAndTripId(userId, tripId))
+                .thenReturn(Optional.of(mockUserTrip));
+
+        Map<String, Object> requestPayload = new HashMap<>();
+        requestPayload.put("userId", userId);
+        requestPayload.put("tripId", tripId);
+        requestPayload.put("status", status);
+
+        // Act: Call the method directly on backendApplication (instead of service)
+        ResponseEntity<?> response = backendApplication.updateRequest(requestPayload);
+
+        // Assert: Verify the response and the status update
+        assertEquals(200, response.getStatusCodeValue());  // Status code should be OK (200)
+        assertEquals("Request updated successfully.", response.getBody());  // Response body should match
+
+        assertEquals("APPROVED", mockUserTrip.getStatus());  // Ensure status was updated
+
+        // Verify that save was called once to persist the changes
+        verify(userTripsRepository, times(1)).save(mockUserTrip);
+    }
+
+
+    @Test
+    void shouldReturnBadRequestWhenRequestNotFound() {
+        // Arrange
+        Long userId = 2L;
+        Long tripId = 200L;
+
+        when(userTripsRepository.findByUserIdAndTripId(userId, tripId))
+                .thenReturn(Optional.empty()); // Simulate no matching user trip
+
+        Map<String, Object> requestPayload = new HashMap<>();
+        requestPayload.put("userId", userId);
+        requestPayload.put("tripId", tripId);
+        requestPayload.put("status", "REJECTED");
+
+        // Act: Call the method directly on backendApplication (instead of service)
+        ResponseEntity<?> response = backendApplication.updateRequest(requestPayload);
+
+        // Assert: Verify the response when request is not found
+        assertEquals(400, response.getStatusCodeValue());  // Status code should be BadRequest (400)
+        assertEquals("Request not found.", response.getBody());  // Response body should match
+
+        // Verify that save was never called
+        verify(userTripsRepository, never()).save(any(UserTrips.class));
+    }
+
 
     @Test
     void shouldHandleMultipleUsersAndAuthenticateCorrectOne() {
@@ -496,7 +570,10 @@ class BackendApplicationTests {
         Map<String, String> payload = new HashMap<>();
         payload.put("status", "Cancelled");
 
-        when(userTripsRepository.findById(userTripId)).thenThrow(new RuntimeException("Database error"));
+        // Ensure the mock repository throws an exception on save
+        when(userTripsRepository.findById(userTripId)).thenReturn(Optional.of(new UserTrips()));
+        doThrow(new RuntimeException("Database error"))
+            .when(userTripsRepository).save(any(UserTrips.class));
 
         // Act
         ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
@@ -559,6 +636,7 @@ class BackendApplicationTests {
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(mockUsers, response.getBody());
     }
+
 
     @Test
     void shouldReturnInternalServerErrorForGetAllUsers() {
@@ -641,6 +719,164 @@ class BackendApplicationTests {
         });
         Throwable cause = exception.getCause();
         assertTrue(cause instanceof RuntimeException);
-        assertTrue(cause.getMessage().contains("Error saving image"));
+        assertTrue(cause.getMessage().contains("Error saving image"))
+        
+    // Unit tests for deleteTrip(Long, String)
+    @Test
+    void shouldDeleteTripSuccessfully() {
+        // Arrange
+        Long tripId = 1L;
+        String email = "email0@gmail.com";
+
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setEmail(email);
+
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        
+        Trip mockTrip = new Trip();
+        mockTrip.setTripId(tripId);
+        mockTrip.setLocation("Paris");
+        mockTrip.setCreatedBy(mockUser);
+
+        when(trip_repository.findById(tripId)).thenReturn(Optional.of(mockTrip));
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.deleteTrip(tripId, email);
+        
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Trip deleted successfully.", response.getBody());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingNonexistentTrip() {
+        // Arrange
+        Long tripId = 99L;
+        String email = "email0@gmail.com";
+
+        User mockUser = new User();
+        mockUser.setUserId(99L);
+        mockUser.setEmail(email);
+
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+
+        Trip mockTrip = new Trip();
+        mockTrip.setTripId(tripId);
+        mockTrip.setLocation("Paris");
+
+        when(trip_repository.findById(tripId)).thenReturn(Optional.empty());
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.deleteTrip(tripId, email);
+        
+        // Assert
+        assertEquals(404, response.getStatusCodeValue());
+        assertEquals("Trip not found.", response.getBody());
+    }
+
+
+    // Unit tests for joinTrip(Map)
+    @Test
+    void shouldJoinTripSuccessfully() {
+        // Arrange
+        Long tripId = 1L;
+        String email = "email0@gmail.com";
+        
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setEmail(email);
+        
+        Trip mockTrip = new Trip();
+        mockTrip.setTripId(tripId);
+        mockTrip.setLocation("Paris");
+
+        Map<String, String> payload = new HashMap<>();
+        payload.put("tripId", String.valueOf(tripId));
+        payload.put("userEmail", email);
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        when(trip_repository.findById(tripId)).thenReturn(Optional.of(mockTrip));
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.joinTrip(payload);
+        
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Trip join status updated.", response.getBody());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenTripNotFoundOnJoinTrip() {
+        // Arrange
+        Long tripId = 9L;
+        String email = "email0@example.com";
+        
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setEmail(email);
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        when(trip_repository.findById(tripId)).thenReturn(Optional.empty());
+        
+        Map<String, String> payload = new HashMap<>();
+        payload.put("tripId", String.valueOf(tripId));
+        payload.put("userEmail", email);
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.joinTrip(payload);
+        
+        // Assert
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("Trip not found.", response.getBody());
+    }
+
+
+    // Unit tests for update_user(String, User)
+    @Test
+    void shouldUpdateUserSuccessfully() {
+        // Arrange
+        String email = "email0@gmail.com";
+        
+        User existingUser = new User();
+        existingUser.setUserId(1L);
+        existingUser.setEmail(email);
+        existingUser.setUsername("oldName");
+        existingUser.setSex("Male");
+        existingUser.setPhoneNumber("8191112222");
+        
+        User updatedUser = new User();
+        updatedUser.setUsername("newName");
+        existingUser.setSex("Female");
+        existingUser.setPhoneNumber("8192221111");
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(existingUser));
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.update_user(email, updatedUser);
+        
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("User updated successfully.", response.getBody());
+        assertEquals("newName", updatedUser.getUsername());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenUserNotFoundOnUpdate() {
+        // Arrange
+        String email = "nonexistent@example.com";
+        
+        User updatedUser = new User();
+        updatedUser.setUsername("newName");
+        updatedUser.setPassword("newPassword");
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.empty());
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.update_user(email, updatedUser);
+        
+        // Assert
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("User not found.", response.getBody());
     }
 }
