@@ -8,11 +8,11 @@ const Contact = () => {
       <Navbar />
       <div className="main-div-contact-page mt-16 grid grid-rows-3 justify-center">
         <div className="header h-28 flex justify-center items-center ">
-          <span className="text-xl">Send us Your Thoughts!</span>
+          <span className="text-5xl">Send us Your Thoughts!</span>
         </div>
 
         <form className="contact-form grid grid-cols-2 gap-10 justify-center">
-          <div className="col-left grid grid-rows-2 gap-5">
+          <div className="col-left grid grid-rows-2 gap-5 auto-rows-auto items-start">
             <div className="form-group h-auto">
               <label htmlFor="email" className="form-label">
                 Email:
@@ -21,7 +21,7 @@ const Contact = () => {
                 type="email"
                 id="email"
                 name="email"
-                className="form-input"
+                className="form-input border-b-slate-500"
                 placeholder="email@example.com"
                 required
               />
@@ -48,7 +48,7 @@ const Contact = () => {
               <textarea
                 id="comment"
                 name="comment"
-                className="form-textarea border border-black"
+                className="form-textarea border border-gray-300"
                 rows={5}
                 required></textarea>
             </div>
@@ -66,10 +66,10 @@ const Contact = () => {
       <style jsx>{`
         .form-input {
           width: 100%;
-          background-color: white;
+          background-color: #;
           padding: 0.8rem;
           border-radius: 8px;
-          border: solid 1px;
+          border: 1px solid #ccc;
           font-size: 1rem;
           color: #000;
         }
