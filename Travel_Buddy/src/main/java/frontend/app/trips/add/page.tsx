@@ -18,9 +18,12 @@ import { useDropzone } from "react-dropzone";
 // }
 
 export default function AddTrip() {
+  // Session information about the user currently logged in.
   const { data: session } = useSession();
+
   const router = useRouter();
 
+  // Information required to track a single trip.
   const [trip, setTrip] = useState({
     location: "",
     startDate: "",
@@ -73,6 +76,7 @@ export default function AddTrip() {
     fetchInterests();
   }, []);
 
+  // Updates the trip information after a change to the trip form.
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -80,6 +84,7 @@ export default function AddTrip() {
     setTrip((prevTrip) => ({ ...prevTrip, [name]: value }));
   };
 
+  // Tracks the file uploaded by the user adding the trip.
   const [files, setFiles] = useState<File[]>([]);
 
   // When files are dropped or selected, store them in state
@@ -95,16 +100,20 @@ export default function AddTrip() {
     onDragLeave: () => {},
   });
 
+  // Handles the submission of the form used to add a trip.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
+    // A trip cannot end before its start date.
     if (new Date(trip.startDate) > new Date(trip.endDate)) {
       setErrorMessage("End date must be after the start date.");
       return;
     }
 
     try {
+      // Add the email of the user creating the trip.
+      // FIXME: This could be added to the `trip` state.
       const tripData = {
         ...trip,
         createdByEmail: session?.user?.email,
@@ -143,6 +152,7 @@ export default function AddTrip() {
         throw new Error("Failed to upload images.");
       }
   
+      // Redirect to the `mytrips` page showing all the trips of the user.
       alert("Trip and images uploaded successfully!");
       router.push("/trips/mytrips");
     } catch (error) {
@@ -305,6 +315,7 @@ export default function AddTrip() {
               </div>
             </div>
 
+            { /* Conditional error block. Only shown when an error occurs. */ }
             {errorMessage && <p className="error-msg">{errorMessage}</p>}
 
             <div className="grid justify-end">
