@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&family=Outfit:wght@100..900&display=swap"); */
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -25,3 +28,8 @@ body {
     text-wrap: balance;
   }
 }
+
+/* @theme {
+  --font-outfit: "Outfit";
+  --font-kantumruy-pro: "Kantumruy Pro";
+} */
