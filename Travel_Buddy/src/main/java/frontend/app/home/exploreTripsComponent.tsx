@@ -66,9 +66,13 @@ const DURATION_ASC_KEYWORD = "durationAsc";
 const DURATION_DESC_KEYWORD = "durationDesc";
 
 export default function ExploreTripsComponent() {
+  // Useful information about the user currently logged in.
   const { data: session } = useSession();
+  // Trips fetched from the backend that are displayed to the user.
   const [trips, setTrips] = useState<Trip[]>([]);
   const [userTrips, setUserTrips] = useState<UserTrip[]>([]);
+  // Improves the UX of the website by communicating to the user that we are waiting for a
+  // response/data.
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRequested, setIsRequested] = useState<Record<number, boolean>>({});
@@ -76,6 +80,9 @@ export default function ExploreTripsComponent() {
   const [showSort, setShowSort] = useState(false);
   const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
   const [interests, setInterests] = useState<Interest[]>([]);
+
+  // Some of the variables below are used for filtering trips based on user defined
+  // criteria such as the location, the start date, the interests etc...
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>("");
@@ -89,6 +96,12 @@ export default function ExploreTripsComponent() {
   );
   const [searchKeyword, setSearchKeyword] = useState<string>("");
 
+  // Fetch trips from the backend and display them to the user. We also retrieve and store
+  // every unique trip location for filtering purposes later.
+  //
+  // This callback is called once as long as the `session` of the user doesn't change. The
+  // `session` variable can change if the user decides to log back in with a different
+  // account which is currently allowed.
   useEffect(() => {
     const fetchTrips = async () => {
       try {
@@ -112,6 +125,8 @@ export default function ExploreTripsComponent() {
       }
     };
 
+    // Fetch the list of interests available from the backend rather than hard coding them
+    // in the frontend.
     const fetchInterests = async () => {
       try {
         const response = await fetch("/backend/interests");
@@ -125,6 +140,7 @@ export default function ExploreTripsComponent() {
       }
     };
 
+    // Fetch trips associated with the user currently logged in.
     const fetchUserTrips = async () => {
       if (!session?.user?.email) return;
       try {
@@ -146,6 +162,9 @@ export default function ExploreTripsComponent() {
     fetchInterests();
   }, [session]);
 
+  // Fires when the user clicks on the join trip button.
+  //
+  // Not called directly. See `handleRequestToggle` to see how this closure is called.
   const handleJoinTrip = async (tripId: number) => {
     try {
       const payload = {
@@ -176,6 +195,7 @@ export default function ExploreTripsComponent() {
     }
   };
 
+  // Handles review submission. Users can leave reviews that can be viewed by other users.
   const handleReviewSubmit = async (tripId, rating) => {
     if (!rating) return;
     console.log(tripId, rating);
@@ -197,6 +217,8 @@ export default function ExploreTripsComponent() {
     }
   };
 
+  // Returns whether the trip identified by `tripId` is `joined`, `requested` or
+  // `declined`.
   const getUserTripStatus = (tripId: number): string | null => {
     const userTrip = userTrips.find((ut) => ut.trip?.tripId === tripId);
     console.log(
@@ -208,6 +230,8 @@ export default function ExploreTripsComponent() {
     return userTrip ? userTrip.status : null;
   };
 
+  // Updates the trips seen by the user based on filtering criteria such as interests,
+  // locations, start and end dates etc...
   useEffect(() => {
     setFilteredTrips(
       trips.filter((trip) => {
@@ -287,6 +311,7 @@ export default function ExploreTripsComponent() {
     setSelectedEndDate(event.target.value);
   };
 
+  // The request to join a trip button handles both user registration and unregistration.
   const handleRequestToggle = async (tripId: number) => {
     setIsRequested((oldVal) => ({
       ...oldVal,
