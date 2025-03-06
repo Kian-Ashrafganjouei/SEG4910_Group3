@@ -1,18 +1,44 @@
 package backend;
 
-import backend.model.User;
-import backend.model.UserTrips;
-import backend.model.Trip;
-import backend.repository.UserRepository;
-import backend.repository.UserTripsRepository;
-import backend.repository.TripRepository;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
+
+import backend.model.Trip;
+import backend.model.User;
+import backend.model.UserTrips;
+import backend.repository.TripRepository;
+import backend.repository.UserRepository;
+import backend.repository.UserTripsRepository;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,6 +52,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
 
 class BackendApplicationTests {
     @Mock
@@ -610,6 +637,91 @@ class BackendApplicationTests {
         assertEquals(mockUsers, response.getBody());
     }
 
+
+    @Test
+    void shouldReturnInternalServerErrorForGetAllUsers() {
+        // Arrange: Simulate an exception thrown by the repository.
+        when(user_repository.findAll()).thenThrow(new RuntimeException("Database error"));
+
+        // Act: Call the getAllUsers endpoint.
+        ResponseEntity<List<User>> response = backendApplication.getAllUsers();
+
+        // Assert: Verify that the response is HTTP 500 and the body is null.
+        assertEquals(500, response.getStatusCodeValue());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void shouldSaveImageToDiskSuccessfully() throws Exception {
+        // Arrange
+        String fileName = "testimage.jpg";
+        byte[] content = "dummy image content".getBytes();
+        MockMultipartFile mockFile = new MockMultipartFile("image", fileName, "image/jpeg", content);
+
+        // Use reflection to access the private saveImageToDisk method
+        Method saveImageMethod = BackendApplication.class.getDeclaredMethod("saveImageToDisk", MultipartFile.class);
+        saveImageMethod.setAccessible(true);
+
+        // Act
+        String returnedPath = (String) saveImageMethod.invoke(backendApplication, mockFile);
+
+        // Assert: Verify that the returned path is as expected
+        assertEquals("/images/posts/" + fileName, returnedPath);
+
+        // Also, verify that the file exists on disk at the expected location
+        Path filePath = Paths.get("src/main/java/frontend/public/images/posts/" + fileName);
+        assertTrue(Files.exists(filePath));
+
+        // Clean up: delete the created file so tests remain idempotent
+        Files.deleteIfExists(filePath);
+    }
+
+    @Test
+    void shouldThrowRuntimeExceptionWhenImageSaveFails() throws Exception {
+        // Arrange: Create a broken MultipartFile that simulates an IOException on getBytes()
+        MultipartFile brokenFile = new MultipartFile() {
+            @Override
+            public String getName() { return "image"; }
+
+            @Override
+            public String getOriginalFilename() { return "broken.jpg"; }
+
+            @Override
+            public String getContentType() { return "image/jpeg"; }
+
+            @Override
+            public boolean isEmpty() { return false; }
+
+            @Override
+            public long getSize() { return 0; }
+
+            @Override
+            public byte[] getBytes() throws IOException { 
+                throw new IOException("Simulated error");
+            }
+
+            @Override
+            public InputStream getInputStream() throws IOException { 
+                throw new IOException("Simulated error");
+            }
+
+            @Override
+            public void transferTo(File dest) throws IOException, IllegalStateException { }
+        };
+
+        // Use reflection to access the private saveImageToDisk method
+        Method saveImageMethod = BackendApplication.class.getDeclaredMethod("saveImageToDisk", MultipartFile.class);
+        saveImageMethod.setAccessible(true);
+
+        // Act & Assert: Expect the method to throw a RuntimeException (wrapped in InvocationTargetException)
+        InvocationTargetException exception = assertThrows(InvocationTargetException.class, () -> {
+            saveImageMethod.invoke(backendApplication, brokenFile);
+        });
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof RuntimeException);
+        assertTrue(cause.getMessage().contains("Error saving image"));
+    }
+        
     // Unit tests for deleteTrip(Long, String)
     @Test
     void shouldDeleteTripSuccessfully() {

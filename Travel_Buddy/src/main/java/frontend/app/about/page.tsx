@@ -3,6 +3,7 @@ import Navbar from "../layout/navbar/page";
 import Footer from "../layout/footer/page";
 
 const About = () => {
+  // Hard coded details about the team members.
   const memberInfo = [
     {
       name: "Hossein Hajmirbaba",
@@ -40,6 +41,11 @@ const About = () => {
     <div>
       <Navbar />
       <div className="main-div mt-16">
+        {
+          /* This section is the first thing users see, featuring a short and concise
+          * description of our service. Refer to the inline style block at the end of the
+          * page for a definition of the hero-section class. */
+        }
         <div className="hero-section h-96 grid gap-10 justify-items-center text-white p-10 ">
           <div className="content w-3/4">
             <p className="text-5xl/relaxed text-center ">
@@ -48,6 +54,10 @@ const About = () => {
             </p>
           </div>
         </div>
+
+        {
+          /* This section briefly describes the goal of our service. */
+        }
         <div className="why-section bg-slate-100 grid grid-cols-10 justify-items-center pt-20 p-10 pb-20">
           <div className="title col-span-4 text-4xl">
             <h1>Who Are We?</h1>
@@ -61,6 +71,11 @@ const About = () => {
             </span>
           </div>
         </div>
+
+        {
+          /* This section introduces the members of our team. Details are hard coded in
+           * the `member_info` class variable defined above. */
+        }
         <div className="our-team grid grid-cols-5 mt-8 p-10">
           <div className="title-div text-4xl col-span-2 justify-items-center">
             <h1 className="">Our Team</h1>
@@ -89,6 +104,7 @@ const About = () => {
           </div>
         </div>
       </div>
+
       <style jsx>
         {`
           .hero-section {

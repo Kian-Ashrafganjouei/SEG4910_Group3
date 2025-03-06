@@ -7,7 +7,10 @@ import Footer from "../layout/footer/page";
 import ExploreTripsComponent from "./exploreTripsComponent";
 
 export default function Home() {
+  // Information about the user currently logged in.
   const { data: session } = useSession();
+
+  // Page navigation helper.
   const router = useRouter();
 
   console.log("Session data:", session); // Check the session data
