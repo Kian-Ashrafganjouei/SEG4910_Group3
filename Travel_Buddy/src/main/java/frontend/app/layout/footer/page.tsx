@@ -3,7 +3,7 @@ const Footer = () => {
     <div className="footer ">
       <div className="footer-links p-4 bg-white text-black border-stone-300 border-t-2">
         <div className="links-row flex justify-center space-x-8 mb-4">
-          <a href="#" className="hover:underline">
+          {/* <a href="#" className="hover:underline">
             Privacy Policy
           </a>
           <a href="#" className="hover:underline">
@@ -14,7 +14,8 @@ const Footer = () => {
           </a>
           <a href="/about" className="hover:underline">
             About Us
-          </a>
+          </a> */}
+          <span className="text-3xl">Traco</span>
         </div>
         <hr className="border-t border-gray-600 mb-4" />
         {/* <div className="social-media-row flex justify-center space-x-4">
