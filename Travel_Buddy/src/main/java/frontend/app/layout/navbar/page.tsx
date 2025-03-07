@@ -5,29 +5,32 @@ import "../../styles/Navbar.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
 
-// Define the notification type
+// Define the structure of a notification
 interface Notification {
   id: number;
   message: string;
   createdAt: Date;
-  status: string;
+  status: string; // "unread" or "read"
 }
 
 const Navbar = () => {
-  const [isTripsDropdownOpen, setIsTripsDropdownOpen] = useState(false);
+  // State for dropdowns and notifications
+  const [isTripsDropdownOpen, setIsTripsDropdownOpen] = useState(false); // Controls trips dropdown visibility
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false); // Controls notifications dropdown visibility
+  const [notifications, setNotifications] = useState<Notification[]>([]); // Stores notifications
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false); // Controls profile dropdown visibility
 
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const { data: session } = useSession();
-  const router = useRouter();
+  const { data: session } = useSession(); // Get the current user session
+  const router = useRouter(); // Router instance for navigation
 
+  // Fetch notifications when the session is available
   useEffect(() => {
     if (session?.user?.email) {
       fetchNotifications();
     }
   }, [session]);
 
+  // Function to fetch notifications from the backend
   const fetchNotifications = async () => {
     if (!session?.user?.email) return;
 
@@ -42,11 +45,12 @@ const Navbar = () => {
 
       const data = await response.json();
 
+      // Format notifications and sort by creation date (newest first)
       const formattedNotifications = data
         .map((notification: any) => ({
           id: notification.notificationId,
           message: notification.message,
-          createdAt: new Date(notification.createdAt), // ✅ Convert string to Date
+          createdAt: new Date(notification.createdAt), // Convert string to Date
           status: notification.status,
         }))
         .sort(
@@ -54,12 +58,13 @@ const Navbar = () => {
             b.createdAt.getTime() - a.createdAt.getTime()
         );
 
-      setNotifications(formattedNotifications);
+      setNotifications(formattedNotifications); // Update notifications state
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
   };
 
+  // Function to mark a notification as read
   const markNotificationAsRead = async (notificationId: number) => {
     try {
       const response = await fetch(
@@ -76,7 +81,7 @@ const Navbar = () => {
         throw new Error("Failed to mark notification as read");
       }
 
-      // Update notification status locally
+      // Update the notification status locally
       setNotifications((prevNotifications) =>
         prevNotifications.map((notification) =>
           notification.id === notificationId
@@ -89,54 +94,68 @@ const Navbar = () => {
     }
   };
 
+  // Toggle notifications dropdown and fetch notifications
   const toggleNotificationsDropdown = async () => {
     await fetchNotifications();
     setIsNotificationsOpen((prev) => !prev);
   };
 
+  // Close notifications dropdown
   const closeNotificationsDropdown = () => {
     setIsNotificationsOpen(false);
   };
 
+  // Toggle trips dropdown
   const toggleTripsDropdown = () => {
     setIsTripsDropdownOpen(!isTripsDropdownOpen);
   };
 
+  // Toggle profile dropdown
   const toggleProfileDropdown = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
   };
 
+  // Handle user sign-out
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" }); // Explicitly redirect to the root page after sign-out
+    await signOut({ callbackUrl: "/" }); // Redirect to the root page after sign-out
   };
 
+  // Handle user sign-in
   const handleSignIn = () => {
     signIn(undefined, { callbackUrl: "/home" }); // Redirect to /home after sign in
   };
 
+  // Count unread notifications
   const unreadCount = notifications.filter((n) => n.status === "unread").length;
 
   return (
     <div className="navbar fixed w-full top-0 left-0 z-10 border-b border-slate-300">
+      {/* Navbar Container */}
       <div className="grid grid-cols-2 md:grid-cols-12 items-center h-16 bg-white text-black">
+        {/* Platform Name */}
         <div className="platform-name text-xl font-bold col-span-1 flex justify-center">
           <a href="/">
             <h1 className="text-2xl ">TRACO</h1>
           </a>
         </div>
+
+        {/* Left Links Section */}
         <div className="left-links col-span-6 flex space-x-10 relative pl-9">
+          {/* Home Link */}
           <div className="home">
             <a href="/home" className="relative group">
               <span className="hover-underline-animation">Trips</span>
             </a>
           </div>
+
+          {/* My Trips Link */}
           <div className="my-trips">
             <a
               href="/trips/mytrips"
               onClick={(e) => {
                 if (!session) {
                   e.preventDefault();
-                  // Redirect to sign-in, and after signing in, go to /trips/mytrips
+                  // Redirect to sign-in, then to /trips/mytrips
                   signIn(undefined, { callbackUrl: "/trips/mytrips" });
                 }
               }}
@@ -144,6 +163,8 @@ const Navbar = () => {
               <span className="hover-underline-animation">My Trips</span>
             </a>
           </div>
+
+          {/* Create Trip Link */}
           <div className="create-trip">
             <a
               href="/trips/add"
@@ -157,6 +178,8 @@ const Navbar = () => {
               <span className="hover-underline-animation">Create Trip</span>
             </a>
           </div>
+
+          {/* Friends Link */}
           <div className="profile">
             <a
               href="/searchusers"
@@ -172,9 +195,12 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* White Space */}
         <div className="white-space col-span-1"></div>
 
+        {/* Right Links Section */}
         <div className="right-links flex space-x-10 col-span-4 justify-end pr-9 items-center">
+          {/* Profile Link */}
           <div className="friends">
             <a
               href="/profile"
@@ -188,24 +214,32 @@ const Navbar = () => {
               <span className="hover-underline-animation">Profile</span>
             </a>
           </div>
+
+          {/* About Link */}
           <div className="about-button">
             <a href="/about" className="relative group">
               <span className="hover-underline-animation">About</span>
             </a>
           </div>
+
+          {/* Contact Link */}
           <div className="contact-button">
             <a href="/contact" className="relative group">
               <span className="hover-underline-animation">Contact</span>
             </a>
           </div>
 
+          {/* Notifications Section */}
           {session && (
             <div className=" notification-bell flex justify-center">
+              {/* Unread Notification Count */}
               {unreadCount > 0 && (
                 <span className="-left-3 -top-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                   {unreadCount}
                 </span>
               )}
+
+              {/* Notification Bell Icon */}
               <button
                 onClick={toggleNotificationsDropdown}
                 className="bell-icon-button">
@@ -215,6 +249,7 @@ const Navbar = () => {
                 />
               </button>
 
+              {/* Notifications Dropdown */}
               {isNotificationsOpen && (
                 <div
                   className="absolute right-0 top-full mt-2 w-60 bg-white border shadow-md rounded-md z-30"
@@ -253,16 +288,16 @@ const Navbar = () => {
             </div>
           )}
 
+          {/* Sign In/Sign Out Button */}
           <div className="hidden md:flex justify-end items-center space-x-4 relative">
-            {/* Signin/Signout button div */}
-            {session ? ( //if session is active show signout button
+            {session ? ( // If session is active, show Sign Out button
               <button
                 onClick={handleSignOut}
                 className="hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black">
                 Sign Out
               </button>
             ) : (
-              //if session not active show signin button
+              // If session is not active, show Sign In button
               <button
                 onClick={handleSignIn}
                 className="hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded border-2 border-black">

@@ -8,6 +8,7 @@ import Navbar from "../layout/navbar/page";
 import Footer from "../layout/footer/page";
 import { signIn } from "next-auth/react";
 
+// Interface defining the structure of user data
 interface UserData {
   name: string;
   phoneNumber?: string;
@@ -20,6 +21,7 @@ interface UserData {
   profilePicture?: string;
 }
 
+// Interface defining the structure of a post
 interface Post {
   postId: number;
   caption: string;
@@ -38,6 +40,7 @@ interface Post {
   };
 }
 
+// Interface defining the structure of a user trip
 interface UserTrip {
   userTripId: number;
   trip: {
@@ -46,14 +49,16 @@ interface UserTrip {
   };
 }
 
+// Main Profile component
 export default function Profile() {
-  const { data: session } = useSession();
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [nationalities, setNationalities] = useState([]);
-  const [languages, setLanguages] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const { data: session } = useSession(); // Access the user session
+  const [userData, setUserData] = useState<UserData | null>(null); // State for user data
+  const [nationalities, setNationalities] = useState([]); // State for nationalities dropdown options
+  const [languages, setLanguages] = useState([]); // State for languages dropdown options
+  const [isLoading, setIsLoading] = useState(true); // State to track loading status
+  const router = useRouter(); // Router instance for navigation
 
+  // Static list of interests for the interests dropdown
   const staticInterests = [
     { value: "hiking", label: "Hiking" },
     { value: "photography", label: "Photography" },
@@ -64,14 +69,14 @@ export default function Profile() {
     { value: "sports", label: "Sports" },
   ];
 
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newCaption, setNewCaption] = useState("");
-  const [newImage, setNewImage] = useState<File | null>(null);
-  const [selectedUserTripId, setSelectedUserTripId] = useState<number | null>(null);
-  const [userTrips, setUserTrips] = useState<UserTrip[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]); // State for user posts
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [newCaption, setNewCaption] = useState(""); // State for new post caption
+  const [newImage, setNewImage] = useState<File | null>(null); // State for new post image
+  const [selectedUserTripId, setSelectedUserTripId] = useState<number | null>(null); // State for selected trip ID
+  const [userTrips, setUserTrips] = useState<UserTrip[]>([]); // State for user trips
 
-  // Fetch Nationalities and Languages from APIs
+  // Fetch nationalities and languages from APIs on component mount
   useEffect(() => {
     const fetchNationalities = async () => {
       const response = await fetch(
@@ -106,6 +111,7 @@ export default function Profile() {
     fetchLanguages();
   }, []);
 
+  // Fetch user trips when the session is available
   useEffect(() => {
     if (session?.user?.email) {
       fetch(`/backend/user-trips?email=${session.user.email}`)
@@ -115,7 +121,7 @@ export default function Profile() {
     }
   }, [session]);
 
-  // Fetch User Data
+  // Fetch user data when the session is available
   useEffect(() => {
     if (session) {
       fetch("/backend/user", {
@@ -137,6 +143,7 @@ export default function Profile() {
     }
   }, [session]);
 
+  // Function to handle profile update
   const handleUpdate = async () => {
     try {
       const res = await fetch("/backend/user", {
@@ -160,6 +167,7 @@ export default function Profile() {
     }
   };
 
+  // Function to handle adding a new post
   const handleAddPost = async () => {
     if (!newImage || !newCaption || !selectedUserTripId) {
       alert("Please provide a caption, image, and select a trip.");
@@ -192,22 +200,29 @@ export default function Profile() {
     }
   };
 
+  // If there is no session, prompt the user to log in
   if (!session) {
     return <p className="login-msg">Please log in to view your profile.</p>;
   }
 
+  // Show loading message while data is being fetched
   if (isLoading) {
     return <p className="loading-msg">Loading profile...</p>;
   }
 
   return (
     <div className="profile-page mt-16">
+      {/* Navbar Component */}
       <Navbar />
+  
+      {/* Main Profile Container */}
       <div className="flex justify-center">
         <div className="profile-container w-1/2 m-12 grid grid-rows-[auto,1fr,auto] gap-10 pt-5 pb-5">
+          {/* Profile Header Section */}
           <div className="profile-header flex items-center gap-5">
+            {/* Profile Picture Section */}
             <div className="relative w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center font-bold text-white overflow-hidden">
-              {/* Profile Picture */}
+              {/* Display Profile Picture if available, otherwise show a placeholder */}
               {userData?.profilePicture ? (
                 <img
                   src={userData.profilePicture}
@@ -217,13 +232,14 @@ export default function Profile() {
               ) : (
                 <span className="text-xl">+</span>
               )}
-
-              {/* Add Picture Button */}
+  
+              {/* Button to Upload New Profile Picture */}
               <label
                 htmlFor="profilePicture"
                 className="absolute bottom-0 right-0 w-6 h-6 bg-purple-500 rounded-full text-white text-sm cursor-pointer hover:bg-purple-600">
                 +
               </label>
+              {/* Hidden File Input for Profile Picture Upload */}
               <input
                 id="profilePicture"
                 type="file"
@@ -245,12 +261,16 @@ export default function Profile() {
                 }}
               />
             </div>
+  
+            {/* Display User Name */}
             <div className="profile-name">
               <span className="user-name text-3xl">
                 {userData?.name || "Name Name"}
               </span>
             </div>
           </div>
+  
+          {/* Profile Form Section */}
           {userData && (
             <div className="form-container grid grid-rows-5 gap-3">
               {/* Name Field */}
@@ -265,7 +285,8 @@ export default function Profile() {
                   className="input-field"
                 />
               </div>
-
+  
+              {/* Row for Nationality and Sex Fields */}
               <div className="row2 grid grid-cols-2 gap-5">
                 {/* Nationality Dropdown */}
                 <div className="nationality-form form-group mb-4 ">
@@ -281,6 +302,7 @@ export default function Profile() {
                     }
                   >
                     <option value="">Select</option>
+                    {/* Map through nationalities to create dropdown options */}
                     {nationalities.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
@@ -299,6 +321,7 @@ export default function Profile() {
                     }
                     className="input-field">
                     <option value="">Select</option>
+                    {/* Map through sex options */}
                     {["Male", "Female", "Other"].map((sex) => (
                       <option key={sex} value={sex}>
                         {sex}
@@ -330,7 +353,8 @@ export default function Profile() {
                   />
                 </div>
               </div>
-
+  
+              {/* Row for Age and Phone Number Fields */}
               <div className="age-num grid grid-cols-2 gap-5">
                 {/* Age Field */}
                 <div className="age-form form-group mb-4 text-color">
@@ -384,13 +408,17 @@ export default function Profile() {
               </div>
             </div>
           )}
+  
+          {/* Submit Buttons Section */}
           <div className="submit-button grid justify-end">
+            {/* Update Profile Button */}
             <button
               className="update-button w-28 h-12 text-xl font-bold bg-purple-500 text-white rounded-lg hover:bg-white hover:text-purple-500 hover:border-2 hover: border-purple-500"
               onClick={handleUpdate}>
               Update
             </button>
-
+  
+            {/* Add Post Button */}
             <button
               onClick={() => setIsModalOpen(true)}
               className="mt-6 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700"
@@ -406,6 +434,7 @@ export default function Profile() {
         <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="modal-content bg-white p-8 rounded-lg w-1/2">
             <h2 className="text-xl font-bold mb-4">Add a New Post</h2>
+            {/* Caption Input */}
             <label className="block mb-4">
               Caption:
               <input
@@ -415,6 +444,7 @@ export default function Profile() {
                 className="w-full p-2 border rounded-lg mt-1"
               />
             </label>
+            {/* Image Upload Input */}
             <label className="block mb-4">
               Image:
               <input
@@ -425,6 +455,7 @@ export default function Profile() {
                 className="w-full p-2 border rounded-lg mt-1"
               />
             </label>
+            {/* Trip Selection Dropdown */}
             <label className="block mb-4">
               Select a Trip:
               <select
@@ -437,6 +468,7 @@ export default function Profile() {
                 className="w-full p-2 border rounded-lg mt-1"
               >
                 <option value="">Select a trip</option>
+                {/* Map through user trips to create dropdown options */}
                 {userTrips.map((userTrip) => (
                   <option
                     key={userTrip.userTripId}
@@ -447,13 +479,16 @@ export default function Profile() {
                 ))}
               </select>
             </label>
+            {/* Modal Action Buttons */}
             <div className="flex justify-end space-x-4">
+              {/* Cancel Button */}
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-700"
               >
                 Cancel
               </button>
+              {/* Add Post Button */}
               <button
                 onClick={handleAddPost}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700"
@@ -464,7 +499,8 @@ export default function Profile() {
           </div>
         </div>
       )}
-
+  
+      {/* Inline Styles for the Component */}
       <style jsx>{`
         label {
           display: block;
@@ -510,6 +546,8 @@ export default function Profile() {
           color: #d32f2f;
         }
       `}</style>
+  
+      {/* Footer Component */}
       <Footer />
     </div>
   );
