@@ -6,25 +6,24 @@ const Footer = () => {
       <div className="footer-links p-4 bg-white text-black border-stone-300 border-t-2">
         {/* Links Row */}
         <div className="links-row flex justify-center space-x-8 mb-4">
-          {/* Privacy Policy Link */}
+          {/* <a href="#" className="hover:underline">
           <a href="#" className="hover:underline">
+
             Privacy Policy
           </a>
 
-          {/* Terms of Service Link */}
           <a href="#" className="hover:underline">
             Terms of Service
           </a>
 
-          {/* Contact Us Link */}
           <a href="/contact" className="hover:underline">
             Contact Us
           </a>
 
-          {/* About Us Link */}
           <a href="/about" className="hover:underline">
             About Us
-          </a>
+          </a> */}
+          <span className="text-3xl">Traco</span>
         </div>
 
         {/* Horizontal Line Separator */}
