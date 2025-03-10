@@ -276,6 +276,21 @@ export default function Profile() {
     return stars;
   };
 
+  const [hoveredRating, setHoveredRating] = useState(0);
+
+  const handleMouseEnter = (index) => {
+    setHoveredRating(index);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredRating(0);
+  };
+
+  const handleClick = (index) => {
+    setNewReview((prev) => ({...prev, rating: Number.parseInt(index)}));
+  };
+
+
   useEffect(() => {
     fetchPosts();
     fetchReviews();
@@ -385,21 +400,27 @@ export default function Profile() {
                     {/* Popup Modal */}
                     {showPopup && (
                       <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                        <div className="bg-white p-6 rounded-lg shadow-lg w-2/3">
                           <h2 className="text-xl font-bold mb-4">Add a Review</h2>
                           <form>
 
-                            <label className="block mb-2">Rating (1-5):</label>
-                            <input
-                              type="number"
-                              name="rating"
-                              value={newReview.rating}
-                              onChange={handleInputChange}
-                              min="1"
-                              max="5"
-                              required
-                              className="border p-2 w-full mb-3"
-                            />
+                            <label className="block mb-2"></label>
+                            <div className="flex space-x-2 text-3xl mb-5">
+                              {[1, 2, 3, 4, 5].map((index) => (
+                                <FontAwesomeIcon
+                                    key={index}
+                                    icon={faStar}
+                                    className={index <= (hoveredRating || newReview.rating)
+                                      ? "text-yellow-500 cursor-pointer"
+                                      : "text-gray-300 cursor-pointer"
+                                    }
+                                    onMouseEnter={() => handleMouseEnter(index)}
+                                    onMouseLeave={handleMouseLeave}
+                                    onClick={() => handleClick(index)}
+
+                                />
+                              ))}
+                            </div>
 
                             <label className="block mb-2">Comment:</label>
                             <textarea
@@ -422,7 +443,7 @@ export default function Profile() {
                                 onClick={(e) => handleSubmit(e)}
                                 disabled={newReview.rating === 0 || newReview.comment.trim() === ""}
                               >
-                                Submit Review
+                                Submit
                               </button>
                             </div>
                           </form>

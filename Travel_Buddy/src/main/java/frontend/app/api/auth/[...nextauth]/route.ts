@@ -16,29 +16,26 @@ const options = {
       },
       async authorize(credentials) {
         try {
-          const res = await fetch(
-            `${apiURL}/backend/credentials/signin`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                username: credentials.username,
-                password: credentials.password,
-              }),
-            }
-          );
-    
+          const res = await fetch(`${apiURL}/backend/credentials/signin`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: credentials.username,
+              password: credentials.password,
+            }),
+          });
+
           if (!res.ok) {
             // Extract the error message from the response
             const errorData = await res.json();
             throw new Error(errorData.error || "Login failed");
           }
-    
+
           const user = await res.json();
           if (!user) {
             throw new Error("No user data returned");
           }
-    
+
           return user; // Return user object for successful authentication
         } catch (error) {
           console.error("Authorization error:", error.message);
@@ -54,20 +51,17 @@ const options = {
     async signIn({ user, account, profile, email, credentials }) {
       if (account.provider === "google") {
         try {
-          const res = await fetch(
-            `${apiURL}/backend/google/signin`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                username: user.name,
-                email: user.email,
-                password: user.id,
-              }),
-            }
-          );
+          const res = await fetch(`${apiURL}/backend/google/signin`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username: user.name,
+              email: user.email,
+              password: user.id,
+            }),
+          });
           if (!res.ok) {
             throw new Error("Internal server error");
           }
@@ -95,25 +89,20 @@ const options = {
       console.log("Updated token:", token);
       return token;
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: Session;
-      token: JWT;
-    }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       console.log("Session callback triggered");
       console.log("Incoming session:", session);
       console.log("Token data:", token);
-  
-      session.user.username = token.username || session.user.name || "Unknown User";
+
+      session.user.username =
+        token.username || session.user.name || "Unknown User";
       session.user.user_id = token.user_id || "Unknown ID";
       session.user.email = token.email || "Unknown Email";
-  
+
       console.log("Updated session:", session);
       return session;
     },
-    
+
     async redirect({ url, baseUrl }) {
       if (url.startsWith(baseUrl)) {
         return url;

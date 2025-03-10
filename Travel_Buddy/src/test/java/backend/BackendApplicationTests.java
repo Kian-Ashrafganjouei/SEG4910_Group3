@@ -1,23 +1,58 @@
 package backend;
 
-import backend.model.User;
-import backend.model.UserTrips;
-import backend.model.Trip;
-import backend.repository.UserRepository;
-import backend.repository.UserTripsRepository;
-import backend.repository.TripRepository;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
+
+import backend.model.Trip;
+import backend.model.User;
+import backend.model.UserTrips;
+import backend.repository.TripRepository;
+import backend.repository.UserRepository;
+import backend.repository.UserTripsRepository;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
 
 class BackendApplicationTests {
     @Mock
@@ -150,6 +185,66 @@ class BackendApplicationTests {
         assertEquals(400, response.getStatusCodeValue());
         assertEquals("Invalid email or password.", response.getBody());
     }
+
+    @Test
+    void shouldUpdateRequestSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+        Long tripId = 100L;
+        String status = "APPROVED";
+
+        UserTrips mockUserTrip = new UserTrips();
+        mockUserTrip.setUserId(userId);
+        mockUserTrip.setTripId(tripId);
+        mockUserTrip.setStatus("PENDING");
+
+        when(userTripsRepository.findByUserIdAndTripId(userId, tripId))
+                .thenReturn(Optional.of(mockUserTrip));
+
+        Map<String, Object> requestPayload = new HashMap<>();
+        requestPayload.put("userId", userId);
+        requestPayload.put("tripId", tripId);
+        requestPayload.put("status", status);
+
+        // Act: Call the method directly on backendApplication (instead of service)
+        ResponseEntity<?> response = backendApplication.updateRequest(requestPayload);
+
+        // Assert: Verify the response and the status update
+        assertEquals(200, response.getStatusCodeValue());  // Status code should be OK (200)
+        assertEquals("Request updated successfully.", response.getBody());  // Response body should match
+
+        assertEquals("APPROVED", mockUserTrip.getStatus());  // Ensure status was updated
+
+        // Verify that save was called once to persist the changes
+        verify(userTripsRepository, times(1)).save(mockUserTrip);
+    }
+
+
+    @Test
+    void shouldReturnBadRequestWhenRequestNotFound() {
+        // Arrange
+        Long userId = 2L;
+        Long tripId = 200L;
+
+        when(userTripsRepository.findByUserIdAndTripId(userId, tripId))
+                .thenReturn(Optional.empty()); // Simulate no matching user trip
+
+        Map<String, Object> requestPayload = new HashMap<>();
+        requestPayload.put("userId", userId);
+        requestPayload.put("tripId", tripId);
+        requestPayload.put("status", "REJECTED");
+
+        // Act: Call the method directly on backendApplication (instead of service)
+        ResponseEntity<?> response = backendApplication.updateRequest(requestPayload);
+
+        // Assert: Verify the response when request is not found
+        assertEquals(400, response.getStatusCodeValue());  // Status code should be BadRequest (400)
+        assertEquals("Request not found.", response.getBody());  // Response body should match
+
+        // Verify that save was never called
+        verify(userTripsRepository, never()).save(any(UserTrips.class));
+    }
+
 
     @Test
     void shouldHandleMultipleUsersAndAuthenticateCorrectOne() {
@@ -468,22 +563,25 @@ class BackendApplicationTests {
         assertEquals("UserTrip not found.", response.getBody());
     }
 
-    // @Test
-    // void shouldHandleExceptionGracefully() {
-    //     // Arrange
-    //     Long userTripId = 1L;
-    //     Map<String, String> payload = new HashMap<>();
-    //     payload.put("status", "Cancelled");
+    @Test
+    void shouldHandleExceptionGracefully() {
+        // Arrange
+        Long userTripId = 1L;
+        Map<String, String> payload = new HashMap<>();
+        payload.put("status", "Cancelled");
 
-    //     when(userTripsRepository.findById(userTripId)).thenThrow(new RuntimeException("Database error"));
+        // Ensure the mock repository throws an exception on save
+        when(userTripsRepository.findById(userTripId)).thenReturn(Optional.of(new UserTrips()));
+        doThrow(new RuntimeException("Database error"))
+            .when(userTripsRepository).save(any(UserTrips.class));
 
-    //     // Act
-    //     ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
+        // Act
+        ResponseEntity<?> response = backendApplication.updateUserTripStatus(userTripId, payload);
 
-    //     // Assert
-    //     assertEquals(500, response.getStatusCodeValue());
-    //     assertEquals("An error occurred while updating the UserTrip status.", response.getBody());
-    // }
+        // Assert
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals("An error occurred while updating the UserTrip status.", response.getBody());
+    }
 
     @Test
     void shouldReturnBadRequestForExistingUser() {
@@ -537,5 +635,249 @@ class BackendApplicationTests {
         // Assert: Verify that the response is HTTP 200 and contains the mock users.
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(mockUsers, response.getBody());
+    }
+
+
+    @Test
+    void shouldReturnInternalServerErrorForGetAllUsers() {
+        // Arrange: Simulate an exception thrown by the repository.
+        when(user_repository.findAll()).thenThrow(new RuntimeException("Database error"));
+
+        // Act: Call the getAllUsers endpoint.
+        ResponseEntity<List<User>> response = backendApplication.getAllUsers();
+
+        // Assert: Verify that the response is HTTP 500 and the body is null.
+        assertEquals(500, response.getStatusCodeValue());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void shouldSaveImageToDiskSuccessfully() throws Exception {
+        // Arrange
+        String fileName = "testimage.jpg";
+        byte[] content = "dummy image content".getBytes();
+        MockMultipartFile mockFile = new MockMultipartFile("image", fileName, "image/jpeg", content);
+
+        // Use reflection to access the private saveImageToDisk method
+        Method saveImageMethod = BackendApplication.class.getDeclaredMethod("saveImageToDisk", MultipartFile.class);
+        saveImageMethod.setAccessible(true);
+
+        // Act
+        String returnedPath = (String) saveImageMethod.invoke(backendApplication, mockFile);
+
+        // Assert: Verify that the returned path is as expected
+        assertEquals("/images/posts/" + fileName, returnedPath);
+
+        // Also, verify that the file exists on disk at the expected location
+        Path filePath = Paths.get("src/main/java/frontend/public/images/posts/" + fileName);
+        assertTrue(Files.exists(filePath));
+
+        // Clean up: delete the created file so tests remain idempotent
+        Files.deleteIfExists(filePath);
+    }
+
+    @Test
+    void shouldThrowRuntimeExceptionWhenImageSaveFails() throws Exception {
+        // Arrange: Create a broken MultipartFile that simulates an IOException on getBytes()
+        MultipartFile brokenFile = new MultipartFile() {
+            @Override
+            public String getName() { return "image"; }
+
+            @Override
+            public String getOriginalFilename() { return "broken.jpg"; }
+
+            @Override
+            public String getContentType() { return "image/jpeg"; }
+
+            @Override
+            public boolean isEmpty() { return false; }
+
+            @Override
+            public long getSize() { return 0; }
+
+            @Override
+            public byte[] getBytes() throws IOException { 
+                throw new IOException("Simulated error");
+            }
+
+            @Override
+            public InputStream getInputStream() throws IOException { 
+                throw new IOException("Simulated error");
+            }
+
+            @Override
+            public void transferTo(File dest) throws IOException, IllegalStateException { }
+        };
+
+        // Use reflection to access the private saveImageToDisk method
+        Method saveImageMethod = BackendApplication.class.getDeclaredMethod("saveImageToDisk", MultipartFile.class);
+        saveImageMethod.setAccessible(true);
+
+        // Act & Assert: Expect the method to throw a RuntimeException (wrapped in InvocationTargetException)
+        InvocationTargetException exception = assertThrows(InvocationTargetException.class, () -> {
+            saveImageMethod.invoke(backendApplication, brokenFile);
+        });
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof RuntimeException);
+        assertTrue(cause.getMessage().contains("Error saving image"));
+    }
+        
+    // Unit tests for deleteTrip(Long, String)
+    @Test
+    void shouldDeleteTripSuccessfully() {
+        // Arrange
+        Long tripId = 1L;
+        String email = "email0@gmail.com";
+
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setEmail(email);
+
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        
+        Trip mockTrip = new Trip();
+        mockTrip.setTripId(tripId);
+        mockTrip.setLocation("Paris");
+        mockTrip.setCreatedBy(mockUser);
+
+        when(trip_repository.findById(tripId)).thenReturn(Optional.of(mockTrip));
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.deleteTrip(tripId, email);
+        
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Trip deleted successfully.", response.getBody());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingNonexistentTrip() {
+        // Arrange
+        Long tripId = 99L;
+        String email = "email0@gmail.com";
+
+        User mockUser = new User();
+        mockUser.setUserId(99L);
+        mockUser.setEmail(email);
+
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+
+        Trip mockTrip = new Trip();
+        mockTrip.setTripId(tripId);
+        mockTrip.setLocation("Paris");
+
+        when(trip_repository.findById(tripId)).thenReturn(Optional.empty());
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.deleteTrip(tripId, email);
+        
+        // Assert
+        assertEquals(404, response.getStatusCodeValue());
+        assertEquals("Trip not found.", response.getBody());
+    }
+
+
+    // Unit tests for joinTrip(Map)
+    @Test
+    void shouldJoinTripSuccessfully() {
+        // Arrange
+        Long tripId = 1L;
+        String email = "email0@gmail.com";
+        
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setEmail(email);
+        
+        Trip mockTrip = new Trip();
+        mockTrip.setTripId(tripId);
+        mockTrip.setLocation("Paris");
+
+        Map<String, String> payload = new HashMap<>();
+        payload.put("tripId", String.valueOf(tripId));
+        payload.put("userEmail", email);
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        when(trip_repository.findById(tripId)).thenReturn(Optional.of(mockTrip));
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.joinTrip(payload);
+        
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Trip join status updated.", response.getBody());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenTripNotFoundOnJoinTrip() {
+        // Arrange
+        Long tripId = 9L;
+        String email = "email0@example.com";
+        
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setEmail(email);
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        when(trip_repository.findById(tripId)).thenReturn(Optional.empty());
+        
+        Map<String, String> payload = new HashMap<>();
+        payload.put("tripId", String.valueOf(tripId));
+        payload.put("userEmail", email);
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.joinTrip(payload);
+        
+        // Assert
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("Trip not found.", response.getBody());
+    }
+
+
+    // Unit tests for update_user(String, User)
+    @Test
+    void shouldUpdateUserSuccessfully() {
+        // Arrange
+        String email = "email0@gmail.com";
+        
+        User existingUser = new User();
+        existingUser.setUserId(1L);
+        existingUser.setEmail(email);
+        existingUser.setUsername("oldName");
+        existingUser.setSex("Male");
+        existingUser.setPhoneNumber("8191112222");
+        
+        User updatedUser = new User();
+        updatedUser.setUsername("newName");
+        existingUser.setSex("Female");
+        existingUser.setPhoneNumber("8192221111");
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.of(existingUser));
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.update_user(email, updatedUser);
+        
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("User updated successfully.", response.getBody());
+        assertEquals("newName", updatedUser.getUsername());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenUserNotFoundOnUpdate() {
+        // Arrange
+        String email = "nonexistent@example.com";
+        
+        User updatedUser = new User();
+        updatedUser.setUsername("newName");
+        updatedUser.setPassword("newPassword");
+        
+        when(user_repository.findByEmail(email)).thenReturn(Optional.empty());
+        
+        // Act
+        ResponseEntity<?> response = backendApplication.update_user(email, updatedUser);
+        
+        // Assert
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("User not found.", response.getBody());
     }
 }

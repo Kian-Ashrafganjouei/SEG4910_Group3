@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -33,12 +34,14 @@ import backend.model.Notification;
 import backend.model.Post;
 import backend.model.Review;
 import backend.model.Trip;
+import backend.model.TripImage;
 import backend.model.User;
 import backend.model.UserTrips;
 import backend.repository.InterestRepository;
 import backend.repository.NotificationRepository;
 import backend.repository.PostRepository;
 import backend.repository.ReviewRepository;
+import backend.repository.TripImageRepository;
 import backend.repository.TripRepository;
 import backend.repository.UserRepository;
 import backend.repository.UserTripsRepository;
@@ -71,6 +74,9 @@ public class BackendApplication {
     @Autowired
     private ReviewRepository reviewRepository;
 
+    @Autowired
+    private TripImageRepository tripImageRepository;
+
     // Main method to run the Spring Boot applicatio
     public static void main(String[] args) {
         SpringApplication.run(BackendApplication.class, args);
@@ -96,10 +102,19 @@ public class BackendApplication {
                 return ResponseEntity.badRequest().body("User not found.");
             }
 
+            Optional<Trip> tripOptional = trip_repository.findById(tripId);
+            if (tripOptional.isEmpty()) {
+                System.err.println("Error: Trip not found for ID :" + tripId);
+                return ResponseEntity.badRequest().body("Trip not found.");
+            }
+
             User user = userOptional.get();
             System.out.println("User found: " + user.getUserId());
 
-            // Check if UserTrip already exists
+            Trip trip = tripOptional.get();
+            System.out.println("Trip found: " + trip.getTripId());
+
+            //Check if UserTrip already exists
             Optional<UserTrips> existingUserTrip = userTripsRepository.findByUserIdAndTripId(user.getUserId(), tripId);
             if (existingUserTrip.isPresent()) {
                 // Update status if already exists
@@ -202,10 +217,12 @@ public class BackendApplication {
     }
 
     // API to update the status of a user-trip association
+    @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/backend/user-trips/update")
     public ResponseEntity<?> updateRequest(@RequestBody Map<String, Object> payload) {
-        Long tripId = Long.valueOf((Integer) payload.get("tripId"));
-        Long userId = Long.valueOf((Integer) payload.get("userId"));
+        // Update the casting to Long
+        Long tripId = Long.valueOf(String.valueOf(payload.get("tripId")));
+        Long userId = Long.valueOf(String.valueOf(payload.get("userId")));
         String status = (String) payload.get("status");
 
         Optional<UserTrips> userTripsOptional = userTripsRepository.findByUserIdAndTripId(userId, tripId);
@@ -226,9 +243,11 @@ public class BackendApplication {
             @RequestBody Map<String, String> payload) {
         try {
             String status = payload.get("status");
+            System.out.println("Received update request for UserTrip ID: " + userTripId + " with status: " + status);
 
             Optional<UserTrips> userTripOptional = userTripsRepository.findById(userTripId);
             if (userTripOptional.isEmpty()) {
+                System.out.println("UserTrip with ID " + userTripId + " not found.");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("UserTrip not found.");
             }
 
@@ -238,7 +257,7 @@ public class BackendApplication {
 
             return ResponseEntity.ok("Status updated successfully.");
         } catch (Exception e) {
-            System.err.println("Error updating UserTrip status: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while updating the UserTrip status.");
         }
@@ -503,6 +522,58 @@ public class BackendApplication {
     //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating review.");
     //     }
     // }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+
+    @PostMapping("/backend/reviewstemp")
+    public ResponseEntity<?> setUserReview(@RequestBody Map<String, Object> requestBody) {
+        try {
+            Map<String, Object> postMap = (Map<String, Object>) payload.get("post");
+            if (postMap == null || !postMap.containsKey("postId")) {
+                return ResponseEntity.badRequest().body("Post information is missing.");
+            }
+
+            Long postId = Long.parseLong(postMap.get("postId").toString());
+            
+            int rating = Integer.parseInt(payload.get("rating").toString());
+            
+            String comment = (String) payload.get("comment");
+            
+            Map<String, Object> reviewerMap = (Map<String, Object>) payload.get("reviewer");
+            if (reviewerMap == null || !reviewerMap.containsKey("userId")) {
+                return ResponseEntity.badRequest().body("Reviewer information is missing.");
+            }
+    
+            Long userId = Long.parseLong(reviewerMap.get("userId").toString());
+    
+            Optional<User> userOptional = user_repository.findById(userId);
+            
+            if (userOptional.isEmpty()) {
+                return ResponseEntity.badRequest().body("User not found.");
+            }
+    
+            Optional<Post> postOptional = postRepository.findById(postId);
+
+            if (postOptional.isEmpty()) {
+                return ResponseEntity.badRequest().body("Post not found.");
+            }
+    
+            Review newReview = new Review();
+            newReview.setReviewer(userOptional.get()); 
+            newReview.setPost(postOptional.get());
+            newReview.setRating(rating);
+            newReview.setComment(comment);
+    
+            reviewRepository.save(newReview);
+    
+            return ResponseEntity.ok("Review added successfully.");            
+        } catch (Exception e) {
+            System.err.println("Error saving review: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while saving the review.");
+        }
+    }
+    
+
 
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/reviews")
@@ -818,5 +889,53 @@ public class BackendApplication {
 
         return ResponseEntity.ok("Notification marked as read.");
     }
+
+    private String saveTripImageToDisk(MultipartFile image) {
+        try {
+            // Generate a unique file name using UUID
+            String uniqueFileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+            
+            // Define the file path where the image will be stored
+            String filePath = "src/main/java/frontend/public/images/trips/" + uniqueFileName;
+            Path path = Paths.get(filePath);
+            Files.createDirectories(path.getParent()); // Ensure the directories exist
+            Files.write(path, image.getBytes());
+
+            // Return the relative URL path for the frontend to access
+            return "/images/trips/" + uniqueFileName;
+        } catch (IOException e) {
+            throw new RuntimeException("Error saving image", e);
+        }
+    }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/backend/trips/{tripId}/images")
+    public ResponseEntity<?> uploadTripImages(@PathVariable Long tripId, @RequestParam("images") List<MultipartFile> images) {
+        try {
+            Optional<Trip> tripOptional = trip_repository.findById(tripId);
+            if (tripOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found.");
+            }
+
+            Trip trip = tripOptional.get();
+            List<TripImage> tripImages = new ArrayList<>();
+
+            for (MultipartFile image : images) {
+                // Save image to disk
+                String imagePath = saveTripImageToDisk(image);
+
+                // Create and save TripImage entity
+                TripImage tripImage = new TripImage(trip, imagePath);
+                tripImages.add(tripImage);
+            }
+
+            tripImageRepository.saveAll(tripImages);
+            return ResponseEntity.ok("Images uploaded successfully.");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading images.");
+        }
+    }
+
 
 }
