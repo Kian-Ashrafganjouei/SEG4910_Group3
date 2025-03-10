@@ -501,75 +501,25 @@ public class BackendApplication {
         }
     }
 
-    // @CrossOrigin(origins = "http://localhost:3000")
-    // @PostMapping("/backend/reviews")
-    // public ResponseEntity<?> setUserReview(@RequestBody Map<String, Object> requestBody) {
-    //     try {
-    //         Long tripId = ((Number) requestBody.get("tripId")).longValue();
-    //         int rating = Integer.parseInt(requestBody.get("rating").toString());
-
-    //         // Find the user associated with the trip
-    //         List<UserTrips> userTrips = userTripsRepository.findByTripId(tripId);
-    //         if (userTrips.isEmpty()) {
-    //             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user found for this trip.");
-    //         }
-    //         User user = userTrips.get(0).getUser(); // Assuming one user per trip
-    //         user.setReviewScore(rating);
-    //         user_repository.save(user);
-    //         System.out.println("MEOW");
-    //     return ResponseEntity.ok("Review successfully updated.");
-    //     } catch (Exception e) {
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating review.");
-    //     }
-    // }
-
     @CrossOrigin(origins = "http://localhost:3000")
-
     @PostMapping("/backend/reviewstemp")
     public ResponseEntity<?> setUserReview(@RequestBody Map<String, Object> requestBody) {
         try {
-            Map<String, Object> postMap = (Map<String, Object>) payload.get("post");
-            if (postMap == null || !postMap.containsKey("postId")) {
-                return ResponseEntity.badRequest().body("Post information is missing.");
-            }
+            Long tripId = ((Number) requestBody.get("tripId")).longValue();
+            int rating = Integer.parseInt(requestBody.get("rating").toString());
 
-            Long postId = Long.parseLong(postMap.get("postId").toString());
-            
-            int rating = Integer.parseInt(payload.get("rating").toString());
-            
-            String comment = (String) payload.get("comment");
-            
-            Map<String, Object> reviewerMap = (Map<String, Object>) payload.get("reviewer");
-            if (reviewerMap == null || !reviewerMap.containsKey("userId")) {
-                return ResponseEntity.badRequest().body("Reviewer information is missing.");
+            // Find the user associated with the trip
+            List<UserTrips> userTrips = userTripsRepository.findByTripId(tripId);
+            if (userTrips.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user found for this trip.");
             }
-    
-            Long userId = Long.parseLong(reviewerMap.get("userId").toString());
-    
-            Optional<User> userOptional = user_repository.findById(userId);
-            
-            if (userOptional.isEmpty()) {
-                return ResponseEntity.badRequest().body("User not found.");
-            }
-    
-            Optional<Post> postOptional = postRepository.findById(postId);
-
-            if (postOptional.isEmpty()) {
-                return ResponseEntity.badRequest().body("Post not found.");
-            }
-    
-            Review newReview = new Review();
-            newReview.setReviewer(userOptional.get()); 
-            newReview.setPost(postOptional.get());
-            newReview.setRating(rating);
-            newReview.setComment(comment);
-    
-            reviewRepository.save(newReview);
-    
-            return ResponseEntity.ok("Review added successfully.");            
+            User user = userTrips.get(0).getUser(); // Assuming one user per trip
+            user.setReviewScore(rating);
+            user_repository.save(user);
+            System.out.println("MEOW");
+        return ResponseEntity.ok("Review successfully updated.");
         } catch (Exception e) {
-            System.err.println("Error saving review: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while saving the review.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating review.");
         }
     }
     

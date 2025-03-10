@@ -1,7 +1,7 @@
 "use client";
 
-import Navbar from "../../layout/navbar/page";
-import Footer from "../../layout/footer/page";
+import Navbar from "../layout/navbar/page";
+import Footer from "../layout/footer/page";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
@@ -52,7 +52,7 @@ interface UserTrip {
   };
 }
 
-export default function Profile() {
+export default function PostsComponent() {
   const { data: session } = useSession();
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
@@ -78,12 +78,6 @@ export default function Profile() {
 
   useEffect (() => {
     if (isSubmitting) {
-      // console.log(`currUser.username: ${currUser?.username}`);
-      console.log(`newReview.reviewer?.userId: ${newReview.reviewer?.userId}`);
-      console.log(`newReview.postId: ${newReview.post.postId}`);
-      console.log(`newReview.rating: ${newReview.rating}`);
-      console.log(`newReview.reviewer.userId: ${newReview.reviewer?.userId}`);
-      console.log(`newReview.comment: ${newReview.comment}`);  
       
       (async () => {
         try {
@@ -121,7 +115,6 @@ export default function Profile() {
 
   const onAddReviewClick = (postId: number) => {
     setShowPopup(true);
-    console.log(`postId: ${postId}`);
     const post = posts.find((p) => p.postId === postId);
 
     if (post === undefined) {
@@ -175,7 +168,6 @@ export default function Profile() {
 
       const data: Review[] = await response.json();
       setReviews(data);
-      console.log(reviews);
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
@@ -299,14 +291,9 @@ export default function Profile() {
   }, [session]);
 
   return (
-    <div className="mt-16">
-      <Navbar />
+    <div className="mt-4 w-100">
       <div className="flex flex-col items-center">
-        <div className="profile-container w-11/12 p-8 m-8 bg-gradient-to-br from-purple-500 to-indigo-700 rounded-3xl shadow-2xl text-white">
-          <h1 className="title text-center text-4xl font-bold mb-8">
-            {session?.user?.username || "User"}'s Posts
-          </h1>
-
+        <div className="profile-container">
           <label className="block mb-4">
             Filter by User:
             <select
@@ -334,175 +321,169 @@ export default function Profile() {
             Apply Filter
           </button>
 
-          {isLoading ? (
-            <p className="loading-msg text-center text-xl font-semibold">
-              Loading posts...
-            </p>
-          ) : errorMessage ? (
-            <p className="error-msg text-center text-xl text-red-300">
-              {errorMessage}
-            </p>
-          ) : filteredPosts.length > 0 ? (
-            <div className="posts-list space-y-6">
-              {filteredPosts.map((post) => (
-                <div
-                  key={post.postId}
-                  className="post-card flex flex-col items-start p-6 rounded-xl shadow-lg bg-white text-black relative">
-                  {/* Display Profile Picture and Username */}
-                  <div className="flex items-center mb-4">
-                    <img
-                      className="w-10 h-10 rounded-full mr-3"
-                      src={
-                        post.userTrip?.user?.profilePicture
-                          ? post.userTrip.user.profilePicture
-                          : "/images/null_avatar.png"
-                      }
-                      alt={post.userTrip?.user?.username || "User Avatar"}
-                    />
-                    <span className="text-lg font-medium text-gray-700">
-                      @{post.userTrip?.user?.username || "Unknown"}
-                    </span>
-                  </div>
+          <div className="">
+            {isLoading ? (
+              <p className="loading-msg text-center text-xl font-semibold">
+                Loading posts...
+              </p>
+            ) : errorMessage ? (
+              <p className="error-msg text-center text-xl text-red-300">
+                {errorMessage}
+              </p>
+            ) : filteredPosts.length > 0 ? (
+              <div className="posts-list columns-2 gap-4 space-y-4">
+                {filteredPosts.map((post) => (
+                  <div
+                    key={post.postId}
+                    className="post-card flex flex-col items-start p-6 rounded-xl shadow-lg bg-white text-black break-inside-avoid">
+                    {/* Display Profile Picture and Username */}
+                    <div className="flex items-center mb-4">
+                      <img
+                        className="w-10 h-10 rounded-full mr-3"
+                        src={
+                          post.userTrip?.user?.profilePicture
+                            ? post.userTrip.user.profilePicture
+                            : "/images/null_avatar.png"
+                        }
+                        alt={post.userTrip?.user?.username || "User Avatar"}
+                      />
+                      <span className="text-lg font-medium text-gray-700">
+                        @{post.userTrip?.user?.username || "Unknown"}
+                      </span>
+                    </div>
 
-                  {/* Display Trip Location */}
-                  {post.userTrip?.trip?.location && (
-                    <span className="absolute top-4 right-4 text-sm font-medium text-gray-600 bg-gray-200 px-2 py-1 rounded-full">
-                      {post.userTrip.trip.location}
-                    </span>
-                  )}
-
-                  {/* Post Content */}
-                  <img
-                    src={post.image}
-                    alt={post.caption}
-                    className="post-image w-full h-64 object-cover rounded-lg mb-4"
-                  />
-                  <p className="post-caption text-lg text-gray-700 mb-2">
-                    {post.caption}
-                  </p>
-                  <p className="post-date text-sm text-gray-500">
-                    Posted on {new Date(post.createdAt).toLocaleDateString()}
-                  </p>
-
-
-
-
-
-
-
-
-                  <div>
-                    {/* Button to open popup */}
-                    <button onClick={() => onAddReviewClick(post.postId)} className="bg-blue-500 text-white px-4 py-2 rounded">
-                      Add Review
-                    </button>
-
-                    {/* Popup Modal */}
-                    {showPopup && (
-                      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-white p-6 rounded-lg shadow-lg w-2/3">
-                          <h2 className="text-xl font-bold mb-4">Add a Review</h2>
-                          <form>
-
-                            <label className="block mb-2"></label>
-                            <div className="flex space-x-2 text-3xl mb-5">
-                              {[1, 2, 3, 4, 5].map((index) => (
-                                <FontAwesomeIcon
-                                    key={index}
-                                    icon={faStar}
-                                    className={index <= (hoveredRating || newReview.rating)
-                                      ? "text-yellow-500 cursor-pointer"
-                                      : "text-gray-300 cursor-pointer"
-                                    }
-                                    onMouseEnter={() => handleMouseEnter(index)}
-                                    onMouseLeave={handleMouseLeave}
-                                    onClick={() => handleClick(index)}
-
-                                />
-                              ))}
-                            </div>
-
-                            <label className="block mb-2">Comment:</label>
-                            <textarea
-                              name="comment"
-                              value={newReview.comment}
-                              onChange={handleInputChange}
-                              required
-                              className="border p-2 w-full mb-3"
-                            />
-
-                            <div className="flex justify-end">
-                              <button
-                                className="px-4 py-2 bg-gray-300 rounded mr-2"
-                                onClick={() => setShowPopup(false)}
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                onClick={(e) => handleSubmit(e)}
-                                disabled={newReview.rating === 0 || newReview.comment.trim() === ""}
-                              >
-                                Submit
-                              </button>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
+                    {/* Display Trip Location */}
+                    {post.userTrip?.trip?.location && (
+                      <span className="absolute top-4 right-4 text-sm font-medium text-gray-600 bg-gray-200 px-2 py-1 rounded-full">
+                        {post.userTrip.trip.location}
+                      </span>
                     )}
-                  </div>
 
-                  
-            <div id={`reviews-section-${post.postId}`} className="reviews-section mt-4">
-              <button
-                className="toggle-reviews-btn text-sm text-blue-500"
-                onClick={() => toggleReviews(post.postId)}
-              >
-                Show Reviews
-              </button>
-              <div
-                id={`reviews-list-${post.postId}`}
-                className="reviews-list mt-4"
-                style={{ display: "none" }}
-              >
-                {reviews
-                  .filter((review) => review.post.postId === post.postId)
-                  .map((review) => {
-                    const reviewer = users.find((user) => user.userId === review.reviewer?.userId);
+                    {/* Post Content */}
+                    <img
+                      src={post.image}
+                      alt={post.caption}
+                      className="post-image w-full h-64 object-cover rounded-lg mb-4"
+                    />
+                    <p className="post-caption text-lg text-gray-700 mb-2">
+                      {post.caption}
+                    </p>
+                    <p className="post-date text-sm text-gray-500">
+                      Posted on {new Date(post.createdAt).toLocaleDateString()}
+                    </p>
 
-                    return (
-                      <div className="review-item mb-3">
-                        <div className="reviewer text-sm font-semibold text-gray-700">
-                          {reviewer ? `${reviewer.name} - ${reviewer.username}` : "User not found"}
+
+
+
+                    <div>
+                      {/* Button to open popup */}
+                      <button onClick={() => onAddReviewClick(post.postId)} className="bg-blue-500 text-white px-4 py-2 rounded">
+                        Add Review
+                      </button>
+
+                      {/* Popup Modal */}
+                      {showPopup && (
+                        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+                          <div className="bg-white p-6 rounded-lg shadow-lg w-2/3">
+                            <h2 className="text-xl font-bold mb-4">Add a Review</h2>
+                            <form>
+
+                              <label className="block mb-2"></label>
+                              <div className="flex space-x-2 text-3xl mb-5">
+                                {[1, 2, 3, 4, 5].map((index) => (
+                                  <FontAwesomeIcon
+                                      key={index}
+                                      icon={faStar}
+                                      className={index <= (hoveredRating || newReview.rating)
+                                        ? "text-yellow-500 cursor-pointer"
+                                        : "text-gray-300 cursor-pointer"
+                                      }
+                                      onMouseEnter={() => handleMouseEnter(index)}
+                                      onMouseLeave={handleMouseLeave}
+                                      onClick={() => handleClick(index)}
+
+                                  />
+                                ))}
+                              </div>
+
+                              <label className="block mb-2">Comment:</label>
+                              <textarea
+                                name="comment"
+                                value={newReview.comment}
+                                onChange={handleInputChange}
+                                required
+                                className="border p-2 w-full mb-3"
+                              />
+
+                              <div className="flex justify-end">
+                                <button
+                                  className="px-4 py-2 bg-gray-300 rounded mr-2"
+                                  onClick={() => setShowPopup(false)}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                  onClick={(e) => handleSubmit(e)}
+                                  disabled={newReview.rating === 0 || newReview.comment.trim() === ""}
+                                >
+                                  Submit
+                                </button>
+                              </div>
+                            </form>
+                          </div>
                         </div>
-                        <div className="rating text-sm">
-                          {renderStars(review.rating)}
+                      )}
+                    </div>
+
+                    
+              <div id={`reviews-section-${post.postId}`} className="reviews-section mt-4">
+                {/* <button
+                  className="toggle-reviews-btn text-sm text-blue-500"
+                  onClick={() => toggleReviews(post.postId)}
+                >
+                  Show Reviews
+                </button> */}
+                <div
+                  id={`reviews-list-${post.postId}`}
+                  className="reviews-list mt-4"
+                  // style={{ display: "none" }}
+                >
+
+                  {reviews
+                    .filter((review) => review.post.postId === post.postId)
+                    .map((review) => {
+                      const reviewer = users.find((user) => user.userId === review.reviewer?.userId);
+
+                      return (
+                        <div className="review-item mb-3">
+                          <div className="reviewer text-sm font-semibold text-gray-700">
+                            {reviewer ? `${reviewer.name} - ${reviewer.username}` : "User not found"}
+                          </div>
+                          <div className="rating text-sm">
+                            {renderStars(review.rating)}
+                          </div>
+                          <div className="comment text-sm text-gray-600">{review.comment}</div>
                         </div>
-                        <div className="comment text-sm text-gray-600">{review.comment}</div>
-                      </div>
-                    )
-                  })
-                }
-              </div>
-            </div>
-          
-
-
-
-
-
+                      )
+                    })
+                  }
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="no-posts-msg text-center text-xl">No posts found.</p>
-          )}
+              </div>
+            
 
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="mt-6 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700">
-            Add Post
-          </button>
+
+
+
+
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-posts-msg text-center text-xl">No posts found.</p>
+            )}
+
+          </div>
         </div>
       </div>
 
@@ -563,7 +544,6 @@ export default function Profile() {
         </div>
       )}
 
-      <Footer />
     </div>
   );
 }
