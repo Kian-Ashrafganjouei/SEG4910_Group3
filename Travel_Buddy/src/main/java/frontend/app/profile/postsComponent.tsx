@@ -4,7 +4,7 @@ import Navbar from "../layout/navbar/page";
 import Footer from "../layout/footer/page";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface Post {
@@ -106,11 +106,22 @@ export default function PostsComponent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setIsSubmitting(true);
-    // const currUser = users.find( (user) => user.name === session?.user.name && user.username === session?.user.username);
+    try {
+      setIsSubmitting(true);
+      const currUser = users.find( (user) => user.name === session?.user.name && user.username === session?.user.username);
+      
+      if (currUser === undefined) {
+        throw new Error("User not found. Cannot add review.");
+      }   
 
-    setNewReview((prev) => ({ ...prev, reviewer: {userId: Number(3)}}));
-
+      setNewReview((prev) => ({ ...prev, reviewer: {userId: currUser.userId}}));
+    }
+    catch (error) {
+      console.error("User not found. Cannot add review.", error);
+    }
+    finally {
+      setShowPopup(false);
+    }
   };
 
   const onAddReviewClick = (postId: number) => {
@@ -294,32 +305,35 @@ export default function PostsComponent() {
     <div className="mt-4 w-100">
       <div className="flex flex-col items-center">
         <div className="profile-container">
-          <label className="block mb-4">
-            Filter by User:
-            <select
-              value={selectedUserId || ""}
-              onChange={(e) =>
-                setSelectedUserId(
-                  e.target.value ? Number(e.target.value) : null
-                )
-              }
-              className="w-full p-2 border rounded-lg mt-1 bg-white text-black">
-              <option value="">Show all posts</option>
-              {users.map((user) => (
-                <option
-                  key={user.userId}
-                  value={user.userId}
-                  className="text-black">
-                  {user.name} ({user.username})
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            onClick={handleFilterPosts}
-            className="mb-8 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700">
-            Apply Filter
-          </button>
+
+          <div className="filters flex items-start">
+            <label className="block mb-4 flex-auto">
+              Filter by User:
+              <select
+                value={selectedUserId || ""}
+                onChange={(e) =>
+                  setSelectedUserId(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
+                className="w-full p-2 border rounded-lg mt-1 bg-white text-black">
+                <option value="">Show all posts</option>
+                {users.map((user) => (
+                  <option
+                    key={user.userId}
+                    value={user.userId}
+                    className="text-black">
+                    {user.name} ({user.username})
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              onClick={handleFilterPosts}
+              className="px-3 py-2 ml-2 mb-4 bg-blue-500 text-white rounded-lg hover:bg-blue-700 self-end">
+              Apply Filter
+            </button>
+          </div>
 
           <div className="">
             {isLoading ? (
@@ -335,9 +349,9 @@ export default function PostsComponent() {
                 {filteredPosts.map((post) => (
                   <div
                     key={post.postId}
-                    className="post-card flex flex-col items-start p-6 rounded-xl shadow-lg bg-white text-black break-inside-avoid">
+                    className="post-card flex flex-col items-start p-6 rounded-xl shadow-lg bg-white text-black break-inside-avoid border border-gray-200 overflow-visible">
                     {/* Display Profile Picture and Username */}
-                    <div className="flex items-center mb-4">
+                    <div className="flex items-center justify-between w-full mb-4">
                       <img
                         className="w-10 h-10 rounded-full mr-3"
                         src={
@@ -347,9 +361,17 @@ export default function PostsComponent() {
                         }
                         alt={post.userTrip?.user?.username || "User Avatar"}
                       />
-                      <span className="text-lg font-medium text-gray-700">
+                      <div className="text-lg font-medium text-gray-700 flex-1">
                         @{post.userTrip?.user?.username || "Unknown"}
-                      </span>
+                      </div>
+                      <div className="relative group">
+                        <FontAwesomeIcon icon={faPlus} 
+                              onClick={() => onAddReviewClick(post.postId)}
+                              className="p-2 text-blue-600 text-lg rounded-md hover:bg-gray-300" />
+                        <span className="absolute fixed w-max hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 bottom-full mb-1">
+                          Add Review
+                        </span>  
+                      </div>
                     </div>
 
                     {/* Display Trip Location */}
@@ -377,9 +399,9 @@ export default function PostsComponent() {
 
                     <div>
                       {/* Button to open popup */}
-                      <button onClick={() => onAddReviewClick(post.postId)} className="bg-blue-500 text-white px-4 py-2 rounded">
+                      {/* <button onClick={() => onAddReviewClick(post.postId)} className="bg-blue-500 text-white px-4 py-2 rounded">
                         Add Review
-                      </button>
+                      </button> */}
 
                       {/* Popup Modal */}
                       {showPopup && (

@@ -8,7 +8,7 @@ import Navbar from "../layout/navbar/page";
 import Footer from "../layout/footer/page";
 import { signIn } from "next-auth/react";
 import PostsComponent from "./postsComponent";
-import { faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 // Interface defining the structure of user data
@@ -273,9 +273,24 @@ export default function Profile() {
               </span>
             </div>
 
-            <FontAwesomeIcon icon={faEdit} 
-                             onClick={() => setShowEditForm(!showEditForm)}
-                             className="p-2 text-blue-600 text-2xl rounded-md hover:bg-gray-300"/>            
+            <div className="relative group">
+              <FontAwesomeIcon icon={faEdit} 
+                              onClick={() => setShowEditForm(!showEditForm)}
+                              className="p-2 text-blue-600 text-2xl rounded-md hover:bg-gray-300"/>       
+              <span className="absolute w-max hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 bottom-full mb-1">
+                Edit Profile
+              </span>
+            </div>
+                
+            <div className="relative group">
+              <FontAwesomeIcon icon={faPlus} 
+                              onClick={() => setIsModalOpen(true)}
+                              className="p-2 text-blue-600 text-2xl rounded-md hover:bg-gray-300"/>  
+              <span className="absolute w-max hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 bottom-full mb-1">
+                New Post
+              </span>              
+            </div>
+      
           </div>
 
           <div style={{display: showEditForm ? "block" : "none"}}>
@@ -429,14 +444,6 @@ export default function Profile() {
               </button>
             </div>
           </div>
-
-          {/* Add Post Button */}
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="mt-6 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700"
-          >
-            Add Post
-          </button>
 
           <PostsComponent />
         </div>
