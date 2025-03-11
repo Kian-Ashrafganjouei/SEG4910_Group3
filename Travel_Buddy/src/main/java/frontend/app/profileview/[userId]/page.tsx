@@ -15,15 +15,14 @@ interface UserProfile {
 
 export default function ProfileView() {
   const router = useRouter();
-  const { userId } = useParams();
-  const parsedUserId = Number(userId);
+  const { userId } = useParams(); // Get the userId from the URL params
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch(`/backend/user/${parsedUserId}`);
+        const response = await fetch(`/backend/user/${userId}`);
         if (!response.ok) throw new Error("Failed to fetch user profile");
         const data: UserProfile = await response.json();
         setUserProfile(data);
@@ -34,10 +33,10 @@ export default function ProfileView() {
       }
     };
 
-    if (parsedUserId) {
+    if (userId) {
       fetchUserProfile();
     }
-  }, [parsedUserId]);
+  }, [userId]);
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -50,10 +49,10 @@ export default function ProfileView() {
   return (
     <div className="relative flex flex-col items-center justify-center h-screen text-white bg-black p-6">
       <button
-        onClick={() => router.push("/searchusers")}
-        className="absolute top-4 left-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700"
+        onClick={() => router.push("/my-trips")}
+        className="absolute top-4 left-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
       >
-        ← Return to Search Users
+        ← Back to My Trips
       </button>
       <div className="flex flex-col items-center text-center">
         <h1 className="text-2xl font-bold mb-4">@{userProfile.username}</h1>
