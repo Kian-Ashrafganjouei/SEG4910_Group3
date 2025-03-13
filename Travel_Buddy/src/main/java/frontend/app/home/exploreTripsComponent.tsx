@@ -661,7 +661,7 @@ export default function ExploreTripsComponent() {
                 </div>
               </div>
               <div>
-                <span className=" text-gray-500">to</span>
+                <span className=" text-gray-500">To:</span>
                 <div className="relative">
                   <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                     <FontAwesomeIcon icon={faCalendar} />

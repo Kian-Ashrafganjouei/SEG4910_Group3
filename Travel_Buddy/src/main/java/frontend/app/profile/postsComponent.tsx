@@ -38,6 +38,7 @@ interface User {
   userId: number;
   username: string;
   name: string;
+  reviewScore: number;
 }
 
 interface UserTrip {
@@ -69,19 +70,19 @@ export default function PostsComponent() {
   );
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [showPopup, setShowPopup] = useState(false);
-  const [newReview, setNewReview] = useState<Review>({post: {postId: -1, caption: "", image: "", createdAt: ""}, rating: -1, comment: ""});
+  const [newReview, setNewReview] = useState<Review>({post: {postId: -1, caption: "", image: "", createdAt: ""}, rating: 0, comment: ""});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setNewReview((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  useEffect (() => {
+  useEffect (() => { // save review to db
     if (isSubmitting) {
       
       (async () => {
         try {
-          const response = await fetch(`/backend/reviews`, {
+          const response = await fetch(`/backend/reviews`, { //upsert review
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newReview),
@@ -89,19 +90,66 @@ export default function PostsComponent() {
     
           if (!response.ok) throw new Error("Failed to submit review");
           
+          const ratedUser = users.find((user) => user.userId === newReview.post.userTrip?.user.userId);
+          console.log(`newReview.post: ${newReview.post}, .userTrip: ${newReview.post.userTrip}, .user: ${newReview.post.userTrip?.user}, .userId: ${newReview.post.userTrip?.user.userId}`);
+          if (ratedUser !== undefined) {
+
+            const userPostIds = posts
+              .filter((post) => post.userTrip?.user.userId === ratedUser.userId)
+              .map((post) => post.postId);
+            console.log(`userPostIds: ${userPostIds}`);
+            let userRatingsSum = 0;
+            let count = 0;
+
+            for (let i = 0; i<reviews.length; i++) {
+              console.log(`i: ${i}`);
+              console.log(`userPostIds.includes(reviews[${i}].post.postId: ${reviews[i].post.postId})  - ${userPostIds.includes(reviews[i].post.postId)}`);
+              if (userPostIds.includes(reviews[i].post.postId)) {
+                console.log(`reviews[${i}]: ${reviews[i].rating} - ${reviews[i].comment}`);
+                userRatingsSum += reviews[i].rating;
+                count++;
+              }
+            }
+            console.log(`count: ${count}`);
+
+            // TODO: if rating is 0, means user has no ratings yet, so display "NOT RATED YET" instead of 0 rating on profile
+
+            ratedUser.reviewScore = count > 0 
+                                    ? Math.round(userRatingsSum / count) //average of all ratings of all of user's posts
+                                    : 0; 
+
+            console.log(`avg: ${Math.round(userRatingsSum / count)}`);
+            console.log(`ratedUser.reviewScore: ${ratedUser.reviewScore}`);
+
+            const userResponse = await fetch('/backend/user', {
+              method: "PUT",                                      // CHECK HOW TO UPDATE A USER
+              headers: {"Content-Type": "application/json", 
+                Id: ratedUser.userId.toString()
+              },
+              body: JSON.stringify(ratedUser)
+            });            
+          } 
+
+
+
+          if (!response.ok) throw new Error("Failed to update user rating.");
+
           setShowPopup(false);
           fetchPosts();
           fetchReviews();
           fetchUsers();
           fetchUserTrips();
-        } catch (error) {
-          console.error("Error adding review:", error);
-        } finally {
+        } 
+        catch (error) {
+          console.error("Error:", error);
+        } 
+        finally {
           setIsSubmitting(false);
+          setNewReview({post: {postId: -1, caption: "", image: "", createdAt: ""}, rating: -1, comment: ""});
         }
       })();
     }
-  }, [newReview, isSubmitting])
+  }, [newReview, isSubmitting]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -335,177 +383,165 @@ export default function PostsComponent() {
             </button>
           </div>
 
-          <div className="">
-            {isLoading ? (
-              <p className="loading-msg text-center text-xl font-semibold">
-                Loading posts...
-              </p>
-            ) : errorMessage ? (
-              <p className="error-msg text-center text-xl text-red-300">
-                {errorMessage}
-              </p>
-            ) : filteredPosts.length > 0 ? (
-              <div className="posts-list columns-2 gap-4 space-y-4">
-                {filteredPosts.map((post) => (
-                  <div
-                    key={post.postId}
-                    className="post-card flex flex-col items-start p-6 rounded-xl shadow-lg bg-white text-black break-inside-avoid border border-gray-200 overflow-visible">
-                    {/* Display Profile Picture and Username */}
-                    <div className="flex items-center justify-between w-full mb-4">
-                      <img
-                        className="w-10 h-10 rounded-full mr-3"
-                        src={
-                          post.userTrip?.user?.profilePicture
-                            ? post.userTrip.user.profilePicture
-                            : "/images/null_avatar.png"
-                        }
-                        alt={post.userTrip?.user?.username || "User Avatar"}
-                      />
-                      <div className="text-lg font-medium text-gray-700 flex-1">
-                        @{post.userTrip?.user?.username || "Unknown"}
-                      </div>
-                      <div className="relative group">
-                        <FontAwesomeIcon icon={faPlus} 
-                              onClick={() => onAddReviewClick(post.postId)}
-                              className="p-2 text-blue-600 text-lg rounded-md hover:bg-gray-300" />
-                        <span className="absolute fixed w-max hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 bottom-full mb-1">
-                          Add Review
-                        </span>  
-                      </div>
-                    </div>
-
-                    {/* Display Trip Location */}
-                    {post.userTrip?.trip?.location && (
-                      <span className="absolute top-4 right-4 text-sm font-medium text-gray-600 bg-gray-200 px-2 py-1 rounded-full">
-                        {post.userTrip.trip.location}
-                      </span>
-                    )}
-
-                    {/* Post Content */}
+          {isLoading ? (
+            <p className="loading-msg text-center text-xl font-semibold">
+              Loading posts...
+            </p>
+          ) : errorMessage ? (
+            <p className="error-msg text-center text-xl text-red-300">
+              {errorMessage}
+            </p>
+          ) : filteredPosts.length > 0 ? (
+            <div className="posts-list columns-2 gap-4 space-y-4">
+              {filteredPosts.map((post) => (
+                <div key={post.postId}
+                     className="post-card flex flex-col items-start p-6 rounded-xl shadow-lg bg-white text-black break-inside-avoid border border-gray-200"> 
+                  {/* relative max-h-[630px] overflow-y-auto*/}
+                  {/* Display Profile Picture and Username */}
+                  <div className="flex items-center justify-between w-full mb-4">
                     <img
-                      src={post.image}
-                      alt={post.caption}
-                      className="post-image w-full h-64 object-cover rounded-lg mb-4"
+                      className="w-10 h-10 rounded-full mr-3"
+                      src={
+                        post.userTrip?.user?.profilePicture
+                          ? post.userTrip.user.profilePicture
+                          : "/images/null_avatar.png"
+                      }
+                      alt={post.userTrip?.user?.username || "User Avatar"}
                     />
-                    <p className="post-caption text-lg text-gray-700 mb-2">
-                      {post.caption}
-                    </p>
-                    <p className="post-date text-sm text-gray-500">
-                      Posted on {new Date(post.createdAt).toLocaleDateString()}
-                    </p>
-
-
-
-
-                    <div>
-                      {/* Button to open popup */}
-                      {/* <button onClick={() => onAddReviewClick(post.postId)} className="bg-blue-500 text-white px-4 py-2 rounded">
-                        Add Review
-                      </button> */}
-
-                      {/* Popup Modal */}
-                      {showPopup && (
-                        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-                          <div className="bg-white p-6 rounded-lg shadow-lg w-2/3">
-                            <h2 className="text-xl font-bold mb-4">Add a Review</h2>
-                            <form>
-
-                              <label className="block mb-2"></label>
-                              <div className="flex space-x-2 text-3xl mb-5">
-                                {[1, 2, 3, 4, 5].map((index) => (
-                                  <FontAwesomeIcon
-                                      key={index}
-                                      icon={faStar}
-                                      className={index <= (hoveredRating || newReview.rating)
-                                        ? "text-yellow-500 cursor-pointer"
-                                        : "text-gray-300 cursor-pointer"
-                                      }
-                                      onMouseEnter={() => handleMouseEnter(index)}
-                                      onMouseLeave={handleMouseLeave}
-                                      onClick={() => handleClick(index)}
-
-                                  />
-                                ))}
-                              </div>
-
-                              <label className="block mb-2">Comment:</label>
-                              <textarea
-                                name="comment"
-                                value={newReview.comment}
-                                onChange={handleInputChange}
-                                required
-                                className="border p-2 w-full mb-3"
-                              />
-
-                              <div className="flex justify-end">
-                                <button
-                                  className="px-4 py-2 bg-gray-300 rounded mr-2"
-                                  onClick={() => setShowPopup(false)}
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                  onClick={(e) => handleSubmit(e)}
-                                  disabled={newReview.rating === 0 || newReview.comment.trim() === ""}
-                                >
-                                  Submit
-                                </button>
-                              </div>
-                            </form>
-                          </div>
-                        </div>
-                      )}
+                    <div className="text-lg font-medium text-gray-700 flex-1">
+                      @{post.userTrip?.user?.username || "Unknown"}
                     </div>
-
-                    
-              <div id={`reviews-section-${post.postId}`} className="reviews-section mt-4">
-                {/* <button
-                  className="toggle-reviews-btn text-sm text-blue-500"
-                  onClick={() => toggleReviews(post.postId)}
-                >
-                  Show Reviews
-                </button> */}
-                <div
-                  id={`reviews-list-${post.postId}`}
-                  className="reviews-list mt-4"
-                  // style={{ display: "none" }}
-                >
-
-                  {reviews
-                    .filter((review) => review.post.postId === post.postId)
-                    .map((review) => {
-                      const reviewer = users.find((user) => user.userId === review.reviewer?.userId);
-
-                      return (
-                        <div className="review-item mb-3">
-                          <div className="reviewer text-sm font-semibold text-gray-700">
-                            {reviewer ? `${reviewer.name} - ${reviewer.username}` : "User not found"}
-                          </div>
-                          <div className="rating text-sm">
-                            {renderStars(review.rating)}
-                          </div>
-                          <div className="comment text-sm text-gray-600">{review.comment}</div>
-                        </div>
-                      )
-                    })
-                  }
-                </div>
-              </div>
-            
-
-
-
-
-
+                    <div className="relative group">
+                      <FontAwesomeIcon icon={faPlus} 
+                            onClick={() => onAddReviewClick(post.postId)}
+                            className="p-2 text-blue-600 text-lg rounded-md hover:bg-gray-300" />
+                      <span className="absolute fixed w-max hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 bottom-full mb-1">
+                        Add Review
+                      </span>  
+                    </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="no-posts-msg text-center text-xl">No posts found.</p>
-            )}
 
-          </div>
+                  {/* Display Trip Location */}
+                  {post.userTrip?.trip?.location && (
+                    <span className="absolute top-4 right-4 text-sm font-medium text-gray-600 bg-gray-200 px-2 py-1 rounded-full">
+                      {post.userTrip.trip.location}
+                    </span>
+                  )}
+
+                  {/* Post Content */}
+                  <img src={post.image}
+                       alt={post.caption}
+                       className="post-image w-full h-64 object-cover rounded-lg mb-4" />
+                  <p className="post-caption text-lg text-gray-700 mb-2">
+                    {post.caption}
+                  </p>
+                  <p className="post-date text-sm text-gray-500">
+                    Posted on {new Date(post.createdAt).toLocaleDateString()}
+                  </p>
+
+
+
+
+                  <div>
+                    {/* Popup Modal */}
+                    {showPopup && (
+                      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-white p-6 rounded-lg shadow-lg w-2/3">
+                          <h2 className="text-xl font-bold mb-4">Add a Review</h2>
+                          <form>
+
+                            <label className="block mb-2"></label>
+                            <div className="flex space-x-2 text-3xl mb-5">
+                              {[1, 2, 3, 4, 5].map((index) => (
+                                <FontAwesomeIcon
+                                    key={index}
+                                    icon={faStar}
+                                    className={index <= (hoveredRating || newReview.rating)
+                                      ? "text-yellow-500 cursor-pointer"
+                                      : "text-gray-300 cursor-pointer"
+                                    }
+                                    onMouseEnter={() => handleMouseEnter(index)}
+                                    onMouseLeave={handleMouseLeave}
+                                    onClick={() => handleClick(index)}
+
+                                />
+                              ))}
+                            </div>
+
+                            <label className="block mb-2">Comment:</label>
+                            <textarea
+                              name="comment"
+                              value={newReview.comment}
+                              onChange={handleInputChange}
+                              required
+                              className="border p-2 w-full mb-3"
+                            />
+
+                            <div className="flex justify-end">
+                              <button
+                                className="px-4 py-2 bg-gray-300 rounded mr-2"
+                                onClick={() => setShowPopup(false)}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                onClick={(e) => handleSubmit(e)}
+                                disabled={newReview.rating === 0 || newReview.comment.trim() === ""}
+                              >
+                                Submit
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  
+                  <div id={`reviews-section-${post.postId}`} className="reviews-section mt-4">
+                    {/* <button
+                      className="toggle-reviews-btn text-sm text-blue-500"
+                      onClick={() => toggleReviews(post.postId)}
+                    >
+                      Show Reviews
+                    </button> */}
+                    <div
+                      id={`reviews-list-${post.postId}`}
+                      className="reviews-list mt-4"
+                      // style={{ display: "none" }}
+                    >
+
+                      {reviews
+                        .filter((review) => review.post.postId === post.postId)
+                        .map((review) => {
+                          const reviewer = users.find((user) => user.userId === review.reviewer?.userId);
+
+                          return (
+                            <div className="review-item mb-3">
+                              <div className="reviewer text-sm font-semibold text-gray-700">
+                                {reviewer ? `${reviewer.name} - ${reviewer.username}` : "User not found"}
+                              </div>
+                              <div className="rating text-sm">
+                                {renderStars(review.rating)}
+                              </div>
+                              <div className="comment text-sm text-gray-600">{review.comment}</div>
+                            </div>
+                          )
+                        })
+                      }
+                    </div>
+                  </div>
+          
+                  {/*<div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-white to-transparent"></div>*/} {/* bottom fade out div */}
+
+                </div> // end of postcard div
+              ))}
+            </div> // end of posts list div
+          ) : (
+            <p className="no-posts-msg text-center text-xl">No posts found.</p>
+          )}
+
         </div>
       </div>
 

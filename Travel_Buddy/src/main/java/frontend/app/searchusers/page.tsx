@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "../layout/navbar/page";
 import Footer from "../layout/footer/page";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 // Updated User Interface
 interface UserProfile {
@@ -76,6 +78,21 @@ export default function SearchUsers() {
     }
   };
 
+  const renderStars = (rating: number) => {
+    const emptyStars = 5 - rating; 
+    const stars = [];
+
+    for (let i = 0; i < rating; i++) {
+      stars.push(<FontAwesomeIcon key={`full-${i}`} icon={faStar} className="text-yellow-500" />);
+    }
+
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(<FontAwesomeIcon key={`empty-${i}`} icon={faStar} className="text-gray-400" />);
+    }
+
+    return stars;
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
     <Navbar />
@@ -112,12 +129,8 @@ export default function SearchUsers() {
                   </div>
                   
                   {/* Star Rating */}
-                  <div className="flex space-x-1 text-yellow-500 text-3xl">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                      <span key={index}>
-                        {index < selectedUser.reviewScore ? "★" : "☆"}
-                      </span>
-                    ))}
+                  <div className="rating text-xl">
+                    {renderStars(selectedUser.reviewScore)}
                   </div>
                 </div>
 
@@ -125,10 +138,10 @@ export default function SearchUsers() {
                   {selectedUser.age && <p><strong>Age:</strong> {selectedUser.age}</p>}
                   {selectedUser.sex && <p><strong>Sex:</strong> {selectedUser.sex}</p>}
                   {selectedUser.nationality && <p><strong>Nationality:</strong> {selectedUser.nationality}</p>}
-                  {selectedUser.languages?.length > 0 && (
+                  {selectedUser.languages !== undefined && selectedUser.languages.length > 0 && (
                     <p><strong>Languages:</strong> {selectedUser.languages.join(", ")}</p>
                   )}
-                  {selectedUser.interests?.length > 0 && (
+                  {selectedUser.interests !== undefined && selectedUser.interests?.length > 0 && (
                     <p className="col-span-2"><strong>Interests:</strong> {selectedUser.interests.join(", ")}</p>
                   )}
                 </div>
