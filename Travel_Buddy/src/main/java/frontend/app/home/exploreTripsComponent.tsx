@@ -3,6 +3,9 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import moment from "moment";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faMagnifyingGlass,
@@ -53,6 +56,7 @@ interface Trip {
   createdAt: string;
   updatedAt: string;
   interests: { interestId: number; name: string }[];
+  images: string[]; // Add images array
 }
 
 interface Interest {
@@ -768,6 +772,32 @@ export default function ExploreTripsComponent() {
                     {moment(trip.endDate).format("MMM D, YYYY")}
                   </p>
                 </div>
+                {/* Trip Images Carousel */}
+                {trip.images && trip.images.length > 0 && (
+                  <div className="carousel-container mt-4 mb-4">
+                    {trip.images.length > 1 ? (
+                      <Slider dots={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1}>
+                        {trip.images.map((image, index) => (
+                          <div key={index} className="pl-2"> {/* Move images slightly left */}
+                            <img
+                              src={image}
+                              alt={`Trip ${trip.tripId} Image ${index + 1}`}
+                              className="rounded-lg w-full h-48 object-cover"
+                            />
+                          </div>
+                        ))}
+                      </Slider>
+                    ) : (
+                      <div className="pl-2">
+                        <img
+                          src={trip.images[0]}
+                          alt={`Trip ${trip.tripId} Image`}
+                          className="rounded-lg w-full h-48 object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
                 <p className="w-full text-base text-secondary-600">
                   {trip.description}
                 </p>

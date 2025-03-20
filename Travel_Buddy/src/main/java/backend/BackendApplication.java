@@ -458,12 +458,31 @@ public class BackendApplication {
     // API to get all the trips
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/trips")
-    public ResponseEntity<List<Trip>> getAllTrips() {
+    public ResponseEntity<List<Map<String, Object>>> getAllTrips() {
         List<Trip> trips = trip_repository.findAll();
+        List<Map<String, Object>> tripsWithImages = new ArrayList<>();
+
         for (Trip trip : trips) {
-            trip.setInterests(trip.getInterests()); // Load interests for each trip
+            Map<String, Object> tripDetails = new HashMap<>();
+            tripDetails.put("tripId", trip.getTripId());
+            tripDetails.put("location", trip.getLocation());
+            tripDetails.put("startDate", trip.getStartDate());
+            tripDetails.put("endDate", trip.getEndDate());
+            tripDetails.put("description", trip.getDescription());
+            tripDetails.put("createdBy", trip.getCreatedBy()); // Ensure `User` is serialized properly
+            tripDetails.put("interests", trip.getInterests());
+
+            // Fetch images for each trip
+            List<TripImage> tripImages = tripImageRepository.findByTrip_TripId(trip.getTripId());
+            List<String> imageUrls = tripImages.stream()
+                                            .map(TripImage::getImageUrl)
+                                            .toList();
+            tripDetails.put("images", imageUrls); // Add images to response
+
+            tripsWithImages.add(tripDetails);
         }
-        return ResponseEntity.ok(trips);
+
+        return ResponseEntity.ok(tripsWithImages);
     }
 
     // API to update trip details
@@ -606,7 +625,11 @@ public class BackendApplication {
         }
 
         for (Trip trip : trips) {
-            trip.setInterests(trip.getInterests());
+            List<TripImage> tripImages = tripImageRepository.findByTrip_TripId(trip.getTripId());
+            List<String> imageUrls = tripImages.stream()
+                                            .map(TripImage::getImageUrl)
+                                            .toList();
+            trip.setImages(imageUrls); 
         }
 
         System.out.println("Trips fetched successfully for user ID: " + user.get().getUserId());
