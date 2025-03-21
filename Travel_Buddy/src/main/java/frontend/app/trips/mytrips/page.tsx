@@ -8,6 +8,10 @@ import { useSession } from "next-auth/react";
 import moment from 'moment';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faE, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css"; 
+import "slick-carousel/slick/slick-theme.css";
+
 
 interface Trip {
   tripId: number;
@@ -16,6 +20,7 @@ interface Trip {
   endDate: string;
   description: string;
   interests: { interestId: number; name: string }[];
+  images: string[]; // Add images array
 }
 
 interface Request {
@@ -215,7 +220,26 @@ export default function MyTrips() {
                       </div>
                     )}
                   </div>
-  
+
+                  {/* Carousel for Trip Images */}
+                  {trip.images && trip.images.length > 0 && (
+                    <div className="carousel-container w-2/5 pr-6"> {/* Added pr-6 to move it left */}
+                      {trip.images.length > 1 ? (
+                        <Slider dots={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1}>
+                          {trip.images.map((image, index) => (
+                            <div key={index} className="pl-2"> {/* Added pl-2 to move images left */}
+                              <img src={image} alt={`Trip ${trip.tripId} Image ${index + 1}`} className="rounded-lg w-full h-48 object-cover"/>
+                            </div>
+                          ))}
+                        </Slider>
+                      ) : (
+                        <div className="pl-2"> {/* Added pl-2 to move single image left */}
+                          <img src={trip.images[0]} alt={`Trip ${trip.tripId} Image`} className="rounded-lg w-full h-48 object-cover"/>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="requests-section w-2/5 bg-gray-100 p-4 rounded-lg">
                     <h3 className="requests-title text-lg font-bold mb-4 text-blue-800">
                       Requests
