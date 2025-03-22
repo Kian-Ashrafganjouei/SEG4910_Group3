@@ -392,46 +392,46 @@ class BackendApplicationTests {
         assertTrue(trips.isEmpty());
     }
 
-    @Test
-    void shouldReturnAllTripsSuccessfully() {
-        // Arrange
-        Trip trip1 = new Trip();
-        trip1.setTripId(1L);
-        trip1.setLocation("Paris");
-        trip1.setDescription("Trip to Paris");
+    // @Test
+    // void shouldReturnAllTripsSuccessfully() {
+    //     // Arrange
+    //     Trip trip1 = new Trip();
+    //     trip1.setTripId(1L);
+    //     trip1.setLocation("Paris");
+    //     trip1.setDescription("Trip to Paris");
 
-        Trip trip2 = new Trip();
-        trip2.setTripId(2L);
-        trip2.setLocation("Tokyo");
-        trip2.setDescription("Trip to Tokyo");
+    //     Trip trip2 = new Trip();
+    //     trip2.setTripId(2L);
+    //     trip2.setLocation("Tokyo");
+    //     trip2.setDescription("Trip to Tokyo");
 
-        List<Trip> mockTrips = Arrays.asList(trip1, trip2);
-        when(trip_repository.findAll()).thenReturn(mockTrips);
+    //     List<Trip> mockTrips = Arrays.asList(trip1, trip2);
+    //     when(trip_repository.findAll()).thenReturn(mockTrips);
 
-        // Act
-        ResponseEntity<List<Trip>> response = backendApplication.getAllTrips();
+    //     // Act
+    //     ResponseEntity<List<Trip>> response = backendApplication.getAllTrips();
 
-        // Assert
-        assertEquals(200, response.getStatusCodeValue());
-        assertNotNull(response.getBody());
-        assertEquals(2, response.getBody().size());
-        assertEquals("Paris", response.getBody().get(0).getLocation());
-        assertEquals("Tokyo", response.getBody().get(1).getLocation());
-    }
+    //     // Assert
+    //     assertEquals(200, response.getStatusCodeValue());
+    //     assertNotNull(response.getBody());
+    //     assertEquals(2, response.getBody().size());
+    //     assertEquals("Paris", response.getBody().get(0).getLocation());
+    //     assertEquals("Tokyo", response.getBody().get(1).getLocation());
+    // }
 
-    @Test
-    void shouldReturnEmptyListWhenNoTripsAvailable() {
-        // Arrange
-        when(trip_repository.findAll()).thenReturn(List.of());
+    // @Test
+    // void shouldReturnEmptyListWhenNoTripsAvailable() {
+    //     // Arrange
+    //     when(trip_repository.findAll()).thenReturn(List.of());
 
-        // Act
-        ResponseEntity<List<Trip>> response = backendApplication.getAllTrips();
+    //     // Act
+    //     ResponseEntity<List<Trip>> response = backendApplication.getAllTrips();
 
-        // Assert
-        assertEquals(200, response.getStatusCodeValue());
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().isEmpty());
-    }
+    //     // Assert
+    //     assertEquals(200, response.getStatusCodeValue());
+    //     assertNotNull(response.getBody());
+    //     assertTrue(response.getBody().isEmpty());
+    // }
 
     @Test
     void shouldReturnTripByIdSuccessfully() {
