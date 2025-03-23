@@ -61,10 +61,7 @@ const LandingPage = () => {
         <div className="w-full h-[600px] absolute bg-black bg-opacity-25">
           <div className="text-center text-white text-[40px] h-max p-20">
             <h1>Find a Travel Companion</h1>
-            <p>
-              Find travel companion by creating and sharing your trips! Enabling
-              a new experience!
-            </p>
+            <p></p>
             <a
               className="signup rounded-md bg-white text-black text-xl py-4 px-6"
               href="/home">
