@@ -298,14 +298,12 @@ public class BackendApplication {
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/google/signin")
     public ResponseEntity<User> handle_google_signin(@RequestBody User user) {
-        // Fetch all users from the database
-        List<User> all_users = user_repository.findAll();
-
-        // Check if the user already exists by email
-        for (User u : all_users) {
-            if (u.getEmail().equals(user.getEmail())) {
-                return ResponseEntity.ok(u);
-            }
+        // Check if a user with the given email already exists in the repository
+        Optional<User> existing = user_repository.findByEmail(user.getEmail());
+        
+        // If the user exists, return a successful response with the existing user data
+        if (existing.isPresent()) {
+            return ResponseEntity.ok(existing.get());
         }
 
         // If the user doesn't exist, create a new user
