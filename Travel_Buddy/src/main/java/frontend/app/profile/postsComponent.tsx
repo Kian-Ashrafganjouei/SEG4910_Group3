@@ -91,35 +91,26 @@ export default function PostsComponent() {
           if (!response.ok) throw new Error("Failed to submit review");
           
           const ratedUser = users.find((user) => user.userId === newReview.post.userTrip?.user.userId);
-          console.log(`newReview.post: ${newReview.post}, .userTrip: ${newReview.post.userTrip}, .user: ${newReview.post.userTrip?.user}, .userId: ${newReview.post.userTrip?.user.userId}`);
+
           if (ratedUser !== undefined) {
 
             const userPostIds = posts
               .filter((post) => post.userTrip?.user.userId === ratedUser.userId)
               .map((post) => post.postId);
-            console.log(`userPostIds: ${userPostIds}`);
-            let userRatingsSum = 0;
+
+              let userRatingsSum = 0;
             let count = 0;
 
             for (let i = 0; i<reviews.length; i++) {
-              console.log(`i: ${i}`);
-              console.log(`userPostIds.includes(reviews[${i}].post.postId: ${reviews[i].post.postId})  - ${userPostIds.includes(reviews[i].post.postId)}`);
               if (userPostIds.includes(reviews[i].post.postId)) {
-                console.log(`reviews[${i}]: ${reviews[i].rating} - ${reviews[i].comment}`);
                 userRatingsSum += reviews[i].rating;
                 count++;
               }
             }
-            console.log(`count: ${count}`);
-
-            // TODO: if rating is 0, means user has no ratings yet, so display "NOT RATED YET" instead of 0 rating on profile
 
             ratedUser.reviewScore = count > 0 
                                     ? Math.round(userRatingsSum / count) //average of all ratings of all of user's posts
                                     : 0; 
-
-            console.log(`avg: ${Math.round(userRatingsSum / count)}`);
-            console.log(`ratedUser.reviewScore: ${ratedUser.reviewScore}`);
 
             const userResponse = await fetch('/backend/user', {
               method: "PUT",                                      // CHECK HOW TO UPDATE A USER

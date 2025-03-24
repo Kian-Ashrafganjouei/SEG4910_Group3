@@ -6,6 +6,7 @@ import Navbar from "../layout/navbar/page";
 import Footer from "../layout/footer/page";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useSession } from "next-auth/react";
 
 // Updated User Interface
 interface UserProfile {
@@ -23,13 +24,41 @@ interface UserProfile {
 
 interface Post {
   postId: number;
-  usertripId: number | null;
   caption: string;
   image: string;
   createdAt: string;
+  userTrip?: {
+    user: {
+      userId: number;
+      username: string;
+      name: string;
+      profilePicture: string;
+    };
+    trip: {
+      location: string;
+    };
+  };
+}
+
+// interface Post {
+//   postId: number;
+//   usertripId: number | null;
+//   caption: string;
+//   image: string;
+//   createdAt: string;
+// }
+
+interface Review {
+  post: Post;
+  reviewer?:{
+    userId: number;
+  }  
+  rating: number;
+  comment: string;
 }
 
 export default function SearchUsers() {
+  const { data: session } = useSession();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
@@ -37,6 +66,56 @@ export default function SearchUsers() {
   const [isLoading, setIsLoading] = useState(true);
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const router = useRouter();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+  useEffect(() => {
+    fetchPosts();
+    fetchReviews();
+  }, [session]);
+
+  useEffect(() => {
+
+    const setUserReviewScores = async () => { // Updates the reviewScores of the users pre-populated in the database (calculates the average of their pre-populated ratings).
+                                              // This function will not be needed in a production version, as there will be no (pre-populated) dummy data, 
+                                              //    and reviewScores are re-calculated every time someone leaves a review.
+      for (let i = 0; i < users.length; i++) {
+        let user = users[i];
+  
+        if (user !== undefined) {
+  
+          const userPostIds = posts
+            .filter((post) => post.userTrip?.user.userId === user.userId)
+            .map((post) => post.postId);
+  
+          let userRatingsSum = 0;
+          let count = 0;
+  
+          for (let i = 0; i<reviews.length; i++) {
+            if (userPostIds.includes(reviews[i].post.postId)) {
+              userRatingsSum += reviews[i].rating;
+              count++;
+            }
+          }
+  
+          user.reviewScore = count > 0 
+                                  ? Math.round(userRatingsSum / count) //average of all ratings of all of user's posts
+                                  : 0; 
+  
+          const userResponse = await fetch('/backend/user', {
+            method: "PUT",
+            headers: {"Content-Type": "application/json", 
+              Id: user.userId.toString()
+            },
+            body: JSON.stringify(user)
+          });            
+        } 
+      }
+    }
+
+    setUserReviewScores();
+    
+  }, [posts, reviews]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -46,14 +125,28 @@ export default function SearchUsers() {
         const data: UserProfile[] = await response.json();
         setUsers(data);
         setFilteredUsers(data);
-      } catch (error) {
+      } 
+      catch (error) {
         console.error("Error fetching users:", error);
-      } finally {
+      } 
+      finally {
         setIsLoading(false);
       }
     };
     fetchUsers();
   }, []);
+
+  const fetchReviews = async () => {
+    try {
+      const response = await fetch("/backend/reviews");
+      if (!response.ok) throw new Error("Failed to fetch reviews");
+
+      const data: Review[] = await response.json();
+      setReviews(data);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
 
   useEffect(() => {
     const query = searchQuery.toLowerCase();
@@ -65,6 +158,28 @@ export default function SearchUsers() {
       )
     );
   }, [searchQuery, users]);
+
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch("/backend/posts", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch posts.");
+      }
+
+      const data: Post[] = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchUserPosts = async (userId: number) => {
     try {
@@ -130,7 +245,7 @@ export default function SearchUsers() {
                   
                   {/* Star Rating */}
                   <div className="rating text-xl">
-                    {renderStars(selectedUser.reviewScore)}
+                    {selectedUser.reviewScore > 0 ? renderStars(selectedUser.reviewScore) : "No ratings yet"}
                   </div>
                 </div>
 
