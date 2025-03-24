@@ -47,6 +47,9 @@ public class Trip {
     @Transient  
     private String createdByEmail;
 
+    @Transient  // Ensures images are dynamically added
+    private List<String> images;
+
     @Transient
     private List<Integer> interestIds;    
     
@@ -122,4 +125,13 @@ public class Trip {
 
     public Timestamp getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
+
+    // Getters & Setters for Images
+    public List<String> getImages() {
+        return images;
+    }
+
+    public void setImages(List<String> images) {
+        this.images = images;
+    }
 }

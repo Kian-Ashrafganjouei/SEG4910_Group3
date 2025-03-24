@@ -53,55 +53,58 @@ import jakarta.transaction.Transactional;
 @SpringBootApplication
 public class BackendApplication {
 
+    // Autowired repositories for database operations
     @Autowired
-    private UserRepository user_repository;
+    private UserRepository user_repository; // Repository for User entity
 
     @Autowired
-    private InterestRepository interestRepository;
+    private InterestRepository interestRepository; // Repository for Interest entity
 
     @Autowired
-    private TripRepository trip_repository;  // Ensure proper @Autowired for TripRepository
+    private TripRepository trip_repository; // Repository for Trip entity
 
     @Autowired
-    private UserTripsRepository userTripsRepository;
+    private UserTripsRepository userTripsRepository; // Repository for UserTrips entity
 
     @Autowired
-    private PostRepository postRepository;
+    private PostRepository postRepository; // Repository for Post entity
 
     @Autowired
-    private NotificationRepository notificationRepository;
+    private NotificationRepository notificationRepository; // Repository for Notification entity
 
     @Autowired
-    private ReviewRepository reviewRepository;
+    private ReviewRepository reviewRepository; // Repository for Review entity
 
     @Autowired
-    private TripImageRepository tripImageRepository;
+    private TripImageRepository tripImageRepository; // Repository for TripImage entity
 
-    // Main method to run the Spring Boot applicatio
+    // Main method to run the Spring Boot application
     public static void main(String[] args) {
         SpringApplication.run(BackendApplication.class, args);
     }
 
     // API to join a trip or update the status of an existing user-trip association
-    @CrossOrigin(origins = "http://localhost:3000")
+    @CrossOrigin(origins = "http://localhost:3000") // Allow requests from frontend
     @PostMapping("/backend/user-trips")
     public ResponseEntity<?> joinTrip(@RequestBody Map<String, String> payload) {
         System.out.println("Payload received: " + payload);
 
         try {
+            // Extract user email, trip ID, and status from the payload
             String userEmail = payload.get("userEmail");
             Long tripId = Long.parseLong(payload.get("tripId"));
             String status = payload.get("status");
 
             System.out.println("Parsed values - userEmail: " + userEmail + ", tripId: " + tripId + ", status: " + status);
 
-            // Validate user
+            // Validate user existence
             Optional<User> userOptional = user_repository.findByEmail(userEmail);
             if (userOptional.isEmpty()) {
                 System.err.println("Error: User not found for email " + userEmail);
                 return ResponseEntity.badRequest().body("User not found.");
             }
 
+            // Validate trip existence
             Optional<Trip> tripOptional = trip_repository.findById(tripId);
             if (tripOptional.isEmpty()) {
                 System.err.println("Error: Trip not found for ID :" + tripId);
@@ -117,7 +120,7 @@ public class BackendApplication {
             //Check if UserTrip already exists
             Optional<UserTrips> existingUserTrip = userTripsRepository.findByUserIdAndTripId(user.getUserId(), tripId);
             if (existingUserTrip.isPresent()) {
-                // Update status if already exists
+                // Update status if the UserTrip already exists
                 UserTrips userTrip = existingUserTrip.get();
                 userTrip.setStatus(status);
                 userTripsRepository.save(userTrip);
@@ -142,6 +145,7 @@ public class BackendApplication {
         }
     }
 
+    // API to get user trips by email
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/user-trips")
     public ResponseEntity<?> getUserTrips(@RequestParam String email) {
@@ -192,14 +196,17 @@ public class BackendApplication {
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/trips/{tripId}/requests")
     public ResponseEntity<List<Map<String, Object>>> getTripRequests(@PathVariable Long tripId) {
+        // Check if the trip exists
         Optional<Trip> tripOptional = trip_repository.findById(tripId);
         if (tripOptional.isEmpty()) {
             return ResponseEntity.badRequest().body(null);
         }
 
+        // Fetch all UserTrips for the given trip ID
         List<UserTrips> userTrips = userTripsRepository.findByTripId(tripId);
         List<Map<String, Object>> requests = new ArrayList<>();
 
+        // Map UserTrips to include user details
         for (UserTrips userTrip : userTrips) {
             Map<String, Object> request = new HashMap<>();
             Optional<User> userOptional = user_repository.findById(userTrip.getUserId());
@@ -220,22 +227,25 @@ public class BackendApplication {
     @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/backend/user-trips/update")
     public ResponseEntity<?> updateRequest(@RequestBody Map<String, Object> payload) {
-        // Update the casting to Long
+        // Extract trip ID, user ID, and status from the payload
         Long tripId = Long.valueOf(String.valueOf(payload.get("tripId")));
         Long userId = Long.valueOf(String.valueOf(payload.get("userId")));
         String status = (String) payload.get("status");
 
+        // Find the UserTrip by user ID and trip ID
         Optional<UserTrips> userTripsOptional = userTripsRepository.findByUserIdAndTripId(userId, tripId);
         if (userTripsOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Request not found.");
         }
 
+        // Update the status and save the UserTrip
         UserTrips userTrip = userTripsOptional.get();
         userTrip.setStatus(status);
         userTripsRepository.save(userTrip);
         return ResponseEntity.ok("Request updated successfully.");
     }
 
+    // API to update the status of a specific UserTrip by ID
     @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/backend/user-trips/{userTripId}")
     public ResponseEntity<?> updateUserTripStatus(
@@ -245,12 +255,14 @@ public class BackendApplication {
             String status = payload.get("status");
             System.out.println("Received update request for UserTrip ID: " + userTripId + " with status: " + status);
 
+            // Find the UserTrip by ID
             Optional<UserTrips> userTripOptional = userTripsRepository.findById(userTripId);
             if (userTripOptional.isEmpty()) {
                 System.out.println("UserTrip with ID " + userTripId + " not found.");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("UserTrip not found.");
             }
 
+            // Update the status and save the UserTrip
             UserTrips userTrip = userTripOptional.get();
             userTrip.setStatus(status);
             userTripsRepository.save(userTrip);
@@ -267,8 +279,10 @@ public class BackendApplication {
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/credentials/signin")
     public ResponseEntity<?> handle_credentials_signin(@RequestBody User user) {
+        // Fetch all users from the database
         List<User> all_users = user_repository.findAll();
         for (User u : all_users) {
+            // Check if the username and password match
             if (u.getUsername().equals(user.getUsername()) &&
                 u.getPassword().equals(user.getPassword())) {
                 System.out.println("User authenticated successfully.");
@@ -280,18 +294,19 @@ public class BackendApplication {
         return ResponseEntity.badRequest().body("Invalid email or password.");
     }
 
-    // API to handle google sign in
+    // API to handle Google sign-in
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/google/signin")
     public ResponseEntity<User> handle_google_signin(@RequestBody User user) {
-        List<User> all_users = user_repository.findAll();
-
-        for (User u : all_users) {
-            if (u.getEmail().equals(user.getEmail())) {
-                return ResponseEntity.ok(u);
-            }
+        // Check if a user with the given email already exists in the repository
+        Optional<User> existing = user_repository.findByEmail(user.getEmail());
+        
+        // If the user exists, return a successful response with the existing user data
+        if (existing.isPresent()) {
+            return ResponseEntity.ok(existing.get());
         }
 
+        // If the user doesn't exist, create a new user
         String email = user.getEmail();
         String username = email.split("@")[0]; // Example: using the part before @ as the username
         user.setUsername(username);
@@ -307,6 +322,7 @@ public class BackendApplication {
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/signup")
     public ResponseEntity<?> handle_signup(@RequestBody User user) {
+        // Check if the email or username already exists
         Optional<User> existingUserByEmail = user_repository.findByEmail(user.getEmail());
         Optional<User> existingUserByUsername = user_repository.findByUsername(user.getUsername());
 
@@ -318,6 +334,7 @@ public class BackendApplication {
             return ResponseEntity.badRequest().body("Username already exists");
         }
 
+        // Set timestamps and save the new user
         Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
         user.setCreatedAt(currentTimestamp);
         user.setUpdatedAt(currentTimestamp);
@@ -331,12 +348,14 @@ public class BackendApplication {
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/forgetme")
     public ResponseEntity<?> handle_forgetme(@RequestBody User user) {
+      // Check if the user exists by email
       Optional<User> existingUserByEmail = user_repository.findByEmail(user.getEmail());
 
       if (!existingUserByEmail.isPresent()) {
         return ResponseEntity.badRequest().body("Email doesn't exist.");
       }
 
+      // Delete the user by ID
       user_repository.deleteById(existingUserByEmail.get().getUserId());
       return ResponseEntity.ok().build();
     }
@@ -347,6 +366,7 @@ public class BackendApplication {
     @GetMapping("/backend/user")
     public ResponseEntity<?> get_user_data(@RequestHeader("Email") String email) {
         System.out.println("Request to get user data for email: " + email);
+        // Find the user by email
         Optional<User> user = user_repository.findByEmail(email);
 
         if (user.isPresent()) {
@@ -362,6 +382,7 @@ public class BackendApplication {
     @GetMapping("/backend/user/{id}")
     public ResponseEntity<?> get_user_data(@PathVariable("id") long id) {
         System.out.println("Request to get user data for email: " + id);
+        // Find the user by ID
         Optional<User> user = user_repository.findById(id);
 
         if (user.isPresent()) {
@@ -441,10 +462,12 @@ public class BackendApplication {
         }
     }
 
+    // API to get all users
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/users")
     public ResponseEntity<List<User>> getAllUsers() {
         try {
+            // Fetch all users from the database
             List<User> users = user_repository.findAll();
             return ResponseEntity.ok(users);
         } catch (Exception e) {
@@ -452,10 +475,12 @@ public class BackendApplication {
         }
     }
 
+    // API to get all reviews
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/reviews")
     public ResponseEntity<List<Review>> getAllReviews() {
         try {
+            // Fetch all reviews from the database
             List<Review> reviews = reviewRepository.findAll();
             return ResponseEntity.ok(reviews);
         } catch (Exception e) {
@@ -463,15 +488,35 @@ public class BackendApplication {
         }
     }
 
-    // API to get all the trips
+    // API to get all trips with images
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/trips")
-    public ResponseEntity<List<Trip>> getAllTrips() {
+    public ResponseEntity<List<Map<String, Object>>> getAllTrips() {
+        // Fetch all trips from the database
         List<Trip> trips = trip_repository.findAll();
+        List<Map<String, Object>> tripsWithImages = new ArrayList<>();
+
         for (Trip trip : trips) {
-            trip.setInterests(trip.getInterests()); // Load interests for each trip
+            Map<String, Object> tripDetails = new HashMap<>();
+            tripDetails.put("tripId", trip.getTripId());
+            tripDetails.put("location", trip.getLocation());
+            tripDetails.put("startDate", trip.getStartDate());
+            tripDetails.put("endDate", trip.getEndDate());
+            tripDetails.put("description", trip.getDescription());
+            tripDetails.put("createdBy", trip.getCreatedBy()); // Ensure `User` is serialized properly
+            tripDetails.put("interests", trip.getInterests());
+
+            // Fetch images for each trip
+            List<TripImage> tripImages = tripImageRepository.findByTrip_TripId(trip.getTripId());
+            List<String> imageUrls = tripImages.stream()
+                                            .map(TripImage::getImageUrl)
+                                            .toList();
+            tripDetails.put("images", imageUrls); // Add images to response
+
+            tripsWithImages.add(tripDetails);
         }
-        return ResponseEntity.ok(trips);
+
+        return ResponseEntity.ok(tripsWithImages);
     }
 
     // API to update trip details
@@ -480,7 +525,7 @@ public class BackendApplication {
     public ResponseEntity<?> updateTrip(@PathVariable Long id, @RequestBody Trip updatedTrip) {
         System.out.println("Request to update trip with ID: " + id);
 
-        // Update trip details based on ID
+        // Find the trip by ID
         Optional<Trip> optionalTrip = trip_repository.findById(id);
         if (optionalTrip.isPresent()) {
             Trip existingTrip = optionalTrip.get();
@@ -509,10 +554,12 @@ public class BackendApplication {
         }
     }
 
+    // API to set a user's review score
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/reviewstemp")
     public ResponseEntity<?> setUserReview(@RequestBody Map<String, Object> requestBody) {
         try {
+            // Extract trip ID and rating from the request body
             Long tripId = ((Number) requestBody.get("tripId")).longValue();
             int rating = Integer.parseInt(requestBody.get("rating").toString());
 
@@ -533,10 +580,12 @@ public class BackendApplication {
     
 
 
+    // API to create a review
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/reviews")
     public ResponseEntity<?> createReview(@RequestBody Map<String, Object> payload) {
         try {
+            // Extract post information from the payload
             Map<String, Object> postMap = (Map<String, Object>) payload.get("post");
             if (postMap == null || !postMap.containsKey("postId")) {
                 return ResponseEntity.badRequest().body("Post information is missing.");
@@ -548,6 +597,7 @@ public class BackendApplication {
             
             String comment = (String) payload.get("comment");
             
+            // Extract reviewer information from the payload
             Map<String, Object> reviewerMap = (Map<String, Object>) payload.get("reviewer");
             if (reviewerMap == null || !reviewerMap.containsKey("userId")) {
                 return ResponseEntity.badRequest().body("Reviewer information is missing.");
@@ -555,18 +605,21 @@ public class BackendApplication {
     
             Long userId = Long.parseLong(reviewerMap.get("userId").toString());
     
+            // Find the reviewer user
             Optional<User> userOptional = user_repository.findById(userId);
             
             if (userOptional.isEmpty()) {
                 return ResponseEntity.badRequest().body("User not found.");
             }
     
+            // Find the post
             Optional<Post> postOptional = postRepository.findById(postId);
 
             if (postOptional.isEmpty()) {
                 return ResponseEntity.badRequest().body("Post not found.");
             }
     
+            // Create and save the review
             Review newReview = new Review();
             newReview.setReviewer(userOptional.get()); 
             newReview.setPost(postOptional.get());
@@ -588,6 +641,7 @@ public class BackendApplication {
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/trips/{id}")
     public ResponseEntity<Trip> getTripById(@PathVariable Long id) {
+        // Find the trip by ID
         Optional<Trip> trip = trip_repository.findById(id);
         if (trip.isPresent()) {
             return ResponseEntity.ok(trip.get());
@@ -602,21 +656,27 @@ public class BackendApplication {
     public ResponseEntity<?> getTripsByCreator(@RequestHeader("Email") String email) {
         System.out.println("Request to get trips created by user with email: " + email);
 
+        // Find the user by email
         Optional<User> user = user_repository.findByEmail(email);
         if (user.isEmpty()) {
             System.err.println("User not found for email: " + email);
             return ResponseEntity.badRequest().body("User not found.");
         }
 
-        // Fetch trips created by the user associated with the provided email
+        // Fetch trips created by the user
         List<Trip> trips = trip_repository.findByCreatedByUserId(user.get().getUserId());
         if (trips.isEmpty()) {
             System.out.println("No trips found for user ID: " + user.get().getUserId());
             return ResponseEntity.ok(List.of()); // Return empty list
         }
 
+        // Add images to each trip
         for (Trip trip : trips) {
-            trip.setInterests(trip.getInterests());
+            List<TripImage> tripImages = tripImageRepository.findByTrip_TripId(trip.getTripId());
+            List<String> imageUrls = tripImages.stream()
+                                            .map(TripImage::getImageUrl)
+                                            .toList();
+            trip.setImages(imageUrls); 
         }
 
         System.out.println("Trips fetched successfully for user ID: " + user.get().getUserId());
@@ -629,23 +689,26 @@ public class BackendApplication {
     public ResponseEntity<?> deleteTrip(@PathVariable Long tripId, @RequestHeader("Email") String email) {
         System.out.println("Request to delete trip with ID: " + tripId + " by user with email: " + email);
 
+        // Find the user by email
         Optional<User> user = user_repository.findByEmail(email);
         if (user.isEmpty()) {
             System.err.println("User not found for email: " + email);
             return ResponseEntity.badRequest().body("User not found.");
         }
 
+        // Find the trip by ID
         Optional<Trip> trip = trip_repository.findById(tripId);
         if (trip.isEmpty()) {
             System.err.println("Trip not found with ID: " + tripId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found.");
         }
-        // Delete a trip if the requesting user is its creator
+        // Check if the requesting user is the creator of the trip
         if (trip.get().getCreatedBy().getUserId() != user.get().getUserId()) {
             System.err.println("User is not authorized to delete this trip.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this trip.");
         }
         try {
+            // Delete the trip
             trip_repository.delete(trip.get());
             System.out.println("Trip with ID: " + tripId + " deleted successfully.");
             return ResponseEntity.ok("Trip deleted successfully.");
@@ -659,6 +722,7 @@ public class BackendApplication {
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/interests")
     public ResponseEntity<List<Interest>> getAllInterests() {
+        // Fetch all interests from the database
         return ResponseEntity.ok(interestRepository.findAll());
     }
 
@@ -703,19 +767,24 @@ public class BackendApplication {
         }
     }
 
+    // API to get all posts
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/posts")
     public ResponseEntity<List<Post>> getAllPosts() {
+        // Fetch all posts from the database
         return ResponseEntity.ok(postRepository.findAll());
     }
 
+    // API to get posts by user ID
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/posts/user/{userId}")
     public ResponseEntity<List<Post>> getPostsByUserId(@PathVariable Long userId) {
+        // Fetch posts by user ID
         return ResponseEntity.ok(postRepository.findPostsByUserId(userId));
 
     }
 
+    // API to add a new post
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/posts")
     public ResponseEntity<?> addPost(
@@ -752,6 +821,7 @@ public class BackendApplication {
         }
     }
 
+    // API to update a post
     @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/backend/posts/{postId}")
     public ResponseEntity<?> updatePost(
@@ -798,6 +868,7 @@ public class BackendApplication {
     }
     
 
+    // Helper method to save an image to disk
     private String saveImageToDisk(MultipartFile image) {
         // Save the image to the "public/images/posts" directory
         String filePath = "src/main/java/frontend/public/images/posts/" + image.getOriginalFilename(); // Physical path
@@ -816,18 +887,22 @@ public class BackendApplication {
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/notifications")
     public ResponseEntity<?> getUserNotifications(@RequestParam String email) {
+        // Find the user by email
         Optional<User> userOptional = user_repository.findByEmail(email);
         if (userOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("User not found.");
         }
 
+        // Fetch notifications for the user
         List<Notification> notifications = notificationRepository.findByUserUserId(userOptional.get().getUserId());
         return ResponseEntity.ok(notifications);
     }
 
+    // Get all notifications
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/backend/notifications/all")
     public ResponseEntity<?> getAllNotifications() {
+        // Fetch all notifications from the database
         List<Notification> notifications = notificationRepository.findAll();
         return ResponseEntity.ok(notifications);
     }
@@ -836,11 +911,13 @@ public class BackendApplication {
     @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/backend/notifications/{notificationId}/read")
     public ResponseEntity<?> markNotificationAsRead(@PathVariable Long notificationId) {
+        // Find the notification by ID
         Optional<Notification> notificationOptional = notificationRepository.findById(notificationId);
         if (notificationOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Notification not found.");
         }
 
+        // Update the notification status to "read"
         Notification notification = notificationOptional.get();
         notification.setStatus("read");
         notificationRepository.save(notification);
@@ -848,6 +925,7 @@ public class BackendApplication {
         return ResponseEntity.ok("Notification marked as read.");
     }
 
+    // Helper method to save a trip image to disk
     private String saveTripImageToDisk(MultipartFile image) {
         try {
             // Generate a unique file name using UUID
@@ -866,10 +944,12 @@ public class BackendApplication {
         }
     }
 
+    // API to upload trip images
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/backend/trips/{tripId}/images")
     public ResponseEntity<?> uploadTripImages(@PathVariable Long tripId, @RequestParam("images") List<MultipartFile> images) {
         try {
+            // Find the trip by ID
             Optional<Trip> tripOptional = trip_repository.findById(tripId);
             if (tripOptional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trip not found.");
@@ -878,6 +958,7 @@ public class BackendApplication {
             Trip trip = tripOptional.get();
             List<TripImage> tripImages = new ArrayList<>();
 
+            // Save each image to disk and create TripImage entities
             for (MultipartFile image : images) {
                 // Save image to disk
                 String imagePath = saveTripImageToDisk(image);
@@ -887,6 +968,7 @@ public class BackendApplication {
                 tripImages.add(tripImage);
             }
 
+            // Save all TripImage entities
             tripImageRepository.saveAll(tripImages);
             return ResponseEntity.ok("Images uploaded successfully.");
 
