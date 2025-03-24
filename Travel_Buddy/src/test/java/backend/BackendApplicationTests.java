@@ -905,6 +905,11 @@ class BackendApplicationTests {
         assertEquals(existingUser, response.getBody());
     }
 
+    // Unit test for [`handle_google_signin(User)`]
+    //
+    // Validate the google authentication backend for a new user.
+    // The system should respond with a 200 response code and add the new user
+    // to the user repository.
     @Test
     void shouldHandleGoogleSigninForNewUser() {
         // Arrange
@@ -929,6 +934,10 @@ class BackendApplicationTests {
     }
 
     // Unit testing for addPost(String, MultipartFile, Long)
+    //
+    // Validate the mechanism for adding new posts.
+    // The system should respond with a 200 response code and add the new post 
+    // to the post repository.
     @Test
     void shouldAddPostSuccessfully() throws Exception {
         // Arrange
@@ -959,6 +968,13 @@ class BackendApplicationTests {
         Files.deleteIfExists(Paths.get("src/main/java/frontend/public/images/posts/test.jpg"));
     }
 
+    // Unit test for [`addPost(String, MultipartFile, Long)`]
+    //
+    // Validate the mechanism for adding new posts when the trip is missing for
+    // a given post.
+    //
+    // The system should respond with a bad response code and should not save
+    // the post in the repository.
     @Test
     void shouldReturnBadRequestWhenUserTripNotFoundOnAddPost() {
         // Arrange
