@@ -7,6 +7,9 @@ import Select from "react-select"; // Import React Select
 import Navbar from "../layout/navbar/page";
 import Footer from "../layout/footer/page";
 import { signIn } from "next-auth/react";
+import PostsComponent from "./postsComponent";
+import { faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 // Interface defining the structure of user data
 interface UserData {
@@ -57,6 +60,7 @@ export default function Profile() {
   const [languages, setLanguages] = useState([]); // State for languages dropdown options
   const [isLoading, setIsLoading] = useState(true); // State to track loading status
   const router = useRouter(); // Router instance for navigation
+  const [showEditForm, setShowEditForm] = useState(false);
 
   // Static list of interests for the interests dropdown
   const staticInterests = [
@@ -263,169 +267,185 @@ export default function Profile() {
             </div>
   
             {/* Display User Name */}
-            <div className="profile-name">
+            <div className="profile-name flex-auto">
               <span className="user-name text-3xl">
                 {userData?.name || "Name Name"}
               </span>
             </div>
+
+            <div className="relative group">
+              <FontAwesomeIcon icon={faEdit} 
+                              onClick={() => setShowEditForm(!showEditForm)}
+                              className="p-2 text-blue-600 text-2xl rounded-md hover:bg-gray-300"/>       
+              <span className="absolute w-max hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 bottom-full mb-1">
+                Edit Profile
+              </span>
+            </div>
+                
+            <div className="relative group">
+              <FontAwesomeIcon icon={faPlus} 
+                              onClick={() => setIsModalOpen(true)}
+                              className="p-2 text-blue-600 text-2xl rounded-md hover:bg-gray-300"/>  
+              <span className="absolute w-max hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 bottom-full mb-1">
+                New Post
+              </span>              
+            </div>
+      
           </div>
-  
-          {/* Profile Form Section */}
-          {userData && (
-            <div className="form-container grid grid-rows-5 gap-3">
-              {/* Name Field */}
-              <div className="form-group mb-4 text-color">
-                <label>Name</label>
-                <input
-                  type="text"
-                  value={userData.name || ""}
-                  onChange={(e) =>
-                    setUserData({ ...userData, name: e.target.value })
-                  }
-                  className="input-field"
-                />
-              </div>
-  
-              {/* Row for Nationality and Sex Fields */}
-              <div className="row2 grid grid-cols-2 gap-5">
-                {/* Nationality Dropdown */}
-                <div className="nationality-form form-group mb-4 ">
-                  <label>Nationality</label>
-                  <select
-                    className="input-field"
-                    value={userData.nationality} // Should be a string
-                    onChange={(event) =>
-                      setUserData({
-                        ...userData,
-                        nationality: event.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Select</option>
-                    {/* Map through nationalities to create dropdown options */}
-                    {nationalities.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
-                {/* Sex Dropdown */}
-                <div className="sex-form form-group mb-4 text-color">
-                  <label>Sex</label>
-                  <select
-                    value={userData.sex || ""}
-                    onChange={(e) =>
-                      setUserData({ ...userData, sex: e.target.value })
-                    }
-                    className="input-field">
-                    <option value="">Select</option>
-                    {/* Map through sex options */}
-                    {["Male", "Female", "Other"].map((sex) => (
-                      <option key={sex} value={sex}>
-                        {sex}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Languages Multi-Select Dropdown */}
-              <div className="language-form form-group mb-4 text-color">
-                <label>Languages</label>
-                <div className="input-field">
-                  <Select
-                    className="input-field"
-                    isMulti
-                    options={languages}
-                    value={languages.filter((option) =>
-                      userData.languages?.includes(option.value)
-                    )}
-                    onChange={(selectedOptions) =>
-                      setUserData({
-                        ...userData,
-                        languages: selectedOptions.map(
-                          (option) => option.value
-                        ),
-                      })
-                    }
-                  />
-                </div>
-              </div>
+          <div style={{display: showEditForm ? "block" : "none"}}>
   
-              {/* Row for Age and Phone Number Fields */}
-              <div className="age-num grid grid-cols-2 gap-5">
-                {/* Age Field */}
-                <div className="age-form form-group mb-4 text-color">
-                  <label>Age:</label>
-                  <input
-                    type="number"
-                    placeholder="1"
-                    value={userData.age || ""}
-                    onChange={(e) =>
-                      setUserData({ ...userData, age: Number(e.target.value) })
-                    }
-                    className="input-field"
-                  />
-                </div>
-
-                {/* Phone Number Field */}
-                <div className="phonenum-form form-group mb-4 text-color">
-                  <label>Phone Number</label>
+            {/* Profile Form Section */}
+            {userData && (
+              <div className="form-container grid grid-rows-5 gap-3">
+                {/* Name Field */}
+                <div className="form-group mb-4 text-color">
+                  <label>Name</label>
                   <input
                     type="text"
-                    placeholder="1234567890"
-                    value={userData.phoneNumber || ""}
+                    value={userData.name || ""}
                     onChange={(e) =>
-                      setUserData({ ...userData, phoneNumber: e.target.value })
+                      setUserData({ ...userData, name: e.target.value })
                     }
                     className="input-field"
                   />
                 </div>
-              </div>
+    
+                {/* Row for Nationality and Sex Fields */}
+                <div className="row2 grid grid-cols-2 gap-5">
+                  {/* Nationality Dropdown */}
+                  <div className="nationality-form form-group mb-4 ">
+                    <label>Nationality</label>
+                    <select
+                      className="input-field"
+                      value={userData.nationality} // Should be a string
+                      onChange={(event) =>
+                        setUserData({
+                          ...userData,
+                          nationality: event.target.value,
+                        })
+                      }
+                    >
+                      <option value="">Select</option>
+                      {/* Map through nationalities to create dropdown options */}
+                      {nationalities.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              {/* Interests Multi-Select Dropdown */}
-              <div className="interest-form form-group mb-4 ">
-                <label>Interests</label>
-                <div className="input-field">
-                  <Select
-                    isMulti
-                    options={staticInterests}
-                    value={staticInterests.filter((option) =>
-                      userData?.interests?.includes(option.value)
-                    )}
-                    onChange={(selectedOptions) =>
-                      setUserData({
-                        ...userData,
-                        interests: selectedOptions.map(
-                          (option) => option.value
-                        ),
-                      })
-                    }
-                  />
+                  {/* Sex Dropdown */}
+                  <div className="sex-form form-group mb-4 text-color">
+                    <label>Sex</label>
+                    <select
+                      value={userData.sex || ""}
+                      onChange={(e) =>
+                        setUserData({ ...userData, sex: e.target.value })
+                      }
+                      className="input-field">
+                      <option value="">Select</option>
+                      {/* Map through sex options */}
+                      {["Male", "Female", "Other"].map((sex) => (
+                        <option key={sex} value={sex}>
+                          {sex}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Languages Multi-Select Dropdown */}
+                <div className="language-form form-group mb-4 text-color">
+                  <label>Languages</label>
+                  <div className="input-field">
+                    <Select
+                      className="input-field"
+                      isMulti
+                      options={languages}
+                      value={languages.filter((option) =>
+                        userData.languages?.includes(option.value)
+                      )}
+                      onChange={(selectedOptions) =>
+                        setUserData({
+                          ...userData,
+                          languages: selectedOptions.map(
+                            (option) => option.value
+                          ),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+    
+                {/* Row for Age and Phone Number Fields */}
+                <div className="age-num grid grid-cols-2 gap-5">
+                  {/* Age Field */}
+                  <div className="age-form form-group mb-4 text-color">
+                    <label>Age:</label>
+                    <input
+                      type="number"
+                      placeholder="1"
+                      value={userData.age || ""}
+                      onChange={(e) =>
+                        setUserData({ ...userData, age: Number(e.target.value) })
+                      }
+                      className="input-field"
+                    />
+                  </div>
+
+                  {/* Phone Number Field */}
+                  <div className="phonenum-form form-group mb-4 text-color">
+                    <label>Phone Number</label>
+                    <input
+                      type="text"
+                      placeholder="1234567890"
+                      value={userData.phoneNumber || ""}
+                      onChange={(e) =>
+                        setUserData({ ...userData, phoneNumber: e.target.value })
+                      }
+                      className="input-field"
+                    />
+                  </div>
+                </div>
+
+                {/* Interests Multi-Select Dropdown */}
+                <div className="interest-form form-group mb-4 ">
+                  <label>Interests</label>
+                  <div className="input-field">
+                    <Select
+                      isMulti
+                      options={staticInterests}
+                      value={staticInterests.filter((option) =>
+                        userData?.interests?.includes(option.value)
+                      )}
+                      onChange={(selectedOptions) =>
+                        setUserData({
+                          ...userData,
+                          interests: selectedOptions.map(
+                            (option) => option.value
+                          ),
+                        })
+                      }
+                    />
+                  </div>
                 </div>
               </div>
+            )}
+    
+            {/* Submit Buttons Section */}
+            <div className="submit-button grid justify-end">
+              {/* Update Profile Button */}
+              <button
+                className="update-button w-28 h-12 text-xl font-bold bg-purple-500 text-white rounded-lg hover:bg-white hover:text-purple-500 hover:border-2 hover: border-purple-500"
+                onClick={handleUpdate}>
+                Update
+              </button>
             </div>
-          )}
-  
-          {/* Submit Buttons Section */}
-          <div className="submit-button grid justify-end">
-            {/* Update Profile Button */}
-            <button
-              className="update-button w-28 h-12 text-xl font-bold bg-purple-500 text-white rounded-lg hover:bg-white hover:text-purple-500 hover:border-2 hover: border-purple-500"
-              onClick={handleUpdate}>
-              Update
-            </button>
-  
-            {/* Add Post Button */}
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="mt-6 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700"
-            >
-              Add Post
-            </button>
           </div>
+
+          <PostsComponent />
         </div>
       </div>
 

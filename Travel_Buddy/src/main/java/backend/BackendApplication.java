@@ -396,11 +396,16 @@ public class BackendApplication {
     // API to update user data
     @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/backend/user")
-    public ResponseEntity<?> update_user(@RequestHeader("Email") String email, @RequestBody User updatedUser) {
+    public ResponseEntity<?> update_user(@RequestHeader(value = "Email", required = false) String email, @RequestHeader(value = "Id", required = false) String id, @RequestBody User updatedUser) {
         System.out.println("Request to update user data for email: " + email);
-        
-        // Find the existing user by email
-        Optional<User> existingUser = user_repository.findByEmail(email);
+        System.out.println("id: ");
+        System.out.println(id);
+
+        if (id == null && email == null) {
+            return ResponseEntity.badRequest().body("Either email or id must be provided.");
+        }
+
+        Optional<User> existingUser = id != null ? user_repository.findById(Integer.parseInt(id)) : user_repository.findByEmail(email);
         
         if (existingUser.isPresent()) {
             User user = existingUser.get();
@@ -426,6 +431,7 @@ public class BackendApplication {
             System.out.println("Sex: " + updatedUser.getSex());
             System.out.println("Interests: " + updatedUser.getInterests());
             System.out.println("Bio: " + updatedUser.getBio());
+            System.out.println("Review Score: " + updatedUser.getReviewScore());
 
             // Update user fields
             user.setName(updatedUser.getName());
@@ -437,6 +443,7 @@ public class BackendApplication {
             user.setInterests(updatedUser.getInterests());
             user.setBio(updatedUser.getBio());
             user.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            user.setReviewScore(updatedUser.getReviewScore());
 
             try {
                 user.setProfilePicture(updatedUser.getProfilePicture());
@@ -570,6 +577,8 @@ public class BackendApplication {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating review.");
         }
     }
+    
+
 
     // API to create a review
     @CrossOrigin(origins = "http://localhost:3000")

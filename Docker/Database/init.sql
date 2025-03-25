@@ -23,7 +23,7 @@ CREATE TABLE Users (
     profile_picture TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    review_score INT DEFAULT 3 CHECK (review_score BETWEEN 1 AND 5)
+    review_score INT DEFAULT 0 CHECK (review_score BETWEEN 0 AND 5)
 );
 
 -- Create a new join table for user languages

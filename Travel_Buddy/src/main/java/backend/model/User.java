@@ -74,7 +74,7 @@ public class User {
     private Timestamp updatedAt;
 
     @Column(name = "review_score")
-    private Integer reviewScore = 3;
+    private Integer reviewScore = 0;
 
     @PrePersist
     protected void onCreate() {
