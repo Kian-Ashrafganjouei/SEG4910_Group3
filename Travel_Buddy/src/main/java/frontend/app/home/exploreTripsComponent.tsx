@@ -494,21 +494,6 @@ export default function ExploreTripsComponent() {
             </div>
           </div>
         </div>
-        <div id="sortAndfilterComponent" className="float-right">
-          {/* <button
-            type="button"
-            className="h-full ml-2.5 px-2 py-1 group flex items-center inline-center justify-center text-sm font-medium text-gray-700 hover:text-gray-900"
-            id="filterButton"
-            onClick={toggleShowFilters}
-            aria-expanded="false"
-            aria-haspopup="true">
-            <FontAwesomeIcon
-              icon={faFilter}
-              className="text-gray-500 px-1.5 items-center"
-            />
-            Filter
-          </button> */}
-        </div>
 
         <div id="filtersContainer" className="">
           {/* Interests filtering code */}
@@ -560,67 +545,6 @@ export default function ExploreTripsComponent() {
           </div>
         </div>
 
-        {/* Location filtering code */}
-        <div
-          id="locationFilterComponent"
-          className="border-t border-gray-200 px-4 py-6">
-          <h3 className="-mx-2 -my-3 flow-root">
-            <button
-              type="button"
-              className="flex w-full items-center justify-between bg-white px-2 py-3 text-gray-400 hover:text-gray-500"
-              onClick={() => toggleShowLocationDropdown()}>
-              <span className="font-medium text-gray-900">Locations</span>
-              <span className="ml-6 flex items-center">
-                {showLocationDropdown ? (
-                  <FontAwesomeIcon icon={faMinus} />
-                ) : (
-                  <FontAwesomeIcon icon={faPlus} />
-                )}
-              </span>
-            </button>
-          </h3>
-          <div
-            className={`pt-6 max-h-64 overflow-y-auto ${
-              showLocationDropdown ? "" : "hidden"
-            }`}
-            id="interestsFilters">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <input
-                  name="location"
-                  id={"locationAllLocations"}
-                  value=""
-                  type="radio"
-                  className="text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-1.5"
-                  onChange={() => handleLocationChange("")}
-                />
-                <label
-                  htmlFor={"locationAllLocations"}
-                  className="ml-3 min-w-0 flex-1 text-gray-500">
-                  All Locations
-                </label>
-              </div>
-              {locations.map((location) => (
-                <div className="flex items-center">
-                  <input
-                    name="location"
-                    id={`location${location}`}
-                    value={location}
-                    type="radio"
-                    className="text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-1.5"
-                    onChange={() => handleLocationChange(location)}
-                  />
-                  <label
-                    htmlFor={`location${location}`}
-                    className="ml-3 min-w-0 flex-1 text-gray-500"
-                    key={location}>
-                    {location}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
         {/* Dates filtering code */}
         <div
           id="datesFilterComponent"
