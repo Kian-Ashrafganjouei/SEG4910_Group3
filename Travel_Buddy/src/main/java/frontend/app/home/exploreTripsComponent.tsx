@@ -516,25 +516,25 @@ export default function ExploreTripsComponent() {
               </button>
             </h3>
             <div
-              className={`pt-6 max-h-64 overflow-y-auto ${
+              className={`pt-6 ${
                 showInterestDropdown ? "" : "hidden"
               }`}
               id="interestsFilters">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3"> 
                 {interests.map((interest) => (
-                  <div className="flex items-center">
+                  <div className="flex items-center space-x-3">
                     <input
                       name={`interest${interest.interestId}`}
                       id={`interest${interest.interestId}`}
                       value={interest.interestId}
                       type="checkbox"
-                      className="text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mr-1.5"
+                      className="text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                       checked={selectedInterests.includes(interest.interestId)}
                       onChange={() => handleInterestChange(interest.interestId)}
                     />
                     <label
                       htmlFor={`interest${interest.interestId}`}
-                      className="ml-3 min-w-0 flex-1 text-gray-500"
+                      className="text-gray-500"
                       key={interest.interestId}>
                       {interest.name}
                     </label>
