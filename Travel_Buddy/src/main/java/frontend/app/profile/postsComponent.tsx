@@ -113,7 +113,7 @@ export default function PostsComponent() {
                                     : 0; 
 
             const userResponse = await fetch('/backend/user', {
-              method: "PUT",                                      // CHECK HOW TO UPDATE A USER
+              method: "PUT",
               headers: {"Content-Type": "application/json", 
                 Id: ratedUser.userId.toString()
               },
@@ -386,8 +386,8 @@ export default function PostsComponent() {
             <div className="posts-list columns-2 gap-4 space-y-4">
               {filteredPosts.map((post) => (
                 <div key={post.postId}
-                     className="post-card flex flex-col items-start p-6 rounded-xl shadow-lg bg-white text-black break-inside-avoid border border-gray-200"> 
-                  {/* relative max-h-[630px] overflow-y-auto*/}
+                     className="post-card custom-scrollbar flex flex-col items-start p-[23px] rounded-xl shadow-lg bg-white text-black break-inside-avoid border border-gray-200 relative"> 
+
                   {/* Display Profile Picture and Username */}
                   <div className="flex items-center justify-between w-full mb-4">
                     <img
@@ -402,6 +402,23 @@ export default function PostsComponent() {
                     <div className="text-lg font-medium text-gray-700 flex-1">
                       @{post.userTrip?.user?.username || "Unknown"}
                     </div>
+                    <span className="text-sm font-medium text-gray-600 bg-gray-200 px-2 py-1 rounded-full ml-auto">
+                      {post.userTrip?.trip?.location !== undefined ? post.userTrip.trip.location : ""}
+                    </span>
+                  </div>
+
+
+                  {/* Post Content */}
+                  <img src={post.image}
+                       alt={post.caption}
+                       className="post-image w-full h-64 object-cover rounded-lg mb-4" />
+                  <p className="post-caption text-lg text-gray-700 mb-2">
+                    {post.caption}
+                  </p>
+                  <div className="flex items-center justify-between w-full">
+                    <div className="post-date text-sm mr-auto text-gray-500">
+                      Posted on {new Date(post.createdAt).toLocaleDateString()}
+                    </div>
                     <div className="relative group">
                       <FontAwesomeIcon icon={faPlus} 
                             onClick={() => onAddReviewClick(post.postId)}
@@ -411,24 +428,6 @@ export default function PostsComponent() {
                       </span>  
                     </div>
                   </div>
-
-                  {/* Display Trip Location */}
-                  {post.userTrip?.trip?.location && (
-                    <span className="absolute top-4 right-4 text-sm font-medium text-gray-600 bg-gray-200 px-2 py-1 rounded-full">
-                      {post.userTrip.trip.location}
-                    </span>
-                  )}
-
-                  {/* Post Content */}
-                  <img src={post.image}
-                       alt={post.caption}
-                       className="post-image w-full h-64 object-cover rounded-lg mb-4" />
-                  <p className="post-caption text-lg text-gray-700 mb-2">
-                    {post.caption}
-                  </p>
-                  <p className="post-date text-sm text-gray-500">
-                    Posted on {new Date(post.createdAt).toLocaleDateString()}
-                  </p>
 
 
 
@@ -490,18 +489,11 @@ export default function PostsComponent() {
                   </div>
 
                   
-                  <div id={`reviews-section-${post.postId}`} className="reviews-section mt-4">
-                    {/* <button
-                      className="toggle-reviews-btn text-sm text-blue-500"
-                      onClick={() => toggleReviews(post.postId)}
-                    >
-                      Show Reviews
-                    </button> */}
+                  <div id={`reviews-section-${post.postId}`} className="reviews-section pr-[10px] mt-4 relative max-h-[300px] overflow-y-auto custom-scrollbar">
+
                     <div
                       id={`reviews-list-${post.postId}`}
-                      className="reviews-list mt-4"
-                      // style={{ display: "none" }}
-                    >
+                      className="reviews-list mt-4 relat" >
 
                       {reviews
                         .filter((review) => review.post.postId === post.postId)
@@ -521,10 +513,10 @@ export default function PostsComponent() {
                           )
                         })
                       }
+
                     </div>
                   </div>
           
-                  {/*<div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-white to-transparent"></div>*/} {/* bottom fade out div */}
 
                 </div> // end of postcard div
               ))}
@@ -592,6 +584,28 @@ export default function PostsComponent() {
           </div>
         </div>
       )}
+
+
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px; 
+          margin-left: 5px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1; 
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbcbcb;
+          border-radius: 10px; 
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #a5a4a4; 
+        }
+
+      `}</style>
 
     </div>
   );
