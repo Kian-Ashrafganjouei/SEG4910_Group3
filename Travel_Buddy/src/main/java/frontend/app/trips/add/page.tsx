@@ -8,6 +8,8 @@ import Navbar from "../../layout/navbar/page";
 import Footer from "../../layout/footer/page";
 import Select from "react-select";
 import { useDropzone } from "react-dropzone";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 // interface Trip {
 //   location: string;
@@ -17,7 +19,7 @@ import { useDropzone } from "react-dropzone";
 //   interestIds: [] as number[];
 // }
 
-export default function AddTrip() {
+export default function AddTrip({ closeModal }: { closeModal: () => void }) {
   // Session information about the user currently logged in.
   const { data: session } = useSession();
 
@@ -162,174 +164,216 @@ export default function AddTrip() {
   };
 
   return (
-    <div className="mt-16">
-      <Navbar />
-      <div className="main-div grid grid-cols-5 justify-center">
-        {/* Drag and Drop images for the trip */}
-        <div className="image-form bg-orange-100 col-span-3 p-10 flex items-center">
-          <div className="image-drop-zone p-10 bg-white rounded-lg flex-auto">
-            {/* Large drop area */}
-            <div
-              {...getRootProps()}
-              className="relative w-full h-64 border-2 border-dashed rounded-lg flex flex-col items-center justify-center p-6 bg-gray-50 hover:bg-gray-100 cursor-pointer">
-              <input {...getInputProps()} />
+    <div>
+      {/* <Navbar /> main-div */}
+      <div className=""> 
+      {/* justify-center */}
+        {/* Form for trip detail */}
+        <div className="form-container">
+          <div className="text-2xl font-bold mb-[30px]">New Trip</div>
 
-              {/* Icon & text */}
-              <div className="flex flex-col items-center">
-                {/* Replace with your own icon if you like */}
-                <div className="bg-gray-200 rounded-full p-4 mb-4">
-                  <svg
-                    className="h-8 w-8 text-gray-600"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
+          <div id="formContent" className="overflow-y-auto custom-scrollbar max-h-[80vh] pr-[15px]">
+
+            <form onSubmit={handleSubmit}>
+
+              <div className="flex w-full mt-2">
+
+                <div className="form-group mt-2 w-full">
+                  <label htmlFor="location" className="text-sm text-gray-400">Location:</label>
+                  <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    className="new-trip-input border border-blue-500 focus-visible:border-blue-700"
+                    value={trip.location}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter trip location"
+                  />
                 </div>
 
-                {isDragActive ? (
-                  <p className="text-gray-700 font-medium">
-                    Drop the files here ...
-                  </p>
-                ) : (
-                  <>
-                    <p className="text-gray-700 font-medium">Upload images</p>
-                    <p className="text-sm text-gray-500">
-                      or use Drag &amp; Drop
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Previews */}
-            <div className="flex mt-4 gap-4">
-              {files.map((file, idx) => {
-                const previewUrl = URL.createObjectURL(file);
-                return (
-                  <div
-                    key={idx}
-                    className="w-24 h-24 rounded-md overflow-hidden border border-gray-200">
-                    <img
-                      src={previewUrl}
-                      alt={file.name}
-                      className="w-full h-full object-cover"
+                <div id="datesContainer" className="flex mt-2">
+                  <div className="form-group ml-[10px]">
+                    <label htmlFor="startDate" className="text-sm text-gray-400">Start Date:</label>
+                    <input
+                      type="date"
+                      id="startDate"
+                      name="startDate"
+                      className="new-trip-input border border-blue-500 focus-visible:border-blue-700 text-gray-400"
+                      value={trip.startDate}
+                      onChange={handleChange}
+                      required
                     />
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-        {/* Form for trip detail */}
-        <div className="form-container bg-orange-50 col-span-2 p-10 ">
-          <h2 className="heading">Trip Information</h2>
-          <form onSubmit={handleSubmit} className="grid grid-rows-6 gap-3">
-            <div className="form-group">
-              <label htmlFor="location">Location:</label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={trip.location}
-                onChange={handleChange}
-                required
-                placeholder="Enter trip location"
-              />
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="startDate">Start Date:</label>
-              <input
-                type="date"
-                id="startDate"
-                name="startDate"
-                value={trip.startDate}
-                onChange={handleChange}
-                required
-              />
-            </div>
+                  <div className="form-group ml-[10px]">
+                    <label htmlFor="endDate" className="text-sm text-gray-400">End Date:</label>
+                    <input
+                      type="date"
+                      id="endDate"
+                      name="endDate"
+                      className="new-trip-input border border-blue-500 focus-visible:border-blue-700 text-gray-400"
+                      value={trip.endDate}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>                  
+                </div>
 
-            <div className="form-group">
-              <label htmlFor="endDate">End Date:</label>
-              <input
-                type="date"
-                id="endDate"
-                name="endDate"
-                value={trip.endDate}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              </div>
 
-            <div className="form-group ">
-              <label htmlFor="description">Description:</label>
-              <textarea
-                id="description"
-                name="description"
-                value={trip.description}
-                onChange={handleChange}
-                placeholder="Describe your trip"
-              />
-            </div>
 
-            {/* Interests Dropdown */}
-            <div className="form-group">
-              <label>Interests</label>
-              <div className="input-field">
-                <Select
-                  options={interests.map((interest) => ({
-                    value: interest.interestId,
-                    label: interest.name,
-                  }))}
-                  isMulti
-                  value={trip.interestIds
-                    .map((interestId) => {
-                      const matchedInterest = interests.find(
-                        (interest) => interest.interestId === interestId
-                      );
-                      return matchedInterest
-                        ? {
-                            value: matchedInterest.interestId,
-                            label: matchedInterest.name,
-                          }
-                        : null;
-                    })
-                    .filter((interest) => interest !== null)}
-                  onChange={(newSelected) => {
-                    const newInterestIds = newSelected.map(
-                      (item) => item.value
-                    );
-                    setTrip((prev) => ({
-                      ...prev,
-                      interestIds: newInterestIds,
-                    }));
-                  }}
-                  placeholder="Select your interests"
+
+              <div className="form-group mt-3">
+                <label htmlFor="description" className="text-sm text-gray-400">Description:</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={trip.description}
+                  className="new-trip-input border border-blue-500 focus-visible:border-blue-700"
+                  onChange={handleChange}
+                  placeholder="Describe your trip"
                 />
               </div>
-            </div>
 
-            { /* Conditional error block. Only shown when an error occurs. */ }
-            {errorMessage && <p className="error-msg">{errorMessage}</p>}
+              {/* Interests Dropdown */}
+              <div className="form-group mt-3">
+                <label className="text-sm text-gray-400">Interests</label>
+                <div id="interestsSelectorContainer">
+                  <Select
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        // Change border color on focus  
+                        borderColor: '#3B82F6', 
+                        paddingLeft: '1px',
+                        '&:focus-visible': {
+                          borderColor: 'black',
+                          borderWidth: '2px'
+                        },
+                        '&:focus': {
+                          borderColor: 'black',
+                          borderWidth: '2px'
+                        },
+                        '&:hover': {
+                          borderColor: '#3B82F6'
+                        },
+                        
+                      }),
+                    }}
+                    id="interestsSelector"
+                    className="new-trip-input rounded-lg text-gray-400 focus-visible:[1px]"
+                    options={interests.map((interest) => ({
+                      value: interest.interestId,
+                      label: interest.name,
+                    }))}
+                    isMulti
+                    value={trip.interestIds
+                      .map((interestId) => {
+                        const matchedInterest = interests.find(
+                          (interest) => interest.interestId === interestId
+                        );
+                        return matchedInterest
+                          ? {
+                              value: matchedInterest.interestId,
+                              label: matchedInterest.name,
+                            }
+                          : null;
+                      })
+                      .filter((interest) => interest !== null)}
+                    onChange={(newSelected) => {
+                      const newInterestIds = newSelected.map(
+                        (item) => item.value
+                      );
+                      setTrip((prev) => ({
+                        ...prev,
+                        interestIds: newInterestIds,
+                      }));
+                    }}
+                    placeholder="Select your interests"
+                  />
+                </div>
+              </div>
 
-            <div className="grid justify-end">
-              <button
-                type="submit"
-                className="submit-button w-28 h-12 text-l font-bold bg-white text-purple-500 rounded-lg hover:bg-purple-500 hover:text-white hover:border-2  border-2 border-purple-500">
-                Add Trip
-              </button>
-            </div>
-          </form>
+              { /* Conditional error block. Only shown when an error occurs. */ }
+              {errorMessage && <p className="error-msg">{errorMessage}</p>}
+
+
+
+              {/* Drag and Drop images for the trip */}
+              <div className="image-form flex items-center mt-[45px]">
+              {/* bg-orange-100 p-10 */}
+                <div className="image-drop-zone border border-blue-500 p-[15px] bg-white rounded-lg flex-auto">
+                  {/* Large drop area */}
+                  <div
+                    {...getRootProps()}
+                    className="relative w-full h-[130px] border-2 border-dashed rounded-lg flex flex-col items-center justify-center p-6 bg-gray-50 hover:bg-gray-100 cursor-pointer">
+                    <input {...getInputProps()} />
+
+                    {/* Icon & text */}
+                    <div className="flex flex-col items-center">
+                      {/* Replace with your own icon if you like */}
+                      <div className="group inline-flex items-center justify-center mt-[20px] mb-[10px] w-10 h-10 bg-gray-300 text-gray-700 rounded-full">
+                        <FontAwesomeIcon icon={faPlus} className="text-lg" />
+                      </div>
+
+                      {isDragActive ? (
+                        <p className="text-gray-700 font-medium">
+                          Drop the files here ...
+                        </p>
+                      ) : (
+                        <>
+                          <p className="text-gray-700 font-medium">Upload images</p>
+                          <p className="text-sm text-gray-500">
+                            or Drag &amp; Drop 
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Previews */}
+                  <div className="flex">
+                    {files.map((file, idx) => {
+                      const previewUrl = URL.createObjectURL(file);
+                      return (
+                        <div
+                          key={idx}
+                          className="new-trip-input w-24 h-24 mt-[15px] rounded-md overflow-hidden border border-gray-200">
+                          <img
+                            src={previewUrl}
+                            alt={file.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid justify-end mt-[20px]">
+                <button
+                  type="submit"
+                  className="submit-button w-28 h-12 text-l font-bold bg-white text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white hover:border-2  border-2 border-blue-500"
+                  onClick={closeModal}>
+                  Add Trip
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+
+          
+
         </div>
       </div>
 
       <style jsx>{`
+
+
+
         .input-field {
           width: 100%;
           background-color: white;
@@ -337,13 +381,6 @@ export default function AddTrip() {
           border-radius: 8px;
           font-size: 1rem;
           color: #000;
-        }
-
-        .heading {
-          text-align: center;
-          margin-bottom: 2rem;
-          font-weight: 600;
-          font-size: 1.8rem;
         }
 
         input,
@@ -358,8 +395,26 @@ export default function AddTrip() {
           text-align: center;
           margin-top: 1rem;
         }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px; 
+          margin-left: 5px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1; 
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbcbcb;
+          border-radius: 10px; 
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #a5a4a4; 
+        }
       `}</style>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

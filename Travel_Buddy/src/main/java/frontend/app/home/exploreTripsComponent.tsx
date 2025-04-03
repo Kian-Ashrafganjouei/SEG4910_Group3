@@ -426,7 +426,7 @@ export default function ExploreTripsComponent() {
               />
             </button>
           </div>
-          <div id="sortComponent" className="flex relative jsutify-center col-span-1">
+          <div id="sortComponent" className="flex jsutify-center col-span-1">
             <div>
               <button
                 type="button"
@@ -441,7 +441,7 @@ export default function ExploreTripsComponent() {
               </button>
             </div>
             <div
-              className={`absolute left-0 top-[30px] z-10 mt-2 w-40 origin-top-left rounded-md bg-white shadow-2xl ring-1 ring-black/5 focus:outline-none ${
+              className={`absolute left-0 z-10 mt-2 w-40 origin-top-left rounded-md bg-white shadow-2xl ring-1 ring-black/5 focus:outline-none ${
                 showSort ? "" : "hidden"
               }`}
               role="menu">
